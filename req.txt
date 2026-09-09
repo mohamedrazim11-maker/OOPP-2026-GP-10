@@ -1,0 +1,116 @@
+You are required to develop a system using JAVA and MYSQL for faculty of technology for handling  
+• User Profiles (Admin, Lecturer, Student, Technical Officer) 
+• Course Details 
+• Undergraduate Marks 
+• Undergraduate Attendance 
+• Notices 
+• Timetables 
+• Medicals 
+Admin 
+• Create and maintain all User Profiles 
+• Create and maintain Courses 
+• Create and maintain Notices 
+• Create and maintain Timetables 
+Lecturer 
+• Can update their profile except username and password 
+• Can modify and add materials to courses 
+• Can upload marks for all kind of exams 
+• Can see undergraduate details 
+• Can see undergraduate eligibility 
+• Can see undergraduate marks, grades and GPA 
+• Can see attendance and medical records of undergraduate 
+• Can see notices 
+Technical Officer 
+• Can update their profile except username and password 
+• Can add and maintain attendance details of undergraduate 
+• Can add and maintain medical details of undergraduate 
+• Can see notices 
+• Can see timetables of their department 
+Page 1 of 4 
+ICT2132 – Object Oriented Programming Practicum 
+Mini - Project 
+Undergraduate 
+• Can update only contact details and profile picture of their profile 
+• Can see attendance details 
+• Can see medical details 
+• Can see their course details 
+• Can see their grades and GPA 
+• Can see their timetables 
+• Can see notices 
+• You should store data for 01 admin, at least 05 lecturers, at least 04 technical officers, at least 
+20 undergraduates (including repeat and batch missed students). 
+• You should record attendance details for undergraduates for the subjects as follows 
+o Refer to your current semester academic timetable for course modules and assume that 
+both theory and practical components have 15 sessions 
+o If some undergraduates have submitted a medical for a day, there should be a way to 
+record it, and there must be a way to identify whether it’s approved or not 
+o There must be data for the attendance records to cover the following scenarios 
+▪ Undergraduates with more than 80% attendance 
+▪ Undergraduates with exactly 80% attendance 
+▪ Undergraduates with less than 80% attendance without medicals 
+▪ Undergraduates with more than 80% attendance with medicals 
+▪ Undergraduates with less than 80% attendance with medicals 
+o There should be a way to view attendance details as a summary for whole batch and as 
+individuals 
+o When there is both theory and practical for a subject there should be a way to check 
+attendance only for theory, only for practical and as combined  
+o Assume one session for 01 credit for theory(1T) is 2 hours and one session for one credit 
+for practical(1P) is 02 hours 
+• You should record marks for the subjects by following the evaluation criteria given by the course 
+coordinators of the current timetable modules.  
+o All marks must be out of 100 
+To obtain the eligibility CA part must have more than or equal 40%  
+o There should be a way to view CA marks details as a summary for whole batch and as 
+individuals 
+o There should be a way to see if undergraduates/s are eligible according to the criteria of 
+CA to sit for the final exam 
+Page 2 of 4 
+ICT2132 – Object Oriented Programming Practicum 
+Mini - Project 
+• There should be a way to check eligibility (attendance + CA marks) as individuals and for the 
+whole batch 
+• There should be a way to see the final marks only for individuals and whole batch 
+• Grade students according to the UGC Commission Circular No. 12-2024 
+• There should be a way to see marks for each subject, individuals and as a whole batch 
+• There should be a way to see Grades for each subject, individuals and as a whole batch 
+• There should be a way to see SGPA and CGPA with the subjects and grades for each 
+undergraduate and for the whole batch 
+01. Based on above given details about the required system draft a Software Requirement 
+Specification (SRS) for the proposed system that you are going to create for faculty of 
+technology.  - Get together as a batch and complete this task 
+Due date 13th September 2026 
+Upload soft copy of the SRS to LMS under Mini Project section of the module 
+(As groups) 
+02. Create class diagram using UML, and create an ER diagram for the database for your mini 
+project 
+Due date 20th September 2026 
+Upload soft copy of the class diagram and the ER diagram to LMS under Mini Project section of 
+the module 
+(As groups) 
+03. Complete your mini project 
+Due date 01st November 2026 
+Submit a report on your project covering all the details 
+• Upload a soft copy of the report to LMS under Mini Project section of the module 
+• Clearly write down the individual contribution in the report 
+(01 page per each member) 
+• Share the source code of your project by uploading it to a Git repository 
+(As Groups) 
+04. Evaluation of the mini project 
+• Date: 05th November 2026 
+• Each group must present their progress 
+• 15 minutes presentation + 10 minutes discussion 
+Page 3 of 4 
+ICT2132 – Object Oriented Programming Practicum 
+Mini - Project 
+• There will be an individual evaluation for each group member on their contribution to 
+coding 
+Note:  
+Each Group member must demonstrate at least the usage of following concepts (but not 
+limited to) in their development part of the mini project. - - - - - - - - 
+Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin

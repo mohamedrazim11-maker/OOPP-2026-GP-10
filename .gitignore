@@ -43,3 +43,10 @@ bin/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Project notes & prompt files
+impl.txt
+my.txt
+prompts
+prompts.txt
+
