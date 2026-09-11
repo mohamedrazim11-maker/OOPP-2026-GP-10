@@ -1,0 +1,69 @@
+=======================================================
+MEMBER 1 — Admin & User Management
+Implementation Summary: Task 1 - Login & Authentication
+=======================================================
+
+1. Architecture & Design Principles:
+------------------------------------
+- Strictly Desktop Application using Java Standard Edition (Java SE 17+).
+- No external UI/Web frameworks used (Pure Java Swing & AWT).
+- Native JDBC connectivity to MySQL database.
+- Standard layered architecture matching folder.txt:
+  * Model Layer: com.faculty.management.model
+  * DAO Layer: com.faculty.management.dao
+  * Service Layer: com.faculty.management.service
+  * Controller Layer: com.faculty.management.controller
+  * GUI Layer: com.faculty.management.gui
+  * Exception Layer: com.faculty.management.exception
+  * Util Layer: com.faculty.management.util
+  * Config Layer: com.faculty.management.config
+
+2. Implemented Features:
+------------------------
+[+] Login GUI (LoginFrame.java):
+    - Two-panel responsive desktop interface.
+    - Left branding panel with University of Ruhuna & Faculty of Technology info + demo credentials guide.
+    - Right form panel with Username, Password, and Show/Hide Password checkbox.
+    - Real-time validation error alerts.
+    - Keyboard shortcut support (Enter key triggers login).
+    - Reset fields button.
+
+[+] Validation & Authentication (ValidationUtil.java, AuthenticationService.java):
+    - Input sanitation, empty check, and minimum length checks.
+    - Custom exceptions: ValidationException, AuthenticationException, DatabaseException.
+    - Password verification supporting plain-text and SHA-256 hashing.
+    - Account active status verification.
+    - Database fallback mode for instant demonstration when MySQL server is offline.
+
+[+] Role Identification & Dynamic Redirection (LoginController.java):
+    - Automatically resolves user role from credentials.
+    - Instantiates specific polymorphic User subclass.
+    - Seamlessly redirects user to their dedicated role dashboard:
+      * Admin -> AdminDashboard.java
+      * Lecturer -> LecturerDashboard.java
+      * Technical Officer -> TechnicalOfficerDashboard.java
+      * Undergraduate Student -> UndergraduateDashboard.java
+    - Implemented secure Logout functionality in all dashboards that returns to LoginFrame.
+
+[+] Database & Seeding (database/):
+    - 01_create_database.sql: Creates faculty_management_db database.
+    - 02_create_tables.sql: Creates 'roles' and 'users' tables with foreign keys and status constraints.
+    - 03_insert_roles.sql: Seeds 4 core roles (ADMIN, LECTURER, TECHNICAL_OFFICER, UNDERGRADUATE).
+    - 04_insert_users.sql: Seeds 1 Admin, 5 Lecturers, 4 Technical Officers, and Undergraduate students.
+
+3. OOP Principles Demonstrated:
+-------------------------------
+- Classes & Objects: User, Role, Admin, Lecturer, TechnicalOfficer, Undergraduate.
+- Inheritance: Abstract User base class extended by Admin, Lecturer, TechnicalOfficer, Undergraduate.
+- Encapsulation: Private fields, public getters/setters, state validation.
+- Abstraction: Abstract methods (getRoleTitle(), getDashboardGreeting()) and layered architecture.
+- Polymorphism: Role-specific dynamic behavior and dashboard redirection.
+- Exception Handling: Custom exception hierarchy (DatabaseException, ValidationException, AuthenticationException).
+- Database Handling: Pure JDBC PreparedStatements & connection management.
+
+4. Verified Test Accounts:
+--------------------------
+- Admin:              admin / admin123
+- Lecturer:           lec_kamal / lec123
+- Technical Officer:  to_bandara / to123
+- Undergraduate:      tg2021001 / std123
