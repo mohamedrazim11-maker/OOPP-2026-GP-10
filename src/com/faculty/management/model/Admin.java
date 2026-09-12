@@ -1,4 +1,4 @@
-cd package com.faculty.management.model;
+package com.faculty.management.model;
 
 /**
  * Represents an Administrator user.
