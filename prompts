@@ -1,0 +1,40 @@
+================================================================================
+PROMPTS LOG - FACULTY MANAGEMENT SYSTEM (MEMBER 1: RAZIM)
+================================================================================
+
+[PROMPT 1] - Initial Setup: Login & Authentication System
+--------------------------------------------------------------------------------
+Develop Member 1 (Admin & User Management) Task 1: Login & Authentication System.
+Requirements:
+1. Login GUI using pure Java Swing (Desktop application, strictly no external frameworks).
+2. Role identification and dynamic redirection for:
+   - Admin
+   - Lecturer
+   - Technical Officer
+   - Undergraduate
+3. MySQL Database setup with JDBC connectivity and offline fallback demo mode.
+4. Core OOP Principles: Classes and Objects, Inheritance, Abstraction, Polymorphism, Encapsulation, Exception Handling.
+
+
+[PROMPT 2] - Role-Based Login Dropdown Field
+--------------------------------------------------------------------------------
+for ligin page add role fiels with drop down menu to login according to role based login  this are the users :Admin
+* Lecturer
+* Technical Officer
+* Undergraduate . just add this role based field dont make any other changes strictly and use only Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling as much as possble and codes need to be simple and eas y to understand . and commit this change to my Razim branch dont make any oyher changes
+
+
+[PROMPT 3] - User Profile Management UI (Admin)
+--------------------------------------------------------------------------------
+User Profile Management
+Admin can:
+* Create users
+* Update users
+
+* Maintain usernames/passwords create only user interface not back end and strictly follow folder structure  in folder.txt . dont create other folders or files jest create/update the folders/files to create/make above ui . and commit in to my github Razim branch
+================================================================================

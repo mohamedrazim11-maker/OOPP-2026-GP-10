@@ -15,6 +15,9 @@ public class AdminDashboard extends JFrame {
 
     private final User currentUser;
 
+    private JTabbedPane tabbedPane;
+    private UserManagementPanel userManagementPanel;
+
     public AdminDashboard(User user) {
         this.currentUser = user;
         initComponents();
@@ -22,8 +25,8 @@ public class AdminDashboard extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Administrator Portal");
-        setSize(950, 600);
-        setMinimumSize(new Dimension(800, 500));
+        setSize(1080, 680);
+        setMinimumSize(new Dimension(900, 580));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -31,17 +34,17 @@ public class AdminDashboard extends JFrame {
         // Top Header Panel
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(new Color(30, 58, 138)); // Deep Navy Blue
-        headerPanel.setBorder(new EmptyBorder(15, 25, 15, 25));
+        headerPanel.setBorder(new EmptyBorder(12, 25, 12, 25));
 
-        JLabel titleLabel = new JLabel("Faculty Management System");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        JLabel titleLabel = new JLabel("🏛️ Faculty Management System (FMS)");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titleLabel.setForeground(Color.WHITE);
 
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         userPanel.setOpaque(false);
 
         JLabel userLabel = new JLabel("👤 " + currentUser.getFullName() + " (Admin)");
-        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         userLabel.setForeground(Color.WHITE);
 
         JButton logoutButton = new JButton("Logout");
@@ -64,10 +67,28 @@ public class AdminDashboard extends JFrame {
         headerPanel.add(titleLabel, BorderLayout.WEST);
         headerPanel.add(userPanel, BorderLayout.EAST);
 
-        // Center Content Panel
+        // Tabbed Navigation
+        tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tabbedPane.setBackground(Color.WHITE);
+
+        // Tab 1: Overview Dashboard
+        JPanel overviewPanel = createOverviewPanel();
+
+        // Tab 2: User Profile Management
+        userManagementPanel = new UserManagementPanel();
+
+        tabbedPane.addTab("  🏠 Overview  ", overviewPanel);
+        tabbedPane.addTab("  👥 User Profiles  ", userManagementPanel);
+
+        add(headerPanel, BorderLayout.NORTH);
+        add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private JPanel createOverviewPanel() {
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(new Color(248, 250, 252));
-        centerPanel.setBorder(new EmptyBorder(30, 30, 30, 30));
+        centerPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
         JPanel welcomeCard = new JPanel();
         welcomeCard.setLayout(new BoxLayout(welcomeCard, BoxLayout.Y_AXIS));
@@ -90,7 +111,16 @@ public class AdminDashboard extends JFrame {
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 20, 20));
         modulesGrid.setOpaque(false);
 
-        modulesGrid.add(createModuleCard("👥 User Management", "Create, edit, view and manage system users (Lecturers, TOs, Students).", new Color(37, 99, 235)));
+        JPanel userCard = createModuleCard("👥 User Management", "Create, update, and maintain credentials for system users (Lecturers, TOs, Students). Click to manage.", new Color(37, 99, 235));
+        userCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        userCard.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                tabbedPane.setSelectedIndex(1); // Switch to User Profiles tab
+            }
+        });
+
+        modulesGrid.add(userCard);
         modulesGrid.add(createModuleCard("📚 Course Management", "Add courses, assign credits, manage course modules.", new Color(16, 185, 129)));
         modulesGrid.add(createModuleCard("📢 Notice Board", "Publish and maintain official faculty notices and circulars.", new Color(245, 158, 11)));
         modulesGrid.add(createModuleCard("🗓️ Timetable Management", "Create and maintain lecture and lab timetables.", new Color(139, 92, 246)));
@@ -100,9 +130,7 @@ public class AdminDashboard extends JFrame {
         welcomeCard.add(modulesGrid);
 
         centerPanel.add(welcomeCard, BorderLayout.CENTER);
-
-        add(headerPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
+        return centerPanel;
     }
 
     private JPanel createModuleCard(String title, String desc, Color accentColor) {
