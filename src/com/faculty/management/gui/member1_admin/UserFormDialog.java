@@ -1,5 +1,7 @@
 package com.faculty.management.gui.member1_admin;
 
+import com.faculty.management.exception.ValidationException;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -7,28 +9,41 @@ import java.awt.event.ItemEvent;
 
 /**
  * User Form Dialog for Member 1 (Admin & User Management).
- * Allows Admin to:
+ * 
+ * Supports:
+ * - View user details (Read-only view)
  * - Create new users
- * - Update existing users
+ * - Update existing user profiles
+ * - Assign user roles
  * - Maintain usernames and passwords
  * 
- * Pure Java Swing - Adheres to OOP principles (Encapsulation, Inheritance).
+ * Demonstrates:
+ * - Classes and Objects: Dialog and components instantiation.
+ * - Inheritance: Extends JDialog.
+ * - Abstraction & Polymorphism: Mode-based polymorphic configuration & abstraction of form validation.
+ * - Encapsulation: Private fields with accessor methods.
+ * - Error & Exception Handling: Uses ValidationException to validate user inputs.
  */
 public class UserFormDialog extends JDialog {
 
     public enum FormMode {
+        VIEW,
         CREATE,
         UPDATE,
-        RESET_PASSWORD
+        ASSIGN_ROLE,
+        MAINTAIN_CREDENTIALS
     }
 
+    // Encapsulated Fields
     private final FormMode mode;
     private boolean saved = false;
+    private Object[] userData;
 
-    // Form Components (Encapsulated)
+    // UI Components (Encapsulated)
     private JComboBox<String> roleComboBox;
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private JPasswordField confirmPasswordField;
     private JCheckBox showPasswordCheckBox;
     private JTextField firstNameField;
     private JTextField lastNameField;
@@ -41,9 +56,6 @@ public class UserFormDialog extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
-    // Extracted Form Data
-    private Object[] userData;
-
     public UserFormDialog(JFrame parent, String title, FormMode mode, Object[] initialData) {
         super(parent, title, true);
         this.mode = mode;
@@ -52,39 +64,39 @@ public class UserFormDialog extends JDialog {
         if (initialData != null) {
             populateFields(initialData);
         }
+        applyModeRestrictions();
     }
 
     private void initComponents() {
-        setSize(520, 620);
-        setMinimumSize(new Dimension(480, 560));
+        setSize(540, 660);
+        setMinimumSize(new Dimension(500, 580));
         setLocationRelativeTo(getParent());
         setLayout(new BorderLayout());
         setResizable(false);
 
-        // Header Panel
+        // 1. Header Panel
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(30, 58, 138)); // Deep Navy
-        headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+        headerPanel.setBackground(new Color(30, 58, 138)); // Deep Navy Blue
+        headerPanel.setBorder(new EmptyBorder(16, 22, 16, 22));
 
-        String headerTitle = (mode == FormMode.CREATE) ? "Create New User Profile" :
-                (mode == FormMode.UPDATE) ? "Update User Profile" : "Maintain User Credentials";
+        String headerTitle = getHeaderTitle();
         JLabel titleLabel = new JLabel(headerTitle);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titleLabel.setForeground(Color.WHITE);
 
         headerPanel.add(titleLabel, BorderLayout.CENTER);
 
-        // Form Panel
+        // 2. Form Panel
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(new EmptyBorder(20, 25, 15, 25));
+        formPanel.setBorder(new EmptyBorder(15, 25, 15, 25));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(4, 5, 4, 5);
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.weightx = 1.0;
 
-        // Error message banner
+        // Error message label
         errorLabel = new JLabel(" ");
         errorLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         errorLabel.setForeground(new Color(220, 38, 38));
@@ -92,7 +104,7 @@ public class UserFormDialog extends JDialog {
         formPanel.add(errorLabel, gbc);
         gbc.gridwidth = 1;
 
-        // 1. Role Selection
+        // Role Selection
         JLabel roleLabel = createFieldLabel("User Role *");
         String[] roles = {"Admin", "Lecturer", "Technical Officer", "Undergraduate"};
         roleComboBox = new JComboBox<>(roles);
@@ -102,128 +114,214 @@ public class UserFormDialog extends JDialog {
                 onRoleChanged((String) e.getItem());
             }
         });
-
         gbc.gridx = 0; gbc.gridy = 1; formPanel.add(roleLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 1; formPanel.add(roleComboBox, gbc);
 
-        // 2. Username
+        // Username
         JLabel usernameLabel = createFieldLabel("Username *");
         usernameField = createStyledTextField();
         gbc.gridx = 0; gbc.gridy = 2; formPanel.add(usernameLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 2; formPanel.add(usernameField, gbc);
 
-        // 3. Password
-        JLabel passwordLabel = createFieldLabel("Password *");
+        // Password
+        JLabel passwordLabel = createFieldLabel(mode == FormMode.MAINTAIN_CREDENTIALS ? "New Password *" : "Password *");
         passwordField = new JPasswordField();
         stylePasswordField(passwordField);
         gbc.gridx = 0; gbc.gridy = 3; formPanel.add(passwordLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 3; formPanel.add(passwordField, gbc);
 
-        // Show password toggle
-        showPasswordCheckBox = new JCheckBox("Show Password");
+        // Confirm Password (for credentials maintenance & create)
+        JLabel confirmPasswordLabel = createFieldLabel("Confirm Password *");
+        confirmPasswordField = new JPasswordField();
+        stylePasswordField(confirmPasswordField);
+        gbc.gridx = 0; gbc.gridy = 4; formPanel.add(confirmPasswordLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 4; formPanel.add(confirmPasswordField, gbc);
+
+        // Show Password toggle
+        showPasswordCheckBox = new JCheckBox("Show Passwords");
         showPasswordCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         showPasswordCheckBox.setBackground(Color.WHITE);
         showPasswordCheckBox.setFocusPainted(false);
         showPasswordCheckBox.addActionListener(e -> {
-            if (showPasswordCheckBox.isSelected()) {
-                passwordField.setEchoChar((char) 0);
-            } else {
-                passwordField.setEchoChar('•');
-            }
+            char echo = showPasswordCheckBox.isSelected() ? (char) 0 : '•';
+            passwordField.setEchoChar(echo);
+            confirmPasswordField.setEchoChar(echo);
         });
-        gbc.gridx = 1; gbc.gridy = 4; formPanel.add(showPasswordCheckBox, gbc);
+        gbc.gridx = 1; gbc.gridy = 5; formPanel.add(showPasswordCheckBox, gbc);
 
-        // 4. First Name
+        // First Name
         JLabel firstNameLabel = createFieldLabel("First Name *");
         firstNameField = createStyledTextField();
-        gbc.gridx = 0; gbc.gridy = 5; formPanel.add(firstNameLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 5; formPanel.add(firstNameField, gbc);
+        gbc.gridx = 0; gbc.gridy = 6; formPanel.add(firstNameLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 6; formPanel.add(firstNameField, gbc);
 
-        // 5. Last Name
+        // Last Name
         JLabel lastNameLabel = createFieldLabel("Last Name *");
         lastNameField = createStyledTextField();
-        gbc.gridx = 0; gbc.gridy = 6; formPanel.add(lastNameLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 6; formPanel.add(lastNameField, gbc);
+        gbc.gridx = 0; gbc.gridy = 7; formPanel.add(lastNameLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 7; formPanel.add(lastNameField, gbc);
 
-        // 6. Email
+        // Email
         JLabel emailLabel = createFieldLabel("Email *");
         emailField = createStyledTextField();
-        gbc.gridx = 0; gbc.gridy = 7; formPanel.add(emailLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 7; formPanel.add(emailField, gbc);
+        gbc.gridx = 0; gbc.gridy = 8; formPanel.add(emailLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 8; formPanel.add(emailField, gbc);
 
-        // 7. Contact No
+        // Contact No
         JLabel contactLabel = createFieldLabel("Contact No");
         contactField = createStyledTextField();
-        gbc.gridx = 0; gbc.gridy = 8; formPanel.add(contactLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 8; formPanel.add(contactField, gbc);
+        gbc.gridx = 0; gbc.gridy = 9; formPanel.add(contactLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 9; formPanel.add(contactField, gbc);
 
-        // 8. Department (For Lecturer & Technical Officer)
+        // Department
         JLabel departmentLabel = createFieldLabel("Department");
-        String[] departments = {"Department of Information & Communication Technology", "Department of Biosystems Technology", "Department of Engineering Technology", "Multidisciplinary"};
+        String[] departments = {
+                "Department of Information & Communication Technology",
+                "Department of Biosystems Technology",
+                "Department of Engineering Technology",
+                "Multidisciplinary"
+        };
         departmentComboBox = new JComboBox<>(departments);
         styleComboBox(departmentComboBox);
-        gbc.gridx = 0; gbc.gridy = 9; formPanel.add(departmentLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 9; formPanel.add(departmentComboBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 10; formPanel.add(departmentLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 10; formPanel.add(departmentComboBox, gbc);
 
-        // 9. Batch (For Undergraduate)
+        // Batch / Intake
         JLabel batchLabel = createFieldLabel("Batch / Intake");
         batchField = createStyledTextField();
         batchField.setText("2021/2022");
-        gbc.gridx = 0; gbc.gridy = 10; formPanel.add(batchLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 10; formPanel.add(batchField, gbc);
+        gbc.gridx = 0; gbc.gridy = 11; formPanel.add(batchLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 11; formPanel.add(batchField, gbc);
 
-        // 10. Status
+        // Status
         JLabel statusLabel = createFieldLabel("Status *");
         String[] statuses = {"ACTIVE", "INACTIVE"};
         statusComboBox = new JComboBox<>(statuses);
         styleComboBox(statusComboBox);
-        gbc.gridx = 0; gbc.gridy = 11; formPanel.add(statusLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 11; formPanel.add(statusComboBox, gbc);
+        gbc.gridx = 0; gbc.gridy = 12; formPanel.add(statusLabel, gbc);
+        gbc.gridx = 1; gbc.gridy = 12; formPanel.add(statusComboBox, gbc);
 
-        // Mode adjustments
-        applyModeRestrictions();
-
-        // Button Panel
+        // 3. Bottom Action Buttons Panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 12));
         buttonPanel.setBackground(new Color(248, 250, 252));
         buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(226, 232, 240)));
 
-        cancelButton = new JButton("Cancel");
+        cancelButton = new JButton(mode == FormMode.VIEW ? "Close" : "Cancel");
         cancelButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         cancelButton.setPreferredSize(new Dimension(90, 34));
         cancelButton.setFocusPainted(false);
         cancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cancelButton.addActionListener(e -> dispose());
 
-        saveButton = new JButton((mode == FormMode.CREATE) ? "Create User" : (mode == FormMode.UPDATE) ? "Save Changes" : "Update Password");
+        saveButton = new JButton(getSaveButtonText());
         saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        saveButton.setBackground(new Color(37, 99, 235)); // Primary Blue
+        saveButton.setBackground(new Color(37, 99, 235));
         saveButton.setForeground(Color.WHITE);
-        saveButton.setPreferredSize(new Dimension(130, 34));
+        saveButton.setPreferredSize(new Dimension(150, 34));
         saveButton.setFocusPainted(false);
         saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         saveButton.addActionListener(e -> handleSave());
 
         buttonPanel.add(cancelButton);
-        buttonPanel.add(saveButton);
+        if (mode != FormMode.VIEW) {
+            buttonPanel.add(saveButton);
+        }
 
         add(headerPanel, BorderLayout.NORTH);
         add(new JScrollPane(formPanel), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    private String getHeaderTitle() {
+        switch (mode) {
+            case VIEW:
+                return "👤 User Profile Details (Read-Only)";
+            case CREATE:
+                return "➕ Create New User Profile";
+            case UPDATE:
+                return "✏️ Update User Profile";
+            case ASSIGN_ROLE:
+                return "🎭 Assign User Role";
+            case MAINTAIN_CREDENTIALS:
+                return "🔑 Maintain Username & Password";
+            default:
+                return "User Form";
+        }
+    }
+
+    private String getSaveButtonText() {
+        switch (mode) {
+            case CREATE:
+                return "Create User";
+            case UPDATE:
+                return "Save Changes";
+            case ASSIGN_ROLE:
+                return "Assign Role";
+            case MAINTAIN_CREDENTIALS:
+                return "Update Credentials";
+            default:
+                return "Save";
+        }
+    }
+
     private void applyModeRestrictions() {
-        if (mode == FormMode.RESET_PASSWORD) {
-            roleComboBox.setEnabled(false);
-            firstNameField.setEnabled(false);
-            lastNameField.setEnabled(false);
-            emailField.setEnabled(false);
-            contactField.setEnabled(false);
-            departmentComboBox.setEnabled(false);
-            batchField.setEnabled(false);
-            statusComboBox.setEnabled(false);
-        } else if (mode == FormMode.UPDATE) {
-            // In update mode, username can be maintained or password updated
+        switch (mode) {
+            case VIEW:
+                roleComboBox.setEnabled(false);
+                usernameField.setEditable(false);
+                passwordField.setEnabled(false);
+                confirmPasswordField.setEnabled(false);
+                showPasswordCheckBox.setEnabled(false);
+                firstNameField.setEditable(false);
+                lastNameField.setEditable(false);
+                emailField.setEditable(false);
+                contactField.setEditable(false);
+                departmentComboBox.setEnabled(false);
+                batchField.setEditable(false);
+                statusComboBox.setEnabled(false);
+                passwordField.setText("********");
+                confirmPasswordField.setText("********");
+                break;
+
+            case ASSIGN_ROLE:
+                roleComboBox.setEnabled(true);
+                usernameField.setEditable(false);
+                passwordField.setEnabled(false);
+                confirmPasswordField.setEnabled(false);
+                showPasswordCheckBox.setEnabled(false);
+                firstNameField.setEditable(false);
+                lastNameField.setEditable(false);
+                emailField.setEditable(false);
+                contactField.setEditable(false);
+                departmentComboBox.setEnabled(true);
+                batchField.setEnabled(true);
+                statusComboBox.setEnabled(false);
+                break;
+
+            case MAINTAIN_CREDENTIALS:
+                roleComboBox.setEnabled(false);
+                usernameField.setEditable(true); // Maintain username
+                passwordField.setEnabled(true);  // Maintain password
+                confirmPasswordField.setEnabled(true);
+                showPasswordCheckBox.setEnabled(true);
+                firstNameField.setEditable(false);
+                lastNameField.setEditable(false);
+                emailField.setEditable(false);
+                contactField.setEditable(false);
+                departmentComboBox.setEnabled(false);
+                batchField.setEditable(false);
+                statusComboBox.setEnabled(false);
+                break;
+
+            case UPDATE:
+                passwordField.setEnabled(false);
+                confirmPasswordField.setEnabled(false);
+                showPasswordCheckBox.setEnabled(false);
+                break;
+
+            case CREATE:
+            default:
+                break;
         }
     }
 
@@ -241,7 +339,6 @@ public class UserFormDialog extends JDialog {
     }
 
     private void populateFields(Object[] data) {
-        // data columns: [0: ID, 1: Username, 2: First Name, 3: Last Name, 4: Role, 5: Email, 6: Contact, 7: Status]
         if (data.length > 1 && data[1] != null) usernameField.setText(data[1].toString());
         if (data.length > 2 && data[2] != null) firstNameField.setText(data[2].toString());
         if (data.length > 3 && data[3] != null) lastNameField.setText(data[3].toString());
@@ -251,37 +348,77 @@ public class UserFormDialog extends JDialog {
         if (data.length > 7 && data[7] != null) statusComboBox.setSelectedItem(data[7].toString());
     }
 
+    /**
+     * Validates input values using ValidationException and updates userData.
+     */
     private void handleSave() {
         String role = (String) roleComboBox.getSelectedItem();
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword()).trim();
+        String confirmPassword = new String(confirmPasswordField.getPassword()).trim();
         String firstName = firstNameField.getText().trim();
         String lastName = lastNameField.getText().trim();
         String email = emailField.getText().trim();
         String contact = contactField.getText().trim();
         String status = (String) statusComboBox.getSelectedItem();
 
-        // Validation & Exception Handling
         try {
-            if (username.isEmpty()) {
-                throw new IllegalArgumentException("Username is required.");
-            }
-            if (username.length() < 3) {
-                throw new IllegalArgumentException("Username must be at least 3 characters.");
-            }
-            if (mode == FormMode.CREATE && password.isEmpty()) {
-                throw new IllegalArgumentException("Password is required for new users.");
-            }
-            if (mode != FormMode.RESET_PASSWORD) {
+            // Validate based on mode
+            if (mode == FormMode.MAINTAIN_CREDENTIALS) {
+                if (username.isEmpty()) {
+                    throw new ValidationException("Username cannot be empty.");
+                }
+                if (username.length() < 3) {
+                    throw new ValidationException("Username must be at least 3 characters long.");
+                }
+                if (password.isEmpty()) {
+                    throw new ValidationException("New password cannot be empty.");
+                }
+                if (password.length() < 6) {
+                    throw new ValidationException("Password must be at least 6 characters long.");
+                }
+                if (!password.equals(confirmPassword)) {
+                    throw new ValidationException("Passwords do not match. Please re-type password.");
+                }
+            } else if (mode == FormMode.ASSIGN_ROLE) {
+                if (role == null || role.isEmpty()) {
+                    throw new ValidationException("Please select a valid user role to assign.");
+                }
+            } else if (mode == FormMode.CREATE) {
+                if (username.isEmpty()) {
+                    throw new ValidationException("Username is required.");
+                }
+                if (username.length() < 3) {
+                    throw new ValidationException("Username must be at least 3 characters long.");
+                }
+                if (password.isEmpty()) {
+                    throw new ValidationException("Password is required for a new user.");
+                }
+                if (password.length() < 6) {
+                    throw new ValidationException("Password must be at least 6 characters long.");
+                }
+                if (!password.equals(confirmPassword)) {
+                    throw new ValidationException("Passwords do not match.");
+                }
                 if (firstName.isEmpty() || lastName.isEmpty()) {
-                    throw new IllegalArgumentException("First name and Last name are required.");
+                    throw new ValidationException("First Name and Last Name are required.");
                 }
                 if (email.isEmpty() || !email.contains("@")) {
-                    throw new IllegalArgumentException("Please enter a valid email address.");
+                    throw new ValidationException("Please enter a valid email address.");
+                }
+            } else if (mode == FormMode.UPDATE) {
+                if (username.isEmpty()) {
+                    throw new ValidationException("Username is required.");
+                }
+                if (firstName.isEmpty() || lastName.isEmpty()) {
+                    throw new ValidationException("First Name and Last Name are required.");
+                }
+                if (email.isEmpty() || !email.contains("@")) {
+                    throw new ValidationException("Please enter a valid email address.");
                 }
             }
 
-            // Assemble updated row data
+            // Construct new/updated user record array
             userData = new Object[]{
                     (userData != null && userData.length > 0) ? userData[0] : (int)(Math.random() * 900 + 100),
                     username,
@@ -296,11 +433,14 @@ public class UserFormDialog extends JDialog {
             saved = true;
             dispose();
 
-        } catch (IllegalArgumentException ex) {
+        } catch (ValidationException ex) {
             errorLabel.setText("⚠️ " + ex.getMessage());
+        } catch (Exception ex) {
+            errorLabel.setText("⚠️ Unexpected error: " + ex.getMessage());
         }
     }
 
+    // Encapsulated Getters
     public boolean isSaved() {
         return saved;
     }
@@ -309,7 +449,11 @@ public class UserFormDialog extends JDialog {
         return userData;
     }
 
-    // UI Helper methods
+    public FormMode getMode() {
+        return mode;
+    }
+
+    // UI Helper methods (Encapsulation)
     private JLabel createFieldLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Segoe UI", Font.BOLD, 12));
@@ -343,3 +487,4 @@ public class UserFormDialog extends JDialog {
         cb.setPreferredSize(new Dimension(240, 32));
     }
 }
+
