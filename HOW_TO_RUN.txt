@@ -1,0 +1,111 @@
+================================================================================
+   FACULTY MANAGEMENT SYSTEM (FMS) - QUICK SETUP & RUN GUIDE
+================================================================================
+
+1. REQUIRED DEPENDENCIES & PREREQUISITES
+--------------------------------------------------------------------------------
+Before running the project, make sure you have the following installed:
+
+a. Java Development Kit (JDK 17 or higher):
+   - Check if installed: 
+     java -version
+     javac -version
+   - If not installed, download & install JDK 17+ from:
+     https://www.oracle.com/java/technologies/downloads/
+     (or OpenJDK: https://adoptium.net/)
+
+b. MySQL Server / XAMPP:
+   - Download & install XAMPP from: https://www.apachefriends.org/
+   - Open XAMPP Control Panel and click "Start" for Apache and MySQL.
+
+c. MySQL JDBC Driver (Connector/J):
+   - The driver file 'mysql-connector-j-9.2.0.jar' must be inside the 'lib/' folder.
+   - If missing, download it from:
+     https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/9.2.0/mysql-connector-j-9.2.0.jar
+     and place it inside the 'lib/' directory of the project.
+
+d. Git:
+   - Check if installed: git --version
+   - If not installed, download from: https://git-scm.com/
+
+
+2. CLONE THE PROJECT
+--------------------------------------------------------------------------------
+Open terminal / command prompt and run:
+
+   git clone https://github.com/mohamedrazim11-maker/OOPP-2026-GP-10.git
+   cd OOPP-2026-GP-10
+
+
+3. CHECKOUT YOUR BRANCH
+--------------------------------------------------------------------------------
+To view all available branches:
+   git branch -a
+
+To switch to your assigned branch (e.g., person-1, person-2, person-3, person-4, Razim):
+   git checkout <branch-name>
+
+Example:
+   git checkout person-1
+
+
+4. DATABASE SETUP (MySQL / XAMPP)
+--------------------------------------------------------------------------------
+a. Start Apache & MySQL in XAMPP Control Panel.
+b. Open phpMyAdmin in your browser (http://localhost/phpmyadmin).
+c. Import the 4 SQL scripts located in the 'database/' folder in this exact order:
+   1) database/01_create_database.sql
+   2) database/02_create_tables.sql
+   3) database/03_insert_roles.sql
+   4) database/04_insert_users.sql
+
+* Note on Database Credentials:
+  Default credentials in src/com/faculty/management/config/DatabaseConnection.java:
+  - Host: localhost:3306
+  - Database: faculty_management_db
+  - User: root
+  - Password: "" (blank)
+  If your MySQL has a password, update the PASSWORD variable in DatabaseConnection.java.
+
+
+5. COMPILE & RUN THE PROJECT
+--------------------------------------------------------------------------------
+
+>>> OPTION A: Using PowerShell (VS Code Terminal)
+
+1) Compile:
+javac -cp "lib/mysql-connector-j-9.2.0.jar;resources" -d bin (Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName })
+
+2) Run:
+java -cp "bin;lib/mysql-connector-j-9.2.0.jar;resources" com.faculty.management.Main
+
+--- Or compile & run in a single command ---
+javac -cp "lib/mysql-connector-j-9.2.0.jar;resources" -d bin (Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName }); java -cp "bin;lib/mysql-connector-j-9.2.0.jar;resources" com.faculty.management.Main
+
+
+>>> OPTION B: Using Command Prompt (cmd.exe)
+
+1) Compile:
+dir /s /b src\*.java > sources.txt
+javac -cp "lib/mysql-connector-j-9.2.0.jar;resources" -d bin @sources.txt
+del sources.txt
+
+2) Run:
+java -cp "bin;lib/mysql-connector-j-9.2.0.jar;resources" com.faculty.management.Main
+
+
+>>> OPTION C: Using IDE (IntelliJ IDEA / Eclipse / VS Code)
+1) Open the project folder in your IDE.
+2) Add the JAR file 'lib/mysql-connector-j-9.2.0.jar' to Project Libraries / Classpath.
+3) Set Project SDK to Java 17+.
+4) Right-click 'src/com/faculty/management/Main.java' -> Run.
+
+
+6. DEFAULT LOGIN CREDENTIALS
+--------------------------------------------------------------------------------
+- Admin:               admin          / admin123
+- Lecturer:            lec001         / lec123
+- Technical Officer:   to001          / to123
+- Student:             TG/2022/1001   / stu123
+
+================================================================================
