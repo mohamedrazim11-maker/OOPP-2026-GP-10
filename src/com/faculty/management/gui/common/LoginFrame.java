@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
  */
 public class LoginFrame extends JFrame {
 
+    private JComboBox<String> roleComboBox;
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JCheckBox showPasswordCheckBox;
@@ -30,8 +31,8 @@ public class LoginFrame extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Login");
-        setSize(780, 520);
-        setMinimumSize(new Dimension(720, 480));
+        setSize(780, 560);
+        setMinimumSize(new Dimension(720, 520));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -122,11 +123,11 @@ public class LoginFrame extends JFrame {
         JPanel formPanel = new JPanel();
         formPanel.setBackground(Color.WHITE);
         formPanel.setLayout(new GridBagLayout());
-        formPanel.setBorder(new EmptyBorder(30, 35, 30, 35));
+        formPanel.setBorder(new EmptyBorder(25, 35, 25, 35));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(6, 0, 6, 0);
+        gbc.insets = new Insets(5, 0, 5, 0);
         gbc.weightx = 1.0;
 
         // Form Title
@@ -134,7 +135,7 @@ public class LoginFrame extends JFrame {
         signInLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         signInLabel.setForeground(new Color(15, 23, 42));
 
-        JLabel signInSub = new JLabel("Please enter your credentials to login");
+        JLabel signInSub = new JLabel("Please select your role and enter credentials");
         signInSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         signInSub.setForeground(new Color(100, 116, 139));
 
@@ -142,6 +143,21 @@ public class LoginFrame extends JFrame {
         errorLabel = new JLabel(" ");
         errorLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         errorLabel.setForeground(new Color(220, 38, 38));
+
+        // Role Selection Dropdown
+        JLabel roleLabel = new JLabel("Select Role");
+        roleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        roleLabel.setForeground(new Color(51, 65, 85));
+
+        String[] roles = {"-- Select Role --", "Admin", "Lecturer", "Technical Officer", "Undergraduate"};
+        roleComboBox = new JComboBox<>(roles);
+        roleComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        roleComboBox.setBackground(Color.WHITE);
+        roleComboBox.setPreferredSize(new Dimension(200, 36));
+        roleComboBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                new EmptyBorder(3, 5, 3, 5)
+        ));
 
         // Username
         JLabel usernameLabel = new JLabel("Username");
@@ -216,6 +232,7 @@ public class LoginFrame extends JFrame {
                 }
             }
         };
+        roleComboBox.addKeyListener(enterKeyListener);
         usernameField.addKeyListener(enterKeyListener);
         passwordField.addKeyListener(enterKeyListener);
 
@@ -230,22 +247,28 @@ public class LoginFrame extends JFrame {
         formPanel.add(errorLabel, gbc);
 
         gbc.gridy = 3;
-        formPanel.add(usernameLabel, gbc);
+        formPanel.add(roleLabel, gbc);
 
         gbc.gridy = 4;
-        formPanel.add(usernameField, gbc);
+        formPanel.add(roleComboBox, gbc);
 
         gbc.gridy = 5;
-        formPanel.add(passwordLabel, gbc);
+        formPanel.add(usernameLabel, gbc);
 
         gbc.gridy = 6;
-        formPanel.add(passwordField, gbc);
+        formPanel.add(usernameField, gbc);
 
         gbc.gridy = 7;
-        formPanel.add(showPasswordCheckBox, gbc);
+        formPanel.add(passwordLabel, gbc);
 
         gbc.gridy = 8;
-        gbc.insets = new Insets(15, 0, 0, 0);
+        formPanel.add(passwordField, gbc);
+
+        gbc.gridy = 9;
+        formPanel.add(showPasswordCheckBox, gbc);
+
+        gbc.gridy = 10;
+        gbc.insets = new Insets(12, 0, 0, 0);
         formPanel.add(buttonPanel, gbc);
 
         mainPanel.add(brandPanel);
@@ -256,9 +279,10 @@ public class LoginFrame extends JFrame {
 
     private void performLogin() {
         clearErrorMessage();
+        String selectedRole = (String) roleComboBox.getSelectedItem();
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
-        loginController.handleLogin(this, username, password);
+        loginController.handleLogin(this, username, password, selectedRole);
     }
 
     public void showErrorMessage(String message) {
@@ -270,9 +294,31 @@ public class LoginFrame extends JFrame {
     }
 
     public void resetFields() {
+        roleComboBox.setSelectedIndex(0);
         usernameField.setText("");
         passwordField.setText("");
         clearErrorMessage();
-        usernameField.requestFocus();
+        roleComboBox.requestFocus();
+    }
+
+    // Encapsulation: Getters and Setters for GUI components
+    public String getSelectedRole() {
+        return (String) roleComboBox.getSelectedItem();
+    }
+
+    public void setSelectedRole(String role) {
+        roleComboBox.setSelectedItem(role);
+    }
+
+    public String getUsername() {
+        return usernameField.getText();
+    }
+
+    public void setUsername(String username) {
+        usernameField.setText(username);
+    }
+
+    public void setPassword(String password) {
+        passwordField.setText(password);
     }
 }

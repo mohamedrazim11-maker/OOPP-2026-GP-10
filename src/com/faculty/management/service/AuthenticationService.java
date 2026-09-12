@@ -27,20 +27,21 @@ public class AuthenticationService {
     }
 
     /**
-     * Authenticates a user with given credentials.
+     * Authenticates a user with given credentials and verifies role selection.
      *
-     * @param username User-entered username
-     * @param password User-entered password
+     * @param username     User-entered username
+     * @param password     User-entered password
+     * @param selectedRole User-selected role from login dropdown
      * @return Authenticated User object (Admin, Lecturer, TechnicalOfficer, or Undergraduate)
      * @throws ValidationException If inputs are invalid or empty
-     * @throws AuthenticationException If username/password do not match or account is inactive
+     * @throws AuthenticationException If username/password do not match, account is inactive, or role mismatches
      * @throws DatabaseException If database communication fails
      */
-    public User authenticate(String username, String password) 
+    public User authenticate(String username, String password, String selectedRole) 
             throws ValidationException, AuthenticationException, DatabaseException {
 
-        // 1. Validate inputs
-        ValidationUtil.validateLoginInput(username, password);
+        // 1. Validate inputs (username, password, selected role)
+        ValidationUtil.validateLoginInput(username, password, selectedRole);
 
         String trimmedUsername = username.trim();
 
@@ -60,6 +61,9 @@ public class AuthenticationService {
                 throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
             }
 
+            // Verify user's assigned role matches the selected role
+            verifyUserRole(user, selectedRole);
+
             return user;
         }
 
@@ -69,10 +73,55 @@ public class AuthenticationService {
             if (!mockUser.isActive()) {
                 throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
             }
+
+            // Verify mock user's assigned role matches the selected role
+            verifyUserRole(mockUser, selectedRole);
+
             return mockUser;
         }
 
         throw new AuthenticationException("Invalid username or password. (Database offline: check credentials or start MySQL)");
+    }
+
+    /**
+     * Authenticates a user with given credentials without role verification.
+     */
+    public User authenticate(String username, String password) 
+            throws ValidationException, AuthenticationException, DatabaseException {
+        return authenticate(username, password, null);
+    }
+
+    /**
+     * Verifies that the authenticated user has the role selected in the login form.
+     * Demonstrates Encapsulation and Polymorphism.
+     *
+     * @param user         The authenticated user object
+     * @param selectedRole The role chosen in the GUI dropdown
+     * @throws AuthenticationException If selected role does not match user's actual role
+     */
+    private void verifyUserRole(User user, String selectedRole) throws AuthenticationException {
+        if (selectedRole == null || selectedRole.trim().isEmpty() || "-- Select Role --".equalsIgnoreCase(selectedRole.trim())) {
+            return;
+        }
+
+        if (user.getRole() == null || user.getRole().getRoleName() == null) {
+            throw new AuthenticationException("No role assigned to this account.");
+        }
+
+        String userRole = user.getRole().getRoleName().replace("_", " ").trim().toUpperCase();
+        String selected = selectedRole.replace("_", " ").trim().toUpperCase();
+
+        // Handle synonyms (STUDENT <-> UNDERGRADUATE)
+        if (userRole.equals("STUDENT")) {
+            userRole = "UNDERGRADUATE";
+        }
+        if (selected.equals("STUDENT")) {
+            selected = "UNDERGRADUATE";
+        }
+
+        if (!userRole.equalsIgnoreCase(selected)) {
+            throw new AuthenticationException("Role mismatch: You cannot log in as '" + selectedRole + "' with this account.");
+        }
     }
 
     /**
