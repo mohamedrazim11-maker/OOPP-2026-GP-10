@@ -26,32 +26,38 @@ public class LoginController {
     }
 
     /**
-     * Handles the login action submitted from the Login GUI.
+     * Handles the login action submitted from the Login GUI with role verification.
      *
-     * @param loginFrame The active LoginFrame instance
-     * @param username   Entered username
-     * @param password   Entered password
+     * @param loginFrame   The active LoginFrame instance
+     * @param username     Entered username
+     * @param password     Entered password
+     * @param selectedRole Selected role from dropdown
      */
-    public void handleLogin(LoginFrame loginFrame, String username, String password) {
+    public void handleLogin(LoginFrame loginFrame, String username, String password, String selectedRole) {
         try {
-            // 1. Authenticate & identify user role
-            User user = authService.authenticate(username, password);
+            // 1. Authenticate & verify user role
+            User user = authService.authenticate(username, password, selectedRole);
 
-            // 2. Redirect based on role identification
+            // 2. Redirect based on role identification (Polymorphism & Abstraction)
             redirectToRoleDashboard(user);
 
             // 3. Close the login window
             loginFrame.dispose();
 
-        } catch (ValidationException e) {
-            loginFrame.showErrorMessage(e.getMessage());
-        } catch (AuthenticationException e) {
+        } catch (ValidationException | AuthenticationException e) {
             loginFrame.showErrorMessage(e.getMessage());
         } catch (DatabaseException e) {
             loginFrame.showErrorMessage("Database error: " + e.getMessage());
         } catch (Exception e) {
             loginFrame.showErrorMessage("An unexpected error occurred: " + e.getMessage());
         }
+    }
+
+    /**
+     * Overloaded login handler for backward compatibility.
+     */
+    public void handleLogin(LoginFrame loginFrame, String username, String password) {
+        handleLogin(loginFrame, username, password, null);
     }
 
     /**
