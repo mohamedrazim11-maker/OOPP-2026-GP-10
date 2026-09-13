@@ -1,9 +1,11 @@
 package com.faculty.management.util;
 
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.model.User;
 
 /**
- * Utility class providing validation methods for user inputs.
+ * Utility class providing validation methods for user inputs and user creation.
+ * Demonstrates Encapsulation and Error/Exception Handling.
  */
 public class ValidationUtil {
 
@@ -57,6 +59,58 @@ public class ValidationUtil {
         }
         if (username.trim().length() < 3) {
             throw new ValidationException("Username must be at least 3 characters long.");
+        }
+    }
+
+    /**
+     * Validates all required fields for creating a new user.
+     *
+     * @param user            User object containing user information
+     * @param rawPassword     The plain password entered by the user
+     * @param confirmPassword Confirmation password entered by the user
+     * @throws ValidationException If any validation constraint fails
+     */
+    public static void validateNewUser(User user, String rawPassword, String confirmPassword) throws ValidationException {
+        if (user == null) {
+            throw new ValidationException("User information cannot be null.");
+        }
+
+        if (isEmpty(user.getUsername())) {
+            throw new ValidationException("Username is required.");
+        }
+        if (user.getUsername().trim().length() < 3) {
+            throw new ValidationException("Username must be at least 3 characters long.");
+        }
+        if (!user.getUsername().trim().matches("^[a-zA-Z0-9_]+$")) {
+            throw new ValidationException("Username can only contain alphanumeric characters and underscores.");
+        }
+
+        if (isEmpty(rawPassword)) {
+            throw new ValidationException("Password is required for a new user.");
+        }
+        if (rawPassword.trim().length() < 6) {
+            throw new ValidationException("Password must be at least 6 characters long.");
+        }
+        if (confirmPassword != null && !rawPassword.equals(confirmPassword)) {
+            throw new ValidationException("Passwords do not match. Please verify.");
+        }
+
+        if (isEmpty(user.getFirstName())) {
+            throw new ValidationException("First Name is required.");
+        }
+        if (isEmpty(user.getLastName())) {
+            throw new ValidationException("Last Name is required.");
+        }
+
+        if (isEmpty(user.getEmail())) {
+            throw new ValidationException("Email address is required.");
+        }
+        if (!user.getEmail().contains("@") || !user.getEmail().contains(".")) {
+            throw new ValidationException("Please enter a valid email address.");
+        }
+
+        if (user.getRole() == null || isEmpty(user.getRole().getRoleName())) {
+            throw new ValidationException("Please assign a valid role to the user.");
         }
     }
 }

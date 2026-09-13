@@ -47,4 +47,28 @@ Admin can:
 [PROMPT 5] - Update Prompts Log
 --------------------------------------------------------------------------------
 add these prompts to prompt.txt
+
+
+[PROMPT 6] - Admin UI: Delete Users, View Users, Assign Roles, Maintain Credentials
+--------------------------------------------------------------------------------
+in admin add  only ui for these: Delete users
+* View users
+* Assign user roles
+* Maintain usernames/passwords dont make ny back end logics strictly dont use any frame works only create relatable files and folder according to folder.txt . only for this updates dont create or update unnessasery files.strictly use simple codes and these Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+
+
+[PROMPT 7] - Backend Logics for Create Users in Admin Page
+--------------------------------------------------------------------------------
+add backend logics to create users option in admin page .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
 ================================================================================

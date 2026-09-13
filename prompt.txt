@@ -60,5 +60,15 @@ Abstraction
 Polymorphism 
 Encapsulation 
 Error and exception handling 
-================================================================================
 
+
+[PROMPT 7] - Backend Logics for Create Users in Admin Page
+--------------------------------------------------------------------------------
+add backend logics to create users option in admin page .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
+================================================================================
