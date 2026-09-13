@@ -1,6 +1,9 @@
 package com.faculty.management.gui.member1_admin;
 
+import com.faculty.management.controller.AdminController;
+import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,27 +13,31 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 /**
  * User Profile Management Panel for Member 1 (Administrator).
  * 
- * Implements UI features:
- * - View users (Detailed read-only view, filtering, table display)
- * - Delete users (Remove/deactivate with safety confirmations)
+ * Implements UI & Backend features:
+ * - View users (Detailed read-only view, filtering, table display loaded from DB)
+ * - Create users (Backend database persistence, role-based instantiation, validation)
+ * - Delete / Deactivate users (Permanent delete & status toggling in DB)
  * - Assign user roles (Assign/change roles: Admin, Lecturer, Technical Officer, Undergraduate)
  * - Maintain usernames/passwords (Update username & change password securely)
  * 
  * OOP Principles Applied:
- * - Classes & Objects: Panel, tables, models, dialogs, and renderers.
+ * - Classes & Objects: Controller, service, tables, models, dialogs, and renderers.
  * - Inheritance: Extends JPanel, custom renderer extends DefaultTableCellRenderer.
- * - Abstraction: Abstracted UI action handlers and table filter predicates.
- * - Polymorphism: Overridden cell renderers and polymorphic dialog modes.
+ * - Abstraction: Controller & Service layers abstract data access from UI.
+ * - Polymorphism: Polymorphic User model handling and table display.
  * - Encapsulation: Private members with accessor methods.
- * - Error and Exception Handling: Uses ValidationException for selection and data validation.
+ * - Error and Exception Handling: Uses ValidationException & DatabaseException.
+ * - Database Handling: Connects to MySQL with JDBC and provides offline fallback.
  */
 public class UserManagementPanel extends JPanel {
 
     // Encapsulated UI components
+    private final AdminController adminController;
     private JTable userTable;
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> rowSorter;
@@ -47,8 +54,9 @@ public class UserManagementPanel extends JPanel {
     private JButton refreshButton;
 
     public UserManagementPanel() {
+        this.adminController = new AdminController();
         initComponents();
-        loadInitialUserData();
+        loadUserDataFromBackend();
     }
 
     private void initComponents() {
@@ -69,7 +77,7 @@ public class UserManagementPanel extends JPanel {
         mainTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         mainTitle.setForeground(new Color(15, 23, 42));
 
-        JLabel subTitle = new JLabel("View users, assign roles, maintain credentials, and manage system accounts.");
+        JLabel subTitle = new JLabel("Create users, view profiles, assign roles, maintain credentials, and manage system accounts.");
         subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         subTitle.setForeground(new Color(100, 116, 139));
 
@@ -104,7 +112,10 @@ public class UserManagementPanel extends JPanel {
         deleteButton.addActionListener(e -> handleDeleteUser());
 
         refreshButton = createActionButton("🔄 Refresh", new Color(241, 245, 249), new Color(71, 85, 105));
-        refreshButton.addActionListener(e -> resetFilters());
+        refreshButton.addActionListener(e -> {
+            resetFilters();
+            loadUserDataFromBackend();
+        });
 
         actionButtons.add(viewButton);
         actionButtons.add(createButton);
@@ -230,6 +241,44 @@ public class UserManagementPanel extends JPanel {
     }
 
     /**
+     * Loads all user data from backend service/database into the table.
+     */
+    private void loadUserDataFromBackend() {
+        try {
+            tableModel.setRowCount(0);
+            List<User> userList = adminController.loadAllUsers();
+            for (User u : userList) {
+                String roleTitle = (u.getRole() != null) ? u.getRole().getRoleName() : "User";
+                // Format role name nicely for UI
+                roleTitle = formatRoleDisplay(roleTitle);
+
+                tableModel.addRow(new Object[]{
+                        u.getUserId(),
+                        u.getUsername(),
+                        u.getFirstName(),
+                        u.getLastName(),
+                        roleTitle,
+                        u.getEmail(),
+                        u.getContactNo(),
+                        u.getStatus()
+                });
+            }
+        } catch (DatabaseException e) {
+            JOptionPane.showMessageDialog(this, "Failed to load users from database: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String formatRoleDisplay(String role) {
+        if (role == null) return "Undergraduate";
+        String r = role.replace("_", " ").trim();
+        if (r.equalsIgnoreCase("ADMIN")) return "Admin";
+        if (r.equalsIgnoreCase("LECTURER")) return "Lecturer";
+        if (r.equalsIgnoreCase("TECHNICAL OFFICER")) return "Technical Officer";
+        if (r.equalsIgnoreCase("UNDERGRADUATE") || r.equalsIgnoreCase("STUDENT")) return "Undergraduate";
+        return r;
+    }
+
+    /**
      * 1. View User Details (Read-Only)
      */
     private void handleViewUser() {
@@ -238,7 +287,7 @@ public class UserManagementPanel extends JPanel {
             Object[] rowData = getRowData(modelRow);
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            UserFormDialog dialog = new UserFormDialog(parentFrame, "User Details", UserFormDialog.FormMode.VIEW, rowData);
+            UserFormDialog dialog = new UserFormDialog(parentFrame, "User Details", UserFormDialog.FormMode.VIEW, rowData, adminController);
             dialog.setVisible(true);
         } catch (ValidationException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Selection Required", JOptionPane.WARNING_MESSAGE);
@@ -246,17 +295,20 @@ public class UserManagementPanel extends JPanel {
     }
 
     /**
-     * 2. Create New User Profile
+     * 2. Create New User Profile with Backend Database Logic
      */
     private void handleCreateUser() {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        UserFormDialog dialog = new UserFormDialog(parentFrame, "Create New User", UserFormDialog.FormMode.CREATE, null);
+        UserFormDialog dialog = new UserFormDialog(parentFrame, "Create New User", UserFormDialog.FormMode.CREATE, null, adminController);
         dialog.setVisible(true);
 
         if (dialog.isSaved()) {
             Object[] data = dialog.getUserData();
             tableModel.addRow(data);
-            JOptionPane.showMessageDialog(this, "User '" + data[1] + "' created successfully!", "User Created", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, 
+                    "User '" + data[1] + "' successfully created in the backend system!", 
+                    "User Created", 
+                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -269,7 +321,7 @@ public class UserManagementPanel extends JPanel {
             Object[] rowData = getRowData(modelRow);
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            UserFormDialog dialog = new UserFormDialog(parentFrame, "Update User Profile", UserFormDialog.FormMode.UPDATE, rowData);
+            UserFormDialog dialog = new UserFormDialog(parentFrame, "Update User Profile", UserFormDialog.FormMode.UPDATE, rowData, adminController);
             dialog.setVisible(true);
 
             if (dialog.isSaved()) {
@@ -293,7 +345,7 @@ public class UserManagementPanel extends JPanel {
             Object[] rowData = getRowData(modelRow);
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            UserFormDialog dialog = new UserFormDialog(parentFrame, "Assign User Role", UserFormDialog.FormMode.ASSIGN_ROLE, rowData);
+            UserFormDialog dialog = new UserFormDialog(parentFrame, "Assign User Role", UserFormDialog.FormMode.ASSIGN_ROLE, rowData, adminController);
             dialog.setVisible(true);
 
             if (dialog.isSaved()) {
@@ -315,7 +367,7 @@ public class UserManagementPanel extends JPanel {
             Object[] rowData = getRowData(modelRow);
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            UserFormDialog dialog = new UserFormDialog(parentFrame, "Maintain Credentials", UserFormDialog.FormMode.MAINTAIN_CREDENTIALS, rowData);
+            UserFormDialog dialog = new UserFormDialog(parentFrame, "Maintain Credentials", UserFormDialog.FormMode.MAINTAIN_CREDENTIALS, rowData, adminController);
             dialog.setVisible(true);
 
             if (dialog.isSaved()) {
@@ -329,11 +381,12 @@ public class UserManagementPanel extends JPanel {
     }
 
     /**
-     * 6. Delete / Deactivate Users
+     * 6. Delete / Deactivate Users with Backend Database Persistence
      */
     private void handleDeleteUser() {
         try {
             int modelRow = getSelectedModelRow();
+            int userId = (int) tableModel.getValueAt(modelRow, 0);
             String username = (String) tableModel.getValueAt(modelRow, 1);
             String currentStatus = (String) tableModel.getValueAt(modelRow, 7);
 
@@ -350,15 +403,19 @@ public class UserManagementPanel extends JPanel {
             );
 
             if (choice == JOptionPane.YES_OPTION) {
+                adminController.handleDeleteUser(userId);
                 tableModel.removeRow(modelRow);
                 JOptionPane.showMessageDialog(this, "User '" + username + "' has been permanently deleted from the system.", "User Deleted", JOptionPane.INFORMATION_MESSAGE);
             } else if (choice == JOptionPane.NO_OPTION) {
                 String newStatus = "ACTIVE".equalsIgnoreCase(currentStatus) ? "INACTIVE" : "ACTIVE";
+                adminController.handleUpdateStatus(userId, newStatus);
                 tableModel.setValueAt(newStatus, modelRow, 7);
                 JOptionPane.showMessageDialog(this, "User '" + username + "' status set to " + newStatus + ".", "Status Changed", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (ValidationException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Selection Required", JOptionPane.WARNING_MESSAGE);
+        } catch (DatabaseException ex) {
+            JOptionPane.showMessageDialog(this, "Database operation failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -416,36 +473,6 @@ public class UserManagementPanel extends JPanel {
         rowSorter.setRowFilter(null);
     }
 
-    /**
-     * Seeds initial user data matching project requirements (Admin, Lecturers, TOs, Students).
-     */
-    private void loadInitialUserData() {
-        tableModel.setRowCount(0);
-
-        // 1 Admin
-        tableModel.addRow(new Object[]{1, "admin", "System", "Admin", "Admin", "admin@fot.ruh.ac.lk", "0711234567", "ACTIVE"});
-
-        // 5 Lecturers
-        tableModel.addRow(new Object[]{2, "lec_kamal", "Kamal", "Perera", "Lecturer", "kamal@fot.ruh.ac.lk", "0771122334", "ACTIVE"});
-        tableModel.addRow(new Object[]{3, "lec_sunil", "Sunil", "Fernando", "Lecturer", "sunil@fot.ruh.ac.lk", "0772233445", "ACTIVE"});
-        tableModel.addRow(new Object[]{4, "lec_anura", "Anura", "Silva", "Lecturer", "anura@fot.ruh.ac.lk", "0773344556", "ACTIVE"});
-        tableModel.addRow(new Object[]{5, "lec_nimal", "Nimal", "Jayasinghe", "Lecturer", "nimal@fot.ruh.ac.lk", "0774455667", "ACTIVE"});
-        tableModel.addRow(new Object[]{6, "lec_malini", "Malini", "Gunaratne", "Lecturer", "malini@fot.ruh.ac.lk", "0775566778", "ACTIVE"});
-
-        // 4 Technical Officers
-        tableModel.addRow(new Object[]{7, "to_bandara", "Bandara", "Herath", "Technical Officer", "bandara@fot.ruh.ac.lk", "0761122334", "ACTIVE"});
-        tableModel.addRow(new Object[]{8, "to_chaminda", "Chaminda", "Kulatunga", "Technical Officer", "chaminda@fot.ruh.ac.lk", "0762233445", "ACTIVE"});
-        tableModel.addRow(new Object[]{9, "to_saman", "Saman", "Kumara", "Technical Officer", "saman@fot.ruh.ac.lk", "0763344556", "ACTIVE"});
-        tableModel.addRow(new Object[]{10, "to_rohan", "Rohan", "Wickrama", "Technical Officer", "rohan@fot.ruh.ac.lk", "0764455667", "ACTIVE"});
-
-        // Undergraduates (Sample)
-        tableModel.addRow(new Object[]{11, "tg2021001", "Kasun", "Kalhara", "Undergraduate", "tg2021001@fot.ruh.ac.lk", "0701122334", "ACTIVE"});
-        tableModel.addRow(new Object[]{12, "tg2021002", "Nipuni", "Hansika", "Undergraduate", "tg2021002@fot.ruh.ac.lk", "0702233445", "ACTIVE"});
-        tableModel.addRow(new Object[]{13, "tg2021003", "Dulshan", "Pradeep", "Undergraduate", "tg2021003@fot.ruh.ac.lk", "0703344556", "ACTIVE"});
-        tableModel.addRow(new Object[]{14, "tg2021004", "Sanduni", "Kavindya", "Undergraduate", "tg2021004@fot.ruh.ac.lk", "0704455667", "ACTIVE"});
-        tableModel.addRow(new Object[]{15, "tg2021005", "Thisara", "Madusanka", "Undergraduate", "tg2021005@fot.ruh.ac.lk", "0705566778", "ACTIVE"});
-    }
-
     // Encapsulated Getters
     public JTable getUserTable() {
         return userTable;
@@ -454,5 +481,8 @@ public class UserManagementPanel extends JPanel {
     public DefaultTableModel getTableModel() {
         return tableModel;
     }
-}
 
+    public AdminController getAdminController() {
+        return adminController;
+    }
+}

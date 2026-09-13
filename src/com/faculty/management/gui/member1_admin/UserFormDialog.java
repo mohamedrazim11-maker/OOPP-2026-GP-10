@@ -1,6 +1,9 @@
 package com.faculty.management.gui.member1_admin;
 
+import com.faculty.management.controller.AdminController;
+import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,7 +15,7 @@ import java.awt.event.ItemEvent;
  * 
  * Supports:
  * - View user details (Read-only view)
- * - Create new users
+ * - Create new users with backend persistence
  * - Update existing user profiles
  * - Assign user roles
  * - Maintain usernames and passwords
@@ -22,7 +25,8 @@ import java.awt.event.ItemEvent;
  * - Inheritance: Extends JDialog.
  * - Abstraction & Polymorphism: Mode-based polymorphic configuration & abstraction of form validation.
  * - Encapsulation: Private fields with accessor methods.
- * - Error & Exception Handling: Uses ValidationException to validate user inputs.
+ * - Error & Exception Handling: Catches ValidationException & DatabaseException.
+ * - Database Handling: Connects to backend controller for real DB creation.
  */
 public class UserFormDialog extends JDialog {
 
@@ -36,8 +40,10 @@ public class UserFormDialog extends JDialog {
 
     // Encapsulated Fields
     private final FormMode mode;
+    private final AdminController adminController;
     private boolean saved = false;
     private Object[] userData;
+    private User createdUser;
 
     // UI Components (Encapsulated)
     private JComboBox<String> roleComboBox;
@@ -56,10 +62,11 @@ public class UserFormDialog extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
-    public UserFormDialog(JFrame parent, String title, FormMode mode, Object[] initialData) {
+    public UserFormDialog(JFrame parent, String title, FormMode mode, Object[] initialData, AdminController adminController) {
         super(parent, title, true);
         this.mode = mode;
         this.userData = initialData;
+        this.adminController = (adminController != null) ? adminController : new AdminController();
         initComponents();
         if (initialData != null) {
             populateFields(initialData);
@@ -67,9 +74,13 @@ public class UserFormDialog extends JDialog {
         applyModeRestrictions();
     }
 
+    public UserFormDialog(JFrame parent, String title, FormMode mode, Object[] initialData) {
+        this(parent, title, mode, initialData, new AdminController());
+    }
+
     private void initComponents() {
-        setSize(540, 660);
-        setMinimumSize(new Dimension(500, 580));
+        setSize(540, 680);
+        setMinimumSize(new Dimension(500, 600));
         setLocationRelativeTo(getParent());
         setLayout(new BorderLayout());
         setResizable(false);
@@ -300,8 +311,8 @@ public class UserFormDialog extends JDialog {
 
             case MAINTAIN_CREDENTIALS:
                 roleComboBox.setEnabled(false);
-                usernameField.setEditable(true); // Maintain username
-                passwordField.setEnabled(true);  // Maintain password
+                usernameField.setEditable(true);
+                passwordField.setEnabled(true);
                 confirmPasswordField.setEnabled(true);
                 showPasswordCheckBox.setEnabled(true);
                 firstNameField.setEditable(false);
@@ -349,9 +360,10 @@ public class UserFormDialog extends JDialog {
     }
 
     /**
-     * Validates input values using ValidationException and updates userData.
+     * Handles saving the user, invoking backend AdminController and handling Validation & Database Exceptions.
      */
     private void handleSave() {
+        errorLabel.setText(" ");
         String role = (String) roleComboBox.getSelectedItem();
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword()).trim();
@@ -361,80 +373,58 @@ public class UserFormDialog extends JDialog {
         String email = emailField.getText().trim();
         String contact = contactField.getText().trim();
         String status = (String) statusComboBox.getSelectedItem();
+        String department = (String) departmentComboBox.getSelectedItem();
+        String batch = batchField.getText().trim();
 
         try {
-            // Validate based on mode
-            if (mode == FormMode.MAINTAIN_CREDENTIALS) {
-                if (username.isEmpty()) {
-                    throw new ValidationException("Username cannot be empty.");
-                }
-                if (username.length() < 3) {
-                    throw new ValidationException("Username must be at least 3 characters long.");
-                }
-                if (password.isEmpty()) {
-                    throw new ValidationException("New password cannot be empty.");
-                }
-                if (password.length() < 6) {
-                    throw new ValidationException("Password must be at least 6 characters long.");
-                }
-                if (!password.equals(confirmPassword)) {
-                    throw new ValidationException("Passwords do not match. Please re-type password.");
-                }
-            } else if (mode == FormMode.ASSIGN_ROLE) {
-                if (role == null || role.isEmpty()) {
-                    throw new ValidationException("Please select a valid user role to assign.");
-                }
-            } else if (mode == FormMode.CREATE) {
-                if (username.isEmpty()) {
-                    throw new ValidationException("Username is required.");
-                }
-                if (username.length() < 3) {
-                    throw new ValidationException("Username must be at least 3 characters long.");
-                }
-                if (password.isEmpty()) {
-                    throw new ValidationException("Password is required for a new user.");
-                }
-                if (password.length() < 6) {
-                    throw new ValidationException("Password must be at least 6 characters long.");
-                }
-                if (!password.equals(confirmPassword)) {
-                    throw new ValidationException("Passwords do not match.");
-                }
-                if (firstName.isEmpty() || lastName.isEmpty()) {
-                    throw new ValidationException("First Name and Last Name are required.");
-                }
-                if (email.isEmpty() || !email.contains("@")) {
-                    throw new ValidationException("Please enter a valid email address.");
-                }
-            } else if (mode == FormMode.UPDATE) {
-                if (username.isEmpty()) {
-                    throw new ValidationException("Username is required.");
-                }
-                if (firstName.isEmpty() || lastName.isEmpty()) {
-                    throw new ValidationException("First Name and Last Name are required.");
-                }
-                if (email.isEmpty() || !email.contains("@")) {
-                    throw new ValidationException("Please enter a valid email address.");
-                }
-            }
+            if (mode == FormMode.CREATE) {
+                // Backend creation logic via AdminController (Database Handling & OOP)
+                createdUser = adminController.handleCreateUser(
+                        role, username, password, confirmPassword,
+                        firstName, lastName, email, contact,
+                        status, department, batch
+                );
 
-            // Construct new/updated user record array
-            userData = new Object[]{
-                    (userData != null && userData.length > 0) ? userData[0] : (int)(Math.random() * 900 + 100),
-                    username,
-                    firstName,
-                    lastName,
-                    role,
-                    email,
-                    contact,
-                    status
-            };
+                userData = new Object[]{
+                        createdUser.getUserId(),
+                        createdUser.getUsername(),
+                        createdUser.getFirstName(),
+                        createdUser.getLastName(),
+                        createdUser.getRole() != null ? createdUser.getRole().getRoleName() : role,
+                        createdUser.getEmail(),
+                        createdUser.getContactNo(),
+                        createdUser.getStatus()
+                };
+
+            } else if (mode == FormMode.MAINTAIN_CREDENTIALS) {
+                int userId = (userData != null && userData.length > 0) ? (int) userData[0] : 0;
+                adminController.handleUpdateCredentials(userId, username, password);
+
+                userData[1] = username;
+
+            } else if (mode == FormMode.ASSIGN_ROLE) {
+                userData[4] = role;
+
+            } else if (mode == FormMode.UPDATE) {
+                userData = new Object[]{
+                        (userData != null && userData.length > 0) ? userData[0] : 0,
+                        username,
+                        firstName,
+                        lastName,
+                        role,
+                        email,
+                        contact,
+                        status
+                };
+            }
 
             saved = true;
             dispose();
 
         } catch (ValidationException ex) {
             errorLabel.setText("⚠️ " + ex.getMessage());
+        } catch (DatabaseException ex) {
+            errorLabel.setText("⚠️ Database Error: " + ex.getMessage());
         } catch (Exception ex) {
             errorLabel.setText("⚠️ Unexpected error: " + ex.getMessage());
         }
@@ -447,6 +437,10 @@ public class UserFormDialog extends JDialog {
 
     public Object[] getUserData() {
         return userData;
+    }
+
+    public User getCreatedUser() {
+        return createdUser;
     }
 
     public FormMode getMode() {
@@ -487,4 +481,3 @@ public class UserFormDialog extends JDialog {
         cb.setPreferredSize(new Dimension(240, 32));
     }
 }
-
