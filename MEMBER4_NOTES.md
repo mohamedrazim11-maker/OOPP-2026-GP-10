@@ -1,4 +1,5 @@
 # Member 4 — Undergraduate, Timetable & Results
+
 ### ICT2132 Mini Project — implementation notes
 
 This document covers what was built for Member 4's part of the group project,
@@ -7,15 +8,15 @@ and where to look for each OOP concept for the report / demo.
 
 ## 1. What's included
 
-| Layer | Files |
-|---|---|
-| Model | `Course`, `Enrollment`, `Mark`, `TimetableEntry`, `Grade`, `Result` |
-| DAO | `CourseDAO`, `EnrollmentDAO`, `TimetableDAO`, `GradeDAO`, `ResultDAO`, `UndergraduateDAO` |
-| Service | `UndergraduateService`, `TimetableService`, `GradeService`, `ResultService`, `GPAService` |
-| Util | `GradeCalculator` (marks → grade → grade point), `GPACalculator` (SGPA/CGPA) |
-| Controller | `UndergraduateController` |
-| GUI | `UndergraduateDashboard` (tabbed shell), `StudentProfilePanel`, `StudentCoursePanel`, `TimetablePanel`, `GradePanel`, `ResultPanel`, `SGPA_Panel`, `CGPA_Panel`, `PendingModulePanel`, `SemesterSelector` |
-| Database | `database/M4_01_create_tables.sql`, `database/M4_02_seed_data.sql` |
+| Layer      | Files                                                                                                                                                                                                     |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Model      | `Course`, `Enrollment`, `Mark`, `TimetableEntry`, `Grade`, `Result`                                                                                                                                       |
+| DAO        | `CourseDAO`, `EnrollmentDAO`, `TimetableDAO`, `GradeDAO`, `ResultDAO`, `UndergraduateDAO`                                                                                                                 |
+| Service    | `UndergraduateService`, `TimetableService`, `GradeService`, `ResultService`, `GPAService`                                                                                                                 |
+| Util       | `GradeCalculator` (marks → grade → grade point), `GPACalculator` (SGPA/CGPA)                                                                                                                              |
+| Controller | `UndergraduateController`                                                                                                                                                                                 |
+| GUI        | `UndergraduateDashboard` (tabbed shell), `StudentProfilePanel`, `StudentCoursePanel`, `TimetablePanel`, `GradePanel`, `ResultPanel`, `SGPA_Panel`, `CGPA_Panel`, `PendingModulePanel`, `SemesterSelector` |
+| Database   | `database/M4_01_create_tables.sql`, `database/M4_02_seed_data.sql`                                                                                                                                        |
 
 Run the two SQL files after `01_create_database.sql`–`04_insert_users.sql`
 (they reference `users`, which must already exist). They're both
@@ -46,9 +47,9 @@ care who created them.
    an exact weighting formula. This implementation uses:
    - CA% = average of whichever CA components were entered
    - Final total = 40% CA + 60% Final Exam
-   Change `CA_WEIGHT` / `FINAL_EXAM_WEIGHT` in `GradeCalculator` if your
-   course coordinators specify different weights.
-3. **CA eligibility only** — "Eligibility" in the brief is CA ≥ 40% *and*
+     Change `CA_WEIGHT` / `FINAL_EXAM_WEIGHT` in `GradeCalculator` if your
+     course coordinators specify different weights.
+3. **CA eligibility only** — "Eligibility" in the brief is CA ≥ 40% _and_
    attendance ≥ 80% (Member 3's data). Since attendance isn't built yet,
    Grade/Result computation here only checks the CA ≥ 40% rule. Once
    Member 3's `attendance` table exists, add an attendance check into
@@ -73,7 +74,7 @@ care who created them.
 - **Exception Handling** — `BusinessRuleException`, `ValidationException`,
   `DatabaseException` used throughout the service/controller layers
 - **Database Handling** — JDBC CRUD across all 6 DAOs, `ON DUPLICATE KEY
-  UPDATE` upserts for computed Grades/Results
+UPDATE` upserts for computed Grades/Results
 - **GUI** — Swing, `UndergraduateDashboard` + 8 tabbed panels
 
 ## 5. Known gaps / next steps for the group
