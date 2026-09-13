@@ -4,7 +4,7 @@ import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.User;
 
 /**
- * Utility class providing validation methods for user inputs and user creation.
+ * Utility class providing validation methods for user inputs, user creation, and updates.
  * Demonstrates Encapsulation and Error/Exception Handling.
  */
 public class ValidationUtil {
@@ -111,6 +111,36 @@ public class ValidationUtil {
 
         if (user.getRole() == null || isEmpty(user.getRole().getRoleName())) {
             throw new ValidationException("Please assign a valid role to the user.");
+        }
+    }
+
+    /**
+     * Validates fields for updating an existing user profile.
+     *
+     * @param user User object containing updated information
+     * @throws ValidationException If any validation constraint fails
+     */
+    public static void validateUserUpdate(User user) throws ValidationException {
+        if (user == null) {
+            throw new ValidationException("User data cannot be null.");
+        }
+        if (user.getUserId() <= 0) {
+            throw new ValidationException("Invalid User ID for update.");
+        }
+        if (isEmpty(user.getFirstName())) {
+            throw new ValidationException("First Name cannot be empty.");
+        }
+        if (isEmpty(user.getLastName())) {
+            throw new ValidationException("Last Name cannot be empty.");
+        }
+        if (isEmpty(user.getEmail())) {
+            throw new ValidationException("Email address cannot be empty.");
+        }
+        if (!user.getEmail().contains("@") || !user.getEmail().contains(".")) {
+            throw new ValidationException("Please enter a valid email address.");
+        }
+        if (user.getRole() == null || isEmpty(user.getRole().getRoleName())) {
+            throw new ValidationException("Please select a valid user role.");
         }
     }
 }

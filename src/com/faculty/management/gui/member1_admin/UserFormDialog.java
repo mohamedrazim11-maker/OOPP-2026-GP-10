@@ -16,7 +16,7 @@ import java.awt.event.ItemEvent;
  * Supports:
  * - View user details (Read-only view)
  * - Create new users with backend persistence
- * - Update existing user profiles
+ * - Update existing user profiles with backend database update
  * - Assign user roles
  * - Maintain usernames and passwords
  * 
@@ -26,7 +26,7 @@ import java.awt.event.ItemEvent;
  * - Abstraction & Polymorphism: Mode-based polymorphic configuration & abstraction of form validation.
  * - Encapsulation: Private fields with accessor methods.
  * - Error & Exception Handling: Catches ValidationException & DatabaseException.
- * - Database Handling: Connects to backend controller for real DB creation.
+ * - Database Handling: Connects to backend controller for real DB creation and updates.
  */
 public class UserFormDialog extends JDialog {
 
@@ -325,6 +325,7 @@ public class UserFormDialog extends JDialog {
                 break;
 
             case UPDATE:
+                usernameField.setEditable(false); // Username fixed on general profile update
                 passwordField.setEnabled(false);
                 confirmPasswordField.setEnabled(false);
                 showPasswordCheckBox.setEnabled(false);
@@ -396,18 +397,17 @@ public class UserFormDialog extends JDialog {
                         createdUser.getStatus()
                 };
 
-            } else if (mode == FormMode.MAINTAIN_CREDENTIALS) {
-                int userId = (userData != null && userData.length > 0) ? (int) userData[0] : 0;
-                adminController.handleUpdateCredentials(userId, username, password);
-
-                userData[1] = username;
-
-            } else if (mode == FormMode.ASSIGN_ROLE) {
-                userData[4] = role;
-
             } else if (mode == FormMode.UPDATE) {
+                // Backend update logic via AdminController (Database Handling & OOP)
+                int userId = (userData != null && userData.length > 0) ? (int) userData[0] : 0;
+                adminController.handleUpdateUser(
+                        userId, role, username,
+                        firstName, lastName, email,
+                        contact, status, department, batch
+                );
+
                 userData = new Object[]{
-                        (userData != null && userData.length > 0) ? userData[0] : 0,
+                        userId,
                         username,
                         firstName,
                         lastName,
@@ -416,6 +416,22 @@ public class UserFormDialog extends JDialog {
                         contact,
                         status
                 };
+
+            } else if (mode == FormMode.MAINTAIN_CREDENTIALS) {
+                int userId = (userData != null && userData.length > 0) ? (int) userData[0] : 0;
+                adminController.handleUpdateCredentials(userId, username, password);
+
+                userData[1] = username;
+
+            } else if (mode == FormMode.ASSIGN_ROLE) {
+                int userId = (userData != null && userData.length > 0) ? (int) userData[0] : 0;
+                adminController.handleUpdateUser(
+                        userId, role, username,
+                        firstName, lastName, email,
+                        contact, status, department, batch
+                );
+
+                userData[4] = role;
             }
 
             saved = true;

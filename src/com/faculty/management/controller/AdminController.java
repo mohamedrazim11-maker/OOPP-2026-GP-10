@@ -26,8 +26,7 @@ public class AdminController {
 
     /**
      * Handles the creation of a new user in the system.
-     * Polymorphically instantiates the appropriate User subclass (Admin, Lecturer, TechnicalOfficer, Undergraduate)
-     * based on role selection.
+     * Polymorphically instantiates the appropriate User subclass based on role selection.
      *
      * @param roleName        Selected role name (e.g. "Admin", "Lecturer", "Technical Officer", "Undergraduate")
      * @param username        Username
@@ -49,32 +48,12 @@ public class AdminController {
                                  String status, String department, String batch) 
             throws ValidationException, DatabaseException {
 
-        // 1. Resolve Role object
         Role role = new Role();
         role.setRoleName(roleName != null ? roleName.toUpperCase().replace(" ", "_") : "UNDERGRADUATE");
 
-        // 2. Factory creation demonstrating Polymorphism & Inheritance
-        User newUser;
-        String normalizedRole = (roleName != null) ? roleName.toUpperCase().replace(" ", "_") : "";
+        // Factory creation demonstrating Polymorphism & Inheritance
+        User newUser = createUserInstance(roleName, department, batch);
 
-        if (Role.ADMIN.equals(normalizedRole) || "ADMINISTRATOR".equals(normalizedRole)) {
-            newUser = new Admin();
-        } else if (Role.LECTURER.equals(normalizedRole)) {
-            Lecturer lecturer = new Lecturer();
-            lecturer.setDepartment(department);
-            newUser = lecturer;
-        } else if (Role.TECHNICAL_OFFICER.equals(normalizedRole) || "TECHNICALOFFICER".equals(normalizedRole)) {
-            TechnicalOfficer to = new TechnicalOfficer();
-            to.setDepartment(department);
-            newUser = to;
-        } else {
-            Undergraduate student = new Undergraduate();
-            student.setDepartment(department);
-            student.setBatch(batch);
-            newUser = student;
-        }
-
-        // 3. Populate encapsulated properties
         newUser.setUsername(username != null ? username.trim() : "");
         newUser.setFirstName(firstName != null ? firstName.trim() : "");
         newUser.setLastName(lastName != null ? lastName.trim() : "");
@@ -83,8 +62,76 @@ public class AdminController {
         newUser.setRole(role);
         newUser.setStatus(status != null ? status : "ACTIVE");
 
-        // 4. Delegate to business service layer
         return userService.createUser(newUser, password, confirmPassword);
+    }
+
+    /**
+     * Handles updating an existing user's profile with backend database persistence.
+     *
+     * @param userId     User ID
+     * @param roleName   User Role
+     * @param username   Username
+     * @param firstName  First Name
+     * @param lastName   Last Name
+     * @param email      Email Address
+     * @param contactNo  Contact Number
+     * @param status     Account Status
+     * @param department Department
+     * @param batch      Batch / Intake
+     * @return true if updated successfully
+     * @throws ValidationException If validation constraints fail
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleUpdateUser(int userId, String roleName, String username,
+                                    String firstName, String lastName, String email,
+                                    String contactNo, String status, String department, String batch) 
+            throws ValidationException, DatabaseException {
+
+        Role role = new Role();
+        role.setRoleName(roleName != null ? roleName.toUpperCase().replace(" ", "_") : "UNDERGRADUATE");
+
+        User updatedUser = createUserInstance(roleName, department, batch);
+        updatedUser.setUserId(userId);
+        updatedUser.setUsername(username != null ? username.trim() : "");
+        updatedUser.setFirstName(firstName != null ? firstName.trim() : "");
+        updatedUser.setLastName(lastName != null ? lastName.trim() : "");
+        updatedUser.setEmail(email != null ? email.trim() : "");
+        updatedUser.setContactNo(contactNo != null ? contactNo.trim() : "");
+        updatedUser.setRole(role);
+        updatedUser.setStatus(status != null ? status : "ACTIVE");
+
+        return userService.updateUser(updatedUser);
+    }
+
+    /**
+     * Overloaded method to update user directly via User entity.
+     */
+    public boolean handleUpdateUser(User user) throws ValidationException, DatabaseException {
+        return userService.updateUser(user);
+    }
+
+    /**
+     * Helper factory method to create the appropriate concrete User subclass (Polymorphism & Inheritance).
+     */
+    private User createUserInstance(String roleName, String department, String batch) {
+        String normalizedRole = (roleName != null) ? roleName.toUpperCase().replace(" ", "_") : "";
+
+        if (Role.ADMIN.equals(normalizedRole) || "ADMINISTRATOR".equals(normalizedRole)) {
+            return new Admin();
+        } else if (Role.LECTURER.equals(normalizedRole)) {
+            Lecturer lecturer = new Lecturer();
+            lecturer.setDepartment(department);
+            return lecturer;
+        } else if (Role.TECHNICAL_OFFICER.equals(normalizedRole) || "TECHNICALOFFICER".equals(normalizedRole)) {
+            TechnicalOfficer to = new TechnicalOfficer();
+            to.setDepartment(department);
+            return to;
+        } else {
+            Undergraduate student = new Undergraduate();
+            student.setDepartment(department);
+            student.setBatch(batch);
+            return student;
+        }
     }
 
     /**
@@ -95,18 +142,6 @@ public class AdminController {
      */
     public List<User> loadAllUsers() throws DatabaseException {
         return userService.getAllUsers();
-    }
-
-    /**
-     * Updates an existing user's profile.
-     *
-     * @param user Updated User object
-     * @return true if updated
-     * @throws ValidationException If validation fails
-     * @throws DatabaseException   If database error occurs
-     */
-    public boolean handleUpdateUser(User user) throws ValidationException, DatabaseException {
-        return userService.updateUser(user);
     }
 
     /**
