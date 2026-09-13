@@ -131,22 +131,41 @@ public class UserService {
     }
 
     /**
-     * Updates an existing user's details.
+     * Updates an existing user's details with business rule validations and DB persistence.
      *
      * @param user User object containing updated details
      * @return true if updated successfully
-     * @throws ValidationException If validation fails
+     * @throws ValidationException If validation fails (empty fields, format, duplicate email)
      * @throws DatabaseException   If database error occurs
      */
     public boolean updateUser(User user) throws ValidationException, DatabaseException {
-        if (user == null || user.getUserId() <= 0) {
-            throw new ValidationException("Invalid user data for update.");
+        // 1. Validate fields
+        ValidationUtil.validateUserUpdate(user);
+
+        // 2. Resolve Role ID
+        if (user.getRole() != null) {
+            String roleName = user.getRole().getRoleName();
+            int resolvedRoleId = mapRoleNameToId(roleName);
+            user.getRole().setRoleId(resolvedRoleId);
         }
 
+        // 3. Database Persistence
         if (DatabaseConnection.getInstance().isConnected()) {
+            // Check if updated email is already taken by another user
+            if (userDAO.existsByEmailExcludingUser(user.getEmail(), user.getUserId())) {
+                throw new ValidationException("Email '" + user.getEmail() + "' is already in use by another account.");
+            }
+
             boolean updated = userDAO.updateUser(user);
             updateMockUser(user);
             return updated;
+        }
+
+        // 4. Offline Fallback Demo Mode
+        for (User u : mockUsers) {
+            if (u.getUserId() != user.getUserId() && u.getEmail().equalsIgnoreCase(user.getEmail())) {
+                throw new ValidationException("Email '" + user.getEmail() + "' is already in use by another account.");
+            }
         }
 
         return updateMockUser(user);
@@ -173,7 +192,16 @@ public class UserService {
         }
 
         if (DatabaseConnection.getInstance().isConnected()) {
+            if (userDAO.existsByUsernameExcludingUser(newUsername.trim(), userId)) {
+                throw new ValidationException("Username '" + newUsername + "' is already taken.");
+            }
             return userDAO.updateCredentials(userId, newUsername.trim(), newPassword.trim());
+        }
+
+        for (User u : mockUsers) {
+            if (u.getUserId() != userId && u.getUsername().equalsIgnoreCase(newUsername.trim())) {
+                throw new ValidationException("Username '" + newUsername + "' is already taken.");
+            }
         }
 
         for (User u : mockUsers) {
@@ -247,7 +275,21 @@ public class UserService {
     private boolean updateMockUser(User user) {
         for (int i = 0; i < mockUsers.size(); i++) {
             if (mockUsers.get(i).getUserId() == user.getUserId()) {
-                mockUsers.set(i, user);
+                User existing = mockUsers.get(i);
+                existing.setFirstName(user.getFirstName());
+                existing.setLastName(user.getLastName());
+                existing.setEmail(user.getEmail());
+                existing.setContactNo(user.getContactNo());
+                existing.setRole(user.getRole());
+                existing.setStatus(user.getStatus());
+                if (user instanceof Undergraduate && existing instanceof Undergraduate) {
+                    ((Undergraduate) existing).setDepartment(((Undergraduate) user).getDepartment());
+                    ((Undergraduate) existing).setBatch(((Undergraduate) user).getBatch());
+                } else if (user instanceof Lecturer && existing instanceof Lecturer) {
+                    ((Lecturer) existing).setDepartment(((Lecturer) user).getDepartment());
+                } else if (user instanceof TechnicalOfficer && existing instanceof TechnicalOfficer) {
+                    ((TechnicalOfficer) existing).setDepartment(((TechnicalOfficer) user).getDepartment());
+                }
                 return true;
             }
         }

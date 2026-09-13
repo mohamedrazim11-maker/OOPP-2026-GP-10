@@ -143,6 +143,27 @@ public class UserDAO {
     }
 
     /**
+     * Checks if a user already exists with the given username, excluding a specific user ID.
+     */
+    public boolean existsByUsernameExcludingUser(String username, int userId) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ? AND user_id != ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setInt(2, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check username uniqueness: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    /**
      * Checks if a user already exists with the given email.
      *
      * @param email Email to check
@@ -162,6 +183,27 @@ public class UserDAO {
             }
         } catch (SQLException e) {
             throw new DatabaseException("Failed to check email existence: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a user already exists with the given email, excluding a specific user ID.
+     */
+    public boolean existsByEmailExcludingUser(String email, int userId) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM users WHERE email = ? AND user_id != ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setInt(2, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check email uniqueness: " + e.getMessage(), e);
         }
         return false;
     }
