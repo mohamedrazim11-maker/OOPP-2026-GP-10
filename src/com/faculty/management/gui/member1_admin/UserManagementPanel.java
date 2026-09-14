@@ -390,10 +390,19 @@ public class UserManagementPanel extends JPanel {
             String username = (String) tableModel.getValueAt(modelRow, 1);
             String currentStatus = (String) tableModel.getValueAt(modelRow, 7);
 
+            // Prevent deleting the primary admin account directly from UI
+            if (userId == 1 || "admin".equalsIgnoreCase(username)) {
+                JOptionPane.showMessageDialog(this, 
+                        "The primary system administrator ('admin') account cannot be deleted.", 
+                        "Action Prohibited", 
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             Object[] options = {"Permanent Delete", "Toggle Status (" + ("ACTIVE".equalsIgnoreCase(currentStatus) ? "Deactivate" : "Activate") + ")", "Cancel"};
             int choice = JOptionPane.showOptionDialog(
                     this,
-                    "Choose an action for user '" + username + "':",
+                    "Choose an action for user '" + username + "' (User ID: " + userId + "):",
                     "Delete / Deactivate User",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.WARNING_MESSAGE,
@@ -403,19 +412,35 @@ public class UserManagementPanel extends JPanel {
             );
 
             if (choice == JOptionPane.YES_OPTION) {
-                adminController.handleDeleteUser(userId);
-                tableModel.removeRow(modelRow);
-                JOptionPane.showMessageDialog(this, "User '" + username + "' has been permanently deleted from the system.", "User Deleted", JOptionPane.INFORMATION_MESSAGE);
+                int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to permanently delete user '" + username + "'?\nThis action cannot be undone!",
+                        "Confirm Permanent Deletion",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    adminController.handleDeleteUser(userId);
+                    tableModel.removeRow(modelRow);
+                    JOptionPane.showMessageDialog(this, 
+                            "User '" + username + "' has been permanently deleted from the database.", 
+                            "User Deleted", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
             } else if (choice == JOptionPane.NO_OPTION) {
                 String newStatus = "ACTIVE".equalsIgnoreCase(currentStatus) ? "INACTIVE" : "ACTIVE";
                 adminController.handleUpdateStatus(userId, newStatus);
                 tableModel.setValueAt(newStatus, modelRow, 7);
-                JOptionPane.showMessageDialog(this, "User '" + username + "' status set to " + newStatus + ".", "Status Changed", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                        "User '" + username + "' status set to " + newStatus + ".", 
+                        "Status Changed", 
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (ValidationException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Selection Required", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Validation Warning", JOptionPane.WARNING_MESSAGE);
         } catch (DatabaseException ex) {
-            JOptionPane.showMessageDialog(this, "Database operation failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Database operation failed: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

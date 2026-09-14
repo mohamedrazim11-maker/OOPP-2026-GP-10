@@ -143,4 +143,21 @@ public class ValidationUtil {
             throw new ValidationException("Please select a valid user role.");
         }
     }
+
+    /**
+     * Validates deletion of a user.
+     * Prevents deletion of the root system administrator and invalid user IDs.
+     *
+     * @param userId   ID of the user to be deleted
+     * @param username Username of the user to be deleted (optional)
+     * @throws ValidationException If deletion rules are violated
+     */
+    public static void validateUserDeletion(int userId, String username) throws ValidationException {
+        if (userId <= 0) {
+            throw new ValidationException("Invalid user ID specified for deletion.");
+        }
+        if (userId == 1 || (username != null && "admin".equalsIgnoreCase(username.trim()))) {
+            throw new ValidationException("The primary system administrator ('admin') account cannot be deleted.");
+        }
+    }
 }
