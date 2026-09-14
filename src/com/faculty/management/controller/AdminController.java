@@ -145,6 +145,44 @@ public class AdminController {
     }
 
     /**
+     * Retrieves a single user profile with all details by User ID (Backend View User).
+     *
+     * @param userId ID of the user
+     * @return User object
+     * @throws ValidationException If ID is invalid or user not found
+     * @throws DatabaseException   If database error occurs
+     */
+    public User handleViewUser(int userId) throws ValidationException, DatabaseException {
+        if (userId <= 0) {
+            throw new ValidationException("Invalid User ID specified.");
+        }
+        User user = userService.getUserById(userId);
+        if (user == null) {
+            throw new ValidationException("User with ID " + userId + " was not found in the database.");
+        }
+        return user;
+    }
+
+    /**
+     * Retrieves a single user profile by username.
+     *
+     * @param username Username of the user
+     * @return User object
+     * @throws ValidationException If username is invalid or user not found
+     * @throws DatabaseException   If database error occurs
+     */
+    public User handleViewUserByUsername(String username) throws ValidationException, DatabaseException {
+        if (username == null || username.trim().isEmpty()) {
+            throw new ValidationException("Username cannot be empty.");
+        }
+        User user = userService.getUserByUsername(username.trim());
+        if (user == null) {
+            throw new ValidationException("User with username '" + username + "' was not found.");
+        }
+        return user;
+    }
+
+    /**
      * Updates user credentials (username and password).
      *
      * @param userId      User ID

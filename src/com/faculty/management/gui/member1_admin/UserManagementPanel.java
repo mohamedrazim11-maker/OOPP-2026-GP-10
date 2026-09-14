@@ -279,18 +279,23 @@ public class UserManagementPanel extends JPanel {
     }
 
     /**
-     * 1. View User Details (Read-Only)
+     * 1. View User Details (Backend Fetch & Read-Only Display)
      */
     private void handleViewUser() {
         try {
             int modelRow = getSelectedModelRow();
-            Object[] rowData = getRowData(modelRow);
+            int userId = (int) tableModel.getValueAt(modelRow, 0);
+
+            // Fetch complete User object with backend database handling & polymorphism
+            User fullUser = adminController.handleViewUser(userId);
 
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            UserFormDialog dialog = new UserFormDialog(parentFrame, "User Details", UserFormDialog.FormMode.VIEW, rowData, adminController);
+            UserFormDialog dialog = new UserFormDialog(parentFrame, "User Details - " + fullUser.getUsername(), UserFormDialog.FormMode.VIEW, fullUser, adminController);
             dialog.setVisible(true);
         } catch (ValidationException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Selection Required", JOptionPane.WARNING_MESSAGE);
+        } catch (DatabaseException ex) {
+            JOptionPane.showMessageDialog(this, "Failed to fetch user details from database: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -299,7 +304,7 @@ public class UserManagementPanel extends JPanel {
      */
     private void handleCreateUser() {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        UserFormDialog dialog = new UserFormDialog(parentFrame, "Create New User", UserFormDialog.FormMode.CREATE, null, adminController);
+        UserFormDialog dialog = new UserFormDialog(parentFrame, "Create New User", UserFormDialog.FormMode.CREATE, adminController);
         dialog.setVisible(true);
 
         if (dialog.isSaved()) {
