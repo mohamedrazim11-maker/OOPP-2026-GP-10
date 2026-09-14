@@ -172,14 +172,30 @@ public class AdminController {
     }
 
     /**
-     * Deletes a user by ID.
+     * Deletes a user by ID with validation and database handling.
      *
      * @param userId User ID
      * @return true if deleted
-     * @throws DatabaseException If database error occurs
+     * @throws ValidationException If validation fails (e.g. deleting root admin)
+     * @throws DatabaseException   If database error occurs
      */
-    public boolean handleDeleteUser(int userId) throws DatabaseException {
+    public boolean handleDeleteUser(int userId) throws ValidationException, DatabaseException {
         return userService.deleteUser(userId);
+    }
+
+    /**
+     * Polymorphic overload to delete a user by passing a User entity.
+     *
+     * @param user User object
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleDeleteUser(User user) throws ValidationException, DatabaseException {
+        if (user == null) {
+            throw new ValidationException("User cannot be null.");
+        }
+        return userService.deleteUser(user);
     }
 
     /**

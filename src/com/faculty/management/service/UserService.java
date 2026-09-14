@@ -237,20 +237,48 @@ public class UserService {
     }
 
     /**
-     * Deletes a user by ID.
+     * Deletes a user by ID after verifying business rules and authorization.
+     * Prevents deletion of the primary system administrator and invalid IDs.
      *
      * @param userId ID of the user to delete
-     * @return true if deleted
-     * @throws DatabaseException If database error occurs
+     * @return true if deleted successfully
+     * @throws ValidationException If validation rules fail (e.g., deleting root admin or invalid ID)
+     * @throws DatabaseException   If database error occurs
      */
-    public boolean deleteUser(int userId) throws DatabaseException {
+    public boolean deleteUser(int userId) throws ValidationException, DatabaseException {
+        // 1. Fetch user to verify existence and username
+        User user = getUserById(userId);
+        if (user == null) {
+            throw new ValidationException("User with ID " + userId + " does not exist.");
+        }
+
+        // 2. Validate deletion rules (Encapsulation & Exception Handling)
+        ValidationUtil.validateUserDeletion(userId, user.getUsername());
+
+        // 3. Database persistence
         if (DatabaseConnection.getInstance().isConnected()) {
             boolean deleted = userDAO.deleteUser(userId);
             mockUsers.removeIf(u -> u.getUserId() == userId);
             return deleted;
         }
 
+        // 4. Offline Fallback Demo Mode
         return mockUsers.removeIf(u -> u.getUserId() == userId);
+    }
+
+    /**
+     * Polymorphic overload to delete a user directly using a User entity.
+     *
+     * @param user The User instance to delete
+     * @return true if deleted successfully
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean deleteUser(User user) throws ValidationException, DatabaseException {
+        if (user == null) {
+            throw new ValidationException("User cannot be null.");
+        }
+        return deleteUser(user.getUserId());
     }
 
     /**

@@ -325,10 +325,31 @@ public class UserDAO {
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
-            return stmt.executeUpdate() > 0;
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to delete.");
+            }
+            return true;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 1451 || (e.getMessage() != null && e.getMessage().contains("foreign key constraint"))) {
+                throw new DatabaseException("Cannot delete user because related academic records (attendance, marks, medicals, or course materials) exist for this user. You can set the user status to INACTIVE instead.", e);
+            }
             throw new DatabaseException("Failed to delete user: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Polymorphic overload to delete a user directly using a User model instance.
+     *
+     * @param user User object to delete
+     * @return true if deleted
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean deleteUser(User user) throws DatabaseException {
+        if (user == null) {
+            throw new DatabaseException("Cannot delete null user.");
+        }
+        return deleteUser(user.getUserId());
     }
 
     /**
