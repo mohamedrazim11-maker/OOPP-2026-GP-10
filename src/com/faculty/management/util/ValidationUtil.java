@@ -160,4 +160,25 @@ public class ValidationUtil {
             throw new ValidationException("The primary system administrator ('admin') account cannot be deleted.");
         }
     }
+
+    /**
+     * Validates role assignment parameters.
+     * Prevents removing admin role from primary admin and validates role name.
+     *
+     * @param userId   ID of user
+     * @param username Username of user
+     * @param newRole  Target role name
+     * @throws ValidationException If validation constraints are violated
+     */
+    public static void validateRoleAssignment(int userId, String username, String newRole) throws ValidationException {
+        if (userId <= 0) {
+            throw new ValidationException("Invalid user ID for role assignment.");
+        }
+        if (isEmpty(newRole) || "-- Select Role --".equalsIgnoreCase(newRole.trim())) {
+            throw new ValidationException("Please select a valid role to assign.");
+        }
+        if (userId == 1 && !"ADMIN".equalsIgnoreCase(newRole.trim()) && !"SYSTEM_ADMINISTRATOR".equalsIgnoreCase(newRole.trim())) {
+            throw new ValidationException("Cannot demote the primary system administrator ('admin') from the Admin role.");
+        }
+    }
 }

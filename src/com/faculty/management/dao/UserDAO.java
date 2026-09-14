@@ -313,6 +313,32 @@ public class UserDAO {
     }
 
     /**
+     * Updates the role of a user in the database.
+     *
+     * @param userId The ID of the user
+     * @param roleId The new Role ID
+     * @return true if updated successfully
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateUserRole(int userId, int roleId) throws DatabaseException {
+        String sql = "UPDATE users SET role_id = ? WHERE user_id = ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, roleId);
+            stmt.setInt(2, userId);
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update role.");
+            }
+            return true;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update user role in database: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Deletes a user by ID.
      *
      * @param userId The ID of the user to delete
