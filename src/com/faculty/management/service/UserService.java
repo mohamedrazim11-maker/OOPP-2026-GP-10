@@ -259,6 +259,64 @@ public class UserService {
     }
 
     /**
+     * Assigns a new role to an existing user with validation and database handling.
+     *
+     * @param userId   ID of the user
+     * @param roleName Target role name (e.g. "Admin", "Lecturer", "Technical Officer", "Undergraduate")
+     * @return true if updated successfully
+     * @throws ValidationException If validation fails (e.g., demoting root admin or invalid role)
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean assignRole(int userId, String roleName) throws ValidationException, DatabaseException {
+        User user = getUserById(userId);
+        if (user == null) {
+            throw new ValidationException("User with ID " + userId + " was not found in the system.");
+        }
+
+        ValidationUtil.validateRoleAssignment(userId, user.getUsername(), roleName);
+
+        int resolvedRoleId = mapRoleNameToId(roleName);
+        Role newRole = new Role(resolvedRoleId, roleName.toUpperCase().replace(" ", "_"), roleName);
+
+        if (DatabaseConnection.getInstance().isConnected()) {
+            boolean updated = userDAO.updateUserRole(userId, resolvedRoleId);
+            updateMockUserRole(userId, newRole);
+            return updated;
+        }
+
+        return updateMockUserRole(userId, newRole);
+    }
+
+    /**
+     * Polymorphic overload to assign a role using User and Role entity instances.
+     *
+     * @param user    Target User entity
+     * @param newRole New Role entity
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean assignRole(User user, Role newRole) throws ValidationException, DatabaseException {
+        if (user == null) {
+            throw new ValidationException("User entity cannot be null.");
+        }
+        if (newRole == null || ValidationUtil.isEmpty(newRole.getRoleName())) {
+            throw new ValidationException("Role entity must contain a valid role name.");
+        }
+        return assignRole(user.getUserId(), newRole.getRoleName());
+    }
+
+    private boolean updateMockUserRole(int userId, Role newRole) {
+        for (User u : mockUsers) {
+            if (u.getUserId() == userId) {
+                u.setRole(newRole);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Deletes a user by ID after verifying business rules and authorization.
      * Prevents deletion of the primary system administrator and invalid IDs.
      *

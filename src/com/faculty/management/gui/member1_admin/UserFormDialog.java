@@ -500,12 +500,7 @@ public class UserFormDialog extends JDialog {
 
             } else if (mode == FormMode.ASSIGN_ROLE) {
                 int userId = (userData != null && userData.length > 0) ? (int) userData[0] : 0;
-                adminController.handleUpdateUser(
-                        userId, role, username,
-                        firstName, lastName, email,
-                        contact, status, department, batch
-                );
-
+                adminController.handleAssignRole(userId, role);
                 userData[4] = role;
             }
 

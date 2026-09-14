@@ -237,6 +237,32 @@ public class AdminController {
     }
 
     /**
+     * Handles assigning a new role to a user.
+     *
+     * @param userId   User ID
+     * @param roleName Role Name (e.g. "Admin", "Lecturer", "Technical Officer", "Undergraduate")
+     * @return true if updated
+     * @throws ValidationException If validation fails (e.g. demoting root admin)
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleAssignRole(int userId, String roleName) throws ValidationException, DatabaseException {
+        return userService.assignRole(userId, roleName);
+    }
+
+    /**
+     * Polymorphic overload to assign role using User and Role entities.
+     *
+     * @param user    Target User entity
+     * @param newRole New Role entity
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleAssignRole(User user, Role newRole) throws ValidationException, DatabaseException {
+        return userService.assignRole(user, newRole);
+    }
+
+    /**
      * Retrieves all system roles.
      *
      * @return List of roles
