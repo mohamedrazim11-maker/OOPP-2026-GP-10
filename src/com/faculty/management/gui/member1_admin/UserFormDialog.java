@@ -74,8 +74,43 @@ public class UserFormDialog extends JDialog {
         applyModeRestrictions();
     }
 
+    public UserFormDialog(JFrame parent, String title, FormMode mode, User user, AdminController adminController) {
+        super(parent, title, true);
+        this.mode = mode;
+        this.adminController = (adminController != null) ? adminController : new AdminController();
+        if (user != null) {
+            this.userData = new Object[]{
+                    user.getUserId(),
+                    user.getUsername(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getRole() != null ? user.getRole().getRoleName() : "Undergraduate",
+                    user.getEmail(),
+                    user.getContactNo(),
+                    user.getStatus()
+            };
+        }
+        initComponents();
+        if (user != null) {
+            populateFieldsFromUser(user);
+        }
+        applyModeRestrictions();
+    }
+
+    public UserFormDialog(JFrame parent, String title, FormMode mode, AdminController adminController) {
+        this(parent, title, mode, (Object[]) null, adminController);
+    }
+
+    public UserFormDialog(JFrame parent, String title, FormMode mode) {
+        this(parent, title, mode, (Object[]) null, new AdminController());
+    }
+
     public UserFormDialog(JFrame parent, String title, FormMode mode, Object[] initialData) {
         this(parent, title, mode, initialData, new AdminController());
+    }
+
+    public UserFormDialog(JFrame parent, String title, FormMode mode, User user) {
+        this(parent, title, mode, user, new AdminController());
     }
 
     private void initComponents() {
@@ -358,6 +393,46 @@ public class UserFormDialog extends JDialog {
         if (data.length > 5 && data[5] != null) emailField.setText(data[5].toString());
         if (data.length > 6 && data[6] != null) contactField.setText(data[6].toString());
         if (data.length > 7 && data[7] != null) statusComboBox.setSelectedItem(data[7].toString());
+    }
+
+    /**
+     * Polymorphic population of user fields directly from a User model subclass instance.
+     * Demonstrates Polymorphism, Inheritance, and Encapsulation.
+     */
+    private void populateFieldsFromUser(User user) {
+        if (user == null) return;
+        usernameField.setText(user.getUsername() != null ? user.getUsername() : "");
+        firstNameField.setText(user.getFirstName() != null ? user.getFirstName() : "");
+        lastNameField.setText(user.getLastName() != null ? user.getLastName() : "");
+        if (user.getRole() != null && user.getRole().getRoleName() != null) {
+            roleComboBox.setSelectedItem(formatRoleDisplay(user.getRole().getRoleName()));
+        }
+        emailField.setText(user.getEmail() != null ? user.getEmail() : "");
+        contactField.setText(user.getContactNo() != null ? user.getContactNo() : "");
+        statusComboBox.setSelectedItem(user.getStatus() != null ? user.getStatus() : "ACTIVE");
+
+        // Subclass-specific field population (Polymorphism & Inheritance)
+        if (user instanceof com.faculty.management.model.Undergraduate) {
+            com.faculty.management.model.Undergraduate u = (com.faculty.management.model.Undergraduate) user;
+            if (u.getDepartment() != null) departmentComboBox.setSelectedItem(u.getDepartment());
+            if (u.getBatch() != null) batchField.setText(u.getBatch());
+        } else if (user instanceof com.faculty.management.model.Lecturer) {
+            com.faculty.management.model.Lecturer l = (com.faculty.management.model.Lecturer) user;
+            if (l.getDepartment() != null) departmentComboBox.setSelectedItem(l.getDepartment());
+        } else if (user instanceof com.faculty.management.model.TechnicalOfficer) {
+            com.faculty.management.model.TechnicalOfficer to = (com.faculty.management.model.TechnicalOfficer) user;
+            if (to.getDepartment() != null) departmentComboBox.setSelectedItem(to.getDepartment());
+        }
+    }
+
+    private String formatRoleDisplay(String role) {
+        if (role == null) return "Undergraduate";
+        String r = role.replace("_", " ").trim();
+        if (r.equalsIgnoreCase("ADMIN") || r.equalsIgnoreCase("SYSTEM ADMINISTRATOR")) return "Admin";
+        if (r.equalsIgnoreCase("LECTURER")) return "Lecturer";
+        if (r.equalsIgnoreCase("TECHNICAL OFFICER") || r.equalsIgnoreCase("TECHNICALOFFICER")) return "Technical Officer";
+        if (r.equalsIgnoreCase("UNDERGRADUATE") || r.equalsIgnoreCase("STUDENT")) return "Undergraduate";
+        return r;
     }
 
     /**

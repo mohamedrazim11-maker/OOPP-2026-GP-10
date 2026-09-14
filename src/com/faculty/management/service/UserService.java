@@ -131,6 +131,28 @@ public class UserService {
     }
 
     /**
+     * Finds a user by their username.
+     *
+     * @param username Username of the user
+     * @return User object or null if not found
+     * @throws DatabaseException If database error occurs
+     */
+    public User getUserByUsername(String username) throws DatabaseException {
+        if (username == null || username.trim().isEmpty()) {
+            return null;
+        }
+        if (DatabaseConnection.getInstance().isConnected()) {
+            return userDAO.findByUsername(username.trim());
+        }
+        for (User u : mockUsers) {
+            if (u.getUsername().equalsIgnoreCase(username.trim())) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Updates an existing user's details with business rule validations and DB persistence.
      *
      * @param user User object containing updated details
