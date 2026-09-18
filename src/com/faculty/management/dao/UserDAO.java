@@ -268,6 +268,7 @@ public class UserDAO {
 
     /**
      * Updates a user's credentials (username and password).
+     * Demonstrates Database Handling with parameterized PreparedStatements.
      *
      * @param userId      ID of the user
      * @param username    New username
@@ -284,10 +285,101 @@ public class UserDAO {
             stmt.setString(2, newPassword);
             stmt.setInt(3, userId);
 
-            return stmt.executeUpdate() > 0;
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update credentials.");
+            }
+            return true;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to update user credentials: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Updates only the username of a user in the database.
+     * Demonstrates Database Handling.
+     *
+     * @param userId      ID of the user
+     * @param newUsername New username
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateUsername(int userId, String newUsername) throws DatabaseException {
+        String sql = "UPDATE users SET username = ? WHERE user_id = ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newUsername);
+            stmt.setInt(2, userId);
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update username.");
+            }
+            return true;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update username: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Updates only the password of a user in the database.
+     * Demonstrates Database Handling.
+     *
+     * @param userId      ID of the user
+     * @param newPassword New password
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updatePassword(int userId, String newPassword) throws DatabaseException {
+        String sql = "UPDATE users SET password = ? WHERE user_id = ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newPassword);
+            stmt.setInt(2, userId);
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update password.");
+            }
+            return true;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update password: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Polymorphic overload to update credentials using a User entity.
+     * Demonstrates Polymorphism and Object-Oriented design.
+     *
+     * @param user        Target User entity
+     * @param newPassword New password
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateCredentials(User user, String newPassword) throws DatabaseException {
+        if (user == null) {
+            throw new DatabaseException("User object cannot be null.");
+        }
+        return updateCredentials(user.getUserId(), user.getUsername(), newPassword);
+    }
+
+    /**
+     * Polymorphic overload to update username and password using a User entity.
+     * Demonstrates Polymorphism.
+     *
+     * @param user        Target User entity
+     * @param newUsername New username
+     * @param newPassword New password
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateCredentials(User user, String newUsername, String newPassword) throws DatabaseException {
+        if (user == null) {
+            throw new DatabaseException("User object cannot be null.");
+        }
+        return updateCredentials(user.getUserId(), newUsername, newPassword);
     }
 
     /**

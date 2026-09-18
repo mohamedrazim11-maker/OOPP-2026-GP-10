@@ -183,18 +183,73 @@ public class AdminController {
     }
 
     /**
-     * Updates user credentials (username and password).
+     * Updates user credentials (username and/or password) with validation and database handling.
      *
-     * @param userId      User ID
-     * @param username    New username
-     * @param newPassword New password
+     * @param userId          User ID
+     * @param username        New username
+     * @param newPassword     New password
+     * @param confirmPassword Confirmation password
      * @return true if updated
      * @throws ValidationException If validation fails
      * @throws DatabaseException   If database error occurs
      */
+    public boolean handleUpdateCredentials(int userId, String username, String newPassword, String confirmPassword) 
+            throws ValidationException, DatabaseException {
+        return userService.updateCredentials(userId, username, newPassword, confirmPassword);
+    }
+
+    /**
+     * Overloaded method to update credentials with username and password.
+     */
     public boolean handleUpdateCredentials(int userId, String username, String newPassword) 
             throws ValidationException, DatabaseException {
-        return userService.updateCredentials(userId, username, newPassword);
+        return userService.updateCredentials(userId, username, newPassword, newPassword);
+    }
+
+    /**
+     * Polymorphic overload to update credentials using a User model entity.
+     * Demonstrates Polymorphism and Object-Oriented design.
+     *
+     * @param user            Target User entity
+     * @param username        New username
+     * @param newPassword     New password
+     * @param confirmPassword Confirmation password
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleUpdateCredentials(User user, String username, String newPassword, String confirmPassword) 
+            throws ValidationException, DatabaseException {
+        return userService.updateCredentials(user, username, newPassword, confirmPassword);
+    }
+
+    /**
+     * Updates only the password for a user.
+     *
+     * @param userId          User ID
+     * @param newPassword     New password
+     * @param confirmPassword Confirmation password
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleUpdatePassword(int userId, String newPassword, String confirmPassword) 
+            throws ValidationException, DatabaseException {
+        return userService.updatePassword(userId, newPassword, confirmPassword);
+    }
+
+    /**
+     * Updates only the username for a user.
+     *
+     * @param userId      User ID
+     * @param newUsername New username
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleUpdateUsername(int userId, String newUsername) 
+            throws ValidationException, DatabaseException {
+        return userService.updateUsername(userId, newUsername);
     }
 
     /**

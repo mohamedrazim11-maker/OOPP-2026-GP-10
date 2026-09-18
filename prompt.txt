@@ -115,4 +115,16 @@ Polymorphism
 Encapsulation 
 Error and exception handling 
 Database Handlin . and commit it to github
+
+
+[PROMPT 12] - Backend Logics for Maintain Username/Password Option in Admin Page
+--------------------------------------------------------------------------------
+add backend logics to main tain username/password option in admin page .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
 ================================================================================
+

@@ -170,14 +170,14 @@ public class UserFormDialog extends JDialog {
         gbc.gridx = 1; gbc.gridy = 2; formPanel.add(usernameField, gbc);
 
         // Password
-        JLabel passwordLabel = createFieldLabel(mode == FormMode.MAINTAIN_CREDENTIALS ? "New Password *" : "Password *");
+        JLabel passwordLabel = createFieldLabel(mode == FormMode.MAINTAIN_CREDENTIALS ? "New Password" : "Password *");
         passwordField = new JPasswordField();
         stylePasswordField(passwordField);
         gbc.gridx = 0; gbc.gridy = 3; formPanel.add(passwordLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 3; formPanel.add(passwordField, gbc);
 
         // Confirm Password (for credentials maintenance & create)
-        JLabel confirmPasswordLabel = createFieldLabel("Confirm Password *");
+        JLabel confirmPasswordLabel = createFieldLabel(mode == FormMode.MAINTAIN_CREDENTIALS ? "Confirm Password" : "Confirm Password *");
         confirmPasswordField = new JPasswordField();
         stylePasswordField(confirmPasswordField);
         gbc.gridx = 0; gbc.gridy = 4; formPanel.add(confirmPasswordLabel, gbc);
@@ -346,7 +346,13 @@ public class UserFormDialog extends JDialog {
 
             case MAINTAIN_CREDENTIALS:
                 roleComboBox.setEnabled(false);
-                usernameField.setEditable(true);
+                int targetId = (userData != null && userData.length > 0 && userData[0] instanceof Integer) ? (int) userData[0] : 0;
+                if (targetId == 1) {
+                    usernameField.setEditable(false);
+                    usernameField.setToolTipText("The primary system administrator ('admin') username cannot be changed.");
+                } else {
+                    usernameField.setEditable(true);
+                }
                 passwordField.setEnabled(true);
                 confirmPasswordField.setEnabled(true);
                 showPasswordCheckBox.setEnabled(true);
@@ -494,7 +500,7 @@ public class UserFormDialog extends JDialog {
 
             } else if (mode == FormMode.MAINTAIN_CREDENTIALS) {
                 int userId = (userData != null && userData.length > 0) ? (int) userData[0] : 0;
-                adminController.handleUpdateCredentials(userId, username, password);
+                adminController.handleUpdateCredentials(userId, username, password, confirmPassword);
 
                 userData[1] = username;
 

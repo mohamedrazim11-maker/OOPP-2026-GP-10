@@ -105,7 +105,8 @@ public class UserManagementPanel extends JPanel {
         assignRoleButton = createActionButton("🎭 Assign Role", new Color(241, 245, 249), new Color(30, 41, 59));
         assignRoleButton.addActionListener(e -> handleAssignRole());
 
-        maintainCredsButton = createActionButton("🔑 Maintain Password", new Color(241, 245, 249), new Color(30, 41, 59));
+        maintainCredsButton = createActionButton("🔑 Maintain Credentials", new Color(241, 245, 249), new Color(30, 41, 59));
+        maintainCredsButton.setToolTipText("Maintain and update username and password for selected user");
         maintainCredsButton.addActionListener(e -> handleMaintainCredentials());
 
         deleteButton = createActionButton("🗑️ Delete User", new Color(254, 242, 242), new Color(220, 38, 38));

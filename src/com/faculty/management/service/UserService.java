@@ -194,42 +194,139 @@ public class UserService {
     }
 
     /**
-     * Updates user credentials (username and password).
+     * Updates user credentials (username and/or password) with validation and database handling.
+     * Demonstrates Encapsulation, Abstraction, Error/Exception Handling, and Database Handling.
      *
-     * @param userId      ID of user
-     * @param newUsername New username
-     * @param newPassword New password
-     * @return true if updated
-     * @throws ValidationException If credentials invalid
+     * @param userId          ID of the user
+     * @param newUsername     New username
+     * @param newPassword     New password (optional if only updating username)
+     * @param confirmPassword Confirmation password
+     * @return true if updated successfully
+     * @throws ValidationException If validation constraints fail
      * @throws DatabaseException   If database error occurs
+     */
+    public boolean updateCredentials(int userId, String newUsername, String newPassword, String confirmPassword) 
+            throws ValidationException, DatabaseException {
+
+        User existingUser = getUserById(userId);
+        if (existingUser == null) {
+            throw new ValidationException("User with ID " + userId + " was not found in the system.");
+        }
+
+        String currentUsername = existingUser.getUsername();
+        ValidationUtil.validateCredentialsUpdate(userId, currentUsername, newUsername, newPassword, confirmPassword);
+
+        String trimmedUsername = newUsername != null ? newUsername.trim() : "";
+        String trimmedPassword = newPassword != null ? newPassword.trim() : "";
+        boolean usernameChanged = !currentUsername.equalsIgnoreCase(trimmedUsername);
+        boolean passwordProvided = !trimmedPassword.isEmpty();
+
+        // Check username uniqueness if changed
+        if (usernameChanged) {
+            if (DatabaseConnection.getInstance().isConnected()) {
+                if (userDAO.existsByUsernameExcludingUser(trimmedUsername, userId)) {
+                    throw new ValidationException("Username '" + trimmedUsername + "' is already taken. Please choose another.");
+                }
+            } else {
+                for (User u : mockUsers) {
+                    if (u.getUserId() != userId && u.getUsername().equalsIgnoreCase(trimmedUsername)) {
+                        throw new ValidationException("Username '" + trimmedUsername + "' is already taken. Please choose another.");
+                    }
+                }
+            }
+        }
+
+        // Database persistence when connected
+        if (DatabaseConnection.getInstance().isConnected()) {
+            boolean updated;
+            if (usernameChanged && passwordProvided) {
+                updated = userDAO.updateCredentials(userId, trimmedUsername, trimmedPassword);
+            } else if (usernameChanged) {
+                updated = userDAO.updateUsername(userId, trimmedUsername);
+            } else if (passwordProvided) {
+                updated = userDAO.updatePassword(userId, trimmedPassword);
+            } else {
+                return false;
+            }
+
+            // Sync mock storage for offline consistency
+            updateMockUserCredentials(userId, usernameChanged ? trimmedUsername : null, passwordProvided ? trimmedPassword : null);
+            return updated;
+        }
+
+        // Offline Fallback Demo Mode
+        return updateMockUserCredentials(userId, usernameChanged ? trimmedUsername : null, passwordProvided ? trimmedPassword : null);
+    }
+
+    /**
+     * Overloaded method to update credentials with username and password.
      */
     public boolean updateCredentials(int userId, String newUsername, String newPassword) 
             throws ValidationException, DatabaseException {
+        return updateCredentials(userId, newUsername, newPassword, newPassword);
+    }
 
-        if (ValidationUtil.isEmpty(newUsername) || newUsername.trim().length() < 3) {
-            throw new ValidationException("Username must be at least 3 characters.");
+    /**
+     * Polymorphic overload to update credentials using a User entity.
+     * Demonstrates Polymorphism and Object-Oriented design.
+     *
+     * @param user            Target User entity
+     * @param newUsername     New username
+     * @param newPassword     New password
+     * @param confirmPassword Confirmation password
+     * @return true if updated successfully
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean updateCredentials(User user, String newUsername, String newPassword, String confirmPassword)
+            throws ValidationException, DatabaseException {
+        if (user == null) {
+            throw new ValidationException("User entity cannot be null.");
         }
-        if (ValidationUtil.isEmpty(newPassword) || newPassword.trim().length() < 6) {
-            throw new ValidationException("Password must be at least 6 characters.");
-        }
+        return updateCredentials(user.getUserId(), newUsername, newPassword, confirmPassword);
+    }
 
-        if (DatabaseConnection.getInstance().isConnected()) {
-            if (userDAO.existsByUsernameExcludingUser(newUsername.trim(), userId)) {
-                throw new ValidationException("Username '" + newUsername + "' is already taken.");
-            }
-            return userDAO.updateCredentials(userId, newUsername.trim(), newPassword.trim());
+    /**
+     * Updates only the password for a user.
+     *
+     * @param userId          ID of the user
+     * @param newPassword     New password
+     * @param confirmPassword Confirmation password
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean updatePassword(int userId, String newPassword, String confirmPassword) 
+            throws ValidationException, DatabaseException {
+        User existingUser = getUserById(userId);
+        if (existingUser == null) {
+            throw new ValidationException("User with ID " + userId + " was not found.");
         }
+        return updateCredentials(userId, existingUser.getUsername(), newPassword, confirmPassword);
+    }
 
-        for (User u : mockUsers) {
-            if (u.getUserId() != userId && u.getUsername().equalsIgnoreCase(newUsername.trim())) {
-                throw new ValidationException("Username '" + newUsername + "' is already taken.");
-            }
-        }
+    /**
+     * Updates only the username for a user.
+     *
+     * @param userId      ID of the user
+     * @param newUsername New username
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean updateUsername(int userId, String newUsername) throws ValidationException, DatabaseException {
+        return updateCredentials(userId, newUsername, null, null);
+    }
 
+    private boolean updateMockUserCredentials(int userId, String newUsername, String newPassword) {
         for (User u : mockUsers) {
             if (u.getUserId() == userId) {
-                u.setUsername(newUsername.trim());
-                u.setPassword(newPassword.trim());
+                if (newUsername != null && !newUsername.isEmpty()) {
+                    u.setUsername(newUsername);
+                }
+                if (newPassword != null && !newPassword.isEmpty()) {
+                    u.setPassword(newPassword);
+                }
                 return true;
             }
         }
