@@ -17,6 +17,7 @@ public class AdminDashboard extends JFrame {
 
     private JTabbedPane tabbedPane;
     private UserManagementPanel userManagementPanel;
+    private CourseManagementPanel courseManagementPanel;
 
     public AdminDashboard(User user) {
         this.currentUser = user;
@@ -78,8 +79,12 @@ public class AdminDashboard extends JFrame {
         // Tab 2: User Profile Management
         userManagementPanel = new UserManagementPanel();
 
+        // Tab 3: Course Management
+        courseManagementPanel = new CourseManagementPanel();
+
         tabbedPane.addTab("  🏠 Overview  ", overviewPanel);
         tabbedPane.addTab("  👥 User Profiles  ", userManagementPanel);
+        tabbedPane.addTab("  📚 Course Management  ", courseManagementPanel);
 
         add(headerPanel, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
@@ -120,8 +125,17 @@ public class AdminDashboard extends JFrame {
             }
         });
 
+        JPanel courseCard = createModuleCard("📚 Course Management", "Add, update, delete, view courses, and assign course details. Click to manage.", new Color(16, 185, 129));
+        courseCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        courseCard.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                tabbedPane.setSelectedIndex(2); // Switch to Course Management tab
+            }
+        });
+
         modulesGrid.add(userCard);
-        modulesGrid.add(createModuleCard("📚 Course Management", "Add courses, assign credits, manage course modules.", new Color(16, 185, 129)));
+        modulesGrid.add(courseCard);
         modulesGrid.add(createModuleCard("📢 Notice Board", "Publish and maintain official faculty notices and circulars.", new Color(245, 158, 11)));
         modulesGrid.add(createModuleCard("🗓️ Timetable Management", "Create and maintain lecture and lab timetables.", new Color(139, 92, 246)));
 

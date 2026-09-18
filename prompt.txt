@@ -126,5 +126,17 @@ Polymorphism
 Encapsulation 
 Error and exception handling 
 Database Handlin . and commit it to github
+
+
+[PROMPT 13] - Course Management Option UI & Backend in Admin Dashboard
+--------------------------------------------------------------------------------
+add a course managemnet option ui in admin dashboard strictly dont add other option inside that course management option  .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
 ================================================================================
+
 

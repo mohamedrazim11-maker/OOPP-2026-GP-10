@@ -3,25 +3,34 @@ package com.faculty.management.controller;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.*;
+import com.faculty.management.service.CourseService;
 import com.faculty.management.service.UserService;
 
 import java.util.List;
 
 /**
- * Controller handling Administrator operations for User Management.
+ * Controller handling Administrator operations for User and Course Management.
  * Demonstrates Classes & Objects, Inheritance, Abstraction, Polymorphism, 
  * Encapsulation, and Error/Exception Handling.
  */
 public class AdminController {
 
     private final UserService userService;
+    private final CourseService courseService;
 
     public AdminController() {
         this.userService = new UserService();
+        this.courseService = new CourseService();
     }
 
     public AdminController(UserService userService) {
         this.userService = userService;
+        this.courseService = new CourseService();
+    }
+
+    public AdminController(UserService userService, CourseService courseService) {
+        this.userService = userService;
+        this.courseService = courseService;
     }
 
     /**
@@ -325,5 +334,118 @@ public class AdminController {
      */
     public List<Role> getAllRoles() throws DatabaseException {
         return userService.getAllRoles();
+    }
+
+    // =========================================================================
+    // COURSE MANAGEMENT BACKEND METHODS
+    // =========================================================================
+
+    /**
+     * Handles adding a new course to the system.
+     *
+     * @param course Course entity
+     * @return Created Course entity
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public Course handleAddCourse(Course course) throws ValidationException, DatabaseException {
+        return courseService.addCourse(course);
+    }
+
+    /**
+     * Polymorphic overload to add a course using individual field parameters.
+     */
+    public Course handleAddCourse(String courseCode, String courseName, int creditValue, int theoryHours,
+                                  int practicalHours, String department, String semester, String description)
+            throws ValidationException, DatabaseException {
+        return courseService.addCourse(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+    }
+
+    /**
+     * Handles updating an existing course record.
+     *
+     * @param course Course entity with updated values
+     * @return true if updated successfully
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleUpdateCourse(Course course) throws ValidationException, DatabaseException {
+        return courseService.updateCourse(course);
+    }
+
+    /**
+     * Polymorphic overload to update a course using individual field parameters.
+     */
+    public boolean handleUpdateCourse(int courseId, String courseCode, String courseName, int creditValue,
+                                     int theoryHours, int practicalHours, String department, String semester, String description)
+            throws ValidationException, DatabaseException {
+        return courseService.updateCourse(courseId, courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+    }
+
+    /**
+     * Handles deleting a course by unique ID.
+     *
+     * @param courseId ID of course
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleDeleteCourse(int courseId) throws ValidationException, DatabaseException {
+        return courseService.deleteCourse(courseId);
+    }
+
+    /**
+     * Polymorphic overload to delete course using a Course entity.
+     */
+    public boolean handleDeleteCourse(Course course) throws ValidationException, DatabaseException {
+        return courseService.deleteCourse(course);
+    }
+
+    /**
+     * Retrieves all courses in the system.
+     *
+     * @return List of Course entities
+     * @throws DatabaseException If database error occurs
+     */
+    public List<Course> loadAllCourses() throws DatabaseException {
+        return courseService.getAllCourses();
+    }
+
+    /**
+     * Retrieves a single course by its ID.
+     *
+     * @param courseId ID of course
+     * @return Course entity
+     * @throws ValidationException If ID invalid or not found
+     * @throws DatabaseException   If database error occurs
+     */
+    public Course handleViewCourse(int courseId) throws ValidationException, DatabaseException {
+        if (courseId <= 0) {
+            throw new ValidationException("Invalid Course ID specified.");
+        }
+        Course course = courseService.getCourseById(courseId);
+        if (course == null) {
+            throw new ValidationException("Course with ID " + courseId + " was not found.");
+        }
+        return course;
+    }
+
+    /**
+     * Retrieves a single course by its code.
+     *
+     * @param courseCode Course code (e.g. ICT2132)
+     * @return Course entity
+     * @throws ValidationException If code invalid or not found
+     * @throws DatabaseException   If database error occurs
+     */
+    public Course handleViewCourseByCode(String courseCode) throws ValidationException, DatabaseException {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new ValidationException("Course code cannot be empty.");
+        }
+        Course course = courseService.getCourseByCode(courseCode.trim());
+        if (course == null) {
+            throw new ValidationException("Course with code '" + courseCode + "' was not found.");
+        }
+        return course;
     }
 }
