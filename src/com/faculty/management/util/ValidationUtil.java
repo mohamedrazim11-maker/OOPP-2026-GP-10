@@ -181,4 +181,65 @@ public class ValidationUtil {
             throw new ValidationException("Cannot demote the primary system administrator ('admin') from the Admin role.");
         }
     }
+
+    /**
+     * Validates input fields for maintaining and updating user credentials (username and password).
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     *
+     * @param userId          ID of the user being modified
+     * @param currentUsername Existing username before edit (optional, for change detection)
+     * @param newUsername     New or existing username
+     * @param newPassword     New password (optional if only updating username)
+     * @param confirmPassword Confirmation password
+     * @throws ValidationException If any validation rule fails
+     */
+    public static void validateCredentialsUpdate(int userId, String currentUsername, String newUsername,
+                                                 String newPassword, String confirmPassword) throws ValidationException {
+        if (userId <= 0) {
+            throw new ValidationException("Invalid user ID specified for maintaining credentials.");
+        }
+
+        if (isEmpty(newUsername)) {
+            throw new ValidationException("Username cannot be empty.");
+        }
+
+        if (newUsername.trim().length() < 3) {
+            throw new ValidationException("Username must be at least 3 characters long.");
+        }
+
+        if (!newUsername.trim().matches("^[a-zA-Z0-9_]+$")) {
+            throw new ValidationException("Username can only contain alphanumeric characters and underscores.");
+        }
+
+        // Protect root system administrator username
+        if (userId == 1 && !"admin".equalsIgnoreCase(newUsername.trim())) {
+            throw new ValidationException("The username for the primary system administrator ('admin') cannot be changed.");
+        }
+
+        boolean hasPassword = !isEmpty(newPassword);
+        boolean usernameChanged = (currentUsername != null) && !currentUsername.trim().equalsIgnoreCase(newUsername.trim());
+
+        // Ensure at least one credential field is being modified
+        if (!hasPassword && !usernameChanged && currentUsername != null) {
+            throw new ValidationException("No changes detected. Please enter a new username or a new password.");
+        }
+
+        // Validate password when provided
+        if (hasPassword) {
+            if (newPassword.trim().length() < 6) {
+                throw new ValidationException("New password must be at least 6 characters long.");
+            }
+            if (confirmPassword != null && !newPassword.equals(confirmPassword)) {
+                throw new ValidationException("New password and confirmation password do not match.");
+            }
+        }
+    }
+
+    /**
+     * Overloaded validation method for maintaining credentials without current username comparison.
+     */
+    public static void validateCredentialsUpdate(int userId, String newUsername, String newPassword, String confirmPassword)
+            throws ValidationException {
+        validateCredentialsUpdate(userId, null, newUsername, newPassword, confirmPassword);
+    }
 }
