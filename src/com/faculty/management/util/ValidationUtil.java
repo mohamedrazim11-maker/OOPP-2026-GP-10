@@ -1,6 +1,7 @@
 package com.faculty.management.util;
 
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.model.Course;
 import com.faculty.management.model.User;
 
 /**
@@ -241,5 +242,42 @@ public class ValidationUtil {
     public static void validateCredentialsUpdate(int userId, String newUsername, String newPassword, String confirmPassword)
             throws ValidationException {
         validateCredentialsUpdate(userId, null, newUsername, newPassword, confirmPassword);
+    }
+
+    /**
+     * Validates fields of a Course object.
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     *
+     * @param course Course entity to validate
+     * @throws ValidationException If any validation constraint fails
+     */
+    public static void validateCourse(Course course) throws ValidationException {
+        if (course == null) {
+            throw new ValidationException("Course information cannot be null.");
+        }
+        if (isEmpty(course.getCourseCode())) {
+            throw new ValidationException("Course Code is required (e.g. ICT2132).");
+        }
+        if (course.getCourseCode().trim().length() < 4) {
+            throw new ValidationException("Course Code must be at least 4 characters long.");
+        }
+        if (isEmpty(course.getCourseName())) {
+            throw new ValidationException("Course Name is required.");
+        }
+        if (course.getCourseName().trim().length() < 3) {
+            throw new ValidationException("Course Name must be at least 3 characters long.");
+        }
+        if (course.getCreditValue() <= 0 || course.getCreditValue() > 10) {
+            throw new ValidationException("Credit Value must be between 1 and 10.");
+        }
+        if (course.getTheoryHours() < 0) {
+            throw new ValidationException("Theory hours cannot be negative.");
+        }
+        if (course.getPracticalHours() < 0) {
+            throw new ValidationException("Practical hours cannot be negative.");
+        }
+        if (isEmpty(course.getDepartment())) {
+            throw new ValidationException("Department selection is required.");
+        }
     }
 }
