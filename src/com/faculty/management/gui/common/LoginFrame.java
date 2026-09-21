@@ -198,26 +198,16 @@ public class LoginFrame extends JFrame {
             }
         });
 
-        // Buttons Panel
+        // Buttons Panel (Using OOP CustomButton components: PrimaryButton & SecondaryButton)
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 0));
         buttonPanel.setOpaque(false);
 
-        loginButton = new JButton("Sign In");
-        loginButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        loginButton.setBackground(new Color(37, 99, 235)); // Primary Blue
-        loginButton.setForeground(Color.WHITE);
+        loginButton = new PrimaryButton("Sign In");
         loginButton.setPreferredSize(new Dimension(100, 38));
-        loginButton.setFocusPainted(false);
-        loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         loginButton.addActionListener(e -> performLogin());
 
-        resetButton = new JButton("Reset");
-        resetButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        resetButton.setBackground(new Color(241, 245, 249));
-        resetButton.setForeground(new Color(71, 85, 105));
+        resetButton = new SecondaryButton("Reset");
         resetButton.setPreferredSize(new Dimension(100, 38));
-        resetButton.setFocusPainted(false);
-        resetButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         resetButton.addActionListener(e -> resetFields());
 
         buttonPanel.add(loginButton);
