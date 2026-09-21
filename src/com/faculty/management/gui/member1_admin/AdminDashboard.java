@@ -1,6 +1,7 @@
 package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.LoginController;
+import com.faculty.management.gui.common.DangerButton;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
@@ -37,23 +38,19 @@ public class AdminDashboard extends JFrame {
         headerPanel.setBackground(new Color(30, 58, 138)); // Deep Navy Blue
         headerPanel.setBorder(new EmptyBorder(12, 25, 12, 25));
 
-        JLabel titleLabel = new JLabel("🏛️ Faculty Management System (FMS)");
+        JLabel titleLabel = new JLabel("Faculty Management System (FMS)");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titleLabel.setForeground(Color.WHITE);
 
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         userPanel.setOpaque(false);
 
-        JLabel userLabel = new JLabel("👤 " + currentUser.getFullName() + " (Admin)");
+        JLabel userLabel = new JLabel(currentUser.getFullName() + " (Admin)");
         userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         userLabel.setForeground(Color.WHITE);
 
-        JButton logoutButton = new JButton("Logout");
-        logoutButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        logoutButton.setBackground(new Color(220, 38, 38)); // Red
-        logoutButton.setForeground(Color.WHITE);
-        logoutButton.setFocusPainted(false);
-        logoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        DangerButton logoutButton = new DangerButton("Logout");
+        logoutButton.setPreferredSize(new Dimension(85, 30));
         logoutButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to log out?", "Confirm Logout", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
@@ -82,9 +79,9 @@ public class AdminDashboard extends JFrame {
         // Tab 3: Course Management
         courseManagementPanel = new CourseManagementPanel();
 
-        tabbedPane.addTab("  🏠 Overview  ", overviewPanel);
-        tabbedPane.addTab("  👥 User Profiles  ", userManagementPanel);
-        tabbedPane.addTab("  📚 Course Management  ", courseManagementPanel);
+        tabbedPane.addTab("  Overview  ", overviewPanel);
+        tabbedPane.addTab("  User Profiles  ", userManagementPanel);
+        tabbedPane.addTab("  Course Management  ", courseManagementPanel);
 
         add(headerPanel, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);

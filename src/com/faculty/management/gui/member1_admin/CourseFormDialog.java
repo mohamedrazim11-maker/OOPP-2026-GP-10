@@ -3,6 +3,8 @@ package com.faculty.management.gui.member1_admin;
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.SecondaryButton;
 import com.faculty.management.model.Course;
 
 import javax.swing.*;
@@ -177,20 +179,12 @@ public class CourseFormDialog extends JDialog {
         buttonPanel.setBackground(new Color(248, 250, 252));
         buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(226, 232, 240)));
 
-        cancelButton = new JButton(mode == FormMode.VIEW ? "Close" : "Cancel");
-        cancelButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cancelButton = new SecondaryButton(mode == FormMode.VIEW ? "Close" : "Cancel");
         cancelButton.setPreferredSize(new Dimension(90, 34));
-        cancelButton.setFocusPainted(false);
-        cancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cancelButton.addActionListener(e -> dispose());
 
-        saveButton = new JButton(getSaveButtonText());
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        saveButton.setBackground(new Color(16, 185, 129));
-        saveButton.setForeground(Color.WHITE);
+        saveButton = new PrimaryButton(getSaveButtonText());
         saveButton.setPreferredSize(new Dimension(140, 34));
-        saveButton.setFocusPainted(false);
-        saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         saveButton.addActionListener(e -> handleSave());
 
         buttonPanel.add(cancelButton);
@@ -206,11 +200,11 @@ public class CourseFormDialog extends JDialog {
     private String getHeaderTitle() {
         switch (mode) {
             case VIEW:
-                return "📖 Course Details (Read-Only)";
+                return "Course Details (Read-Only)";
             case ADD:
-                return "➕ Add New Course Module";
+                return "Add New Course Module";
             case UPDATE:
-                return "✏️ Update Course Module";
+                return "Update Course Module";
             default:
                 return "Course Form";
         }
