@@ -3,6 +3,8 @@ package com.faculty.management.gui.member1_admin;
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.SecondaryButton;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
@@ -252,20 +254,12 @@ public class UserFormDialog extends JDialog {
         buttonPanel.setBackground(new Color(248, 250, 252));
         buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(226, 232, 240)));
 
-        cancelButton = new JButton(mode == FormMode.VIEW ? "Close" : "Cancel");
-        cancelButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cancelButton = new SecondaryButton(mode == FormMode.VIEW ? "Close" : "Cancel");
         cancelButton.setPreferredSize(new Dimension(90, 34));
-        cancelButton.setFocusPainted(false);
-        cancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cancelButton.addActionListener(e -> dispose());
 
-        saveButton = new JButton(getSaveButtonText());
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        saveButton.setBackground(new Color(37, 99, 235));
-        saveButton.setForeground(Color.WHITE);
+        saveButton = new PrimaryButton(getSaveButtonText());
         saveButton.setPreferredSize(new Dimension(150, 34));
-        saveButton.setFocusPainted(false);
-        saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         saveButton.addActionListener(e -> handleSave());
 
         buttonPanel.add(cancelButton);
@@ -281,15 +275,15 @@ public class UserFormDialog extends JDialog {
     private String getHeaderTitle() {
         switch (mode) {
             case VIEW:
-                return "👤 User Profile Details (Read-Only)";
+                return "User Profile Details (Read-Only)";
             case CREATE:
-                return "➕ Create New User Profile";
+                return "Create New User Profile";
             case UPDATE:
-                return "✏️ Update User Profile";
+                return "Update User Profile";
             case ASSIGN_ROLE:
-                return "🎭 Assign User Role";
+                return "Assign User Role";
             case MAINTAIN_CREDENTIALS:
-                return "🔑 Maintain Username & Password";
+                return "Maintain Username & Password";
             default:
                 return "User Form";
         }

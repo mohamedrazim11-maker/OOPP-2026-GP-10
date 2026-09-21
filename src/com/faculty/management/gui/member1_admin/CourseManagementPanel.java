@@ -3,6 +3,7 @@ package com.faculty.management.gui.member1_admin;
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.gui.common.CustomButton;
 import com.faculty.management.model.Course;
 
 import javax.swing.*;
@@ -75,11 +76,11 @@ public class CourseManagementPanel extends JPanel {
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setOpaque(false);
 
-        JLabel mainTitle = new JLabel("📚 Course Management");
+        JLabel mainTitle = new JLabel("Course & Module Management");
         mainTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         mainTitle.setForeground(new Color(15, 23, 42));
 
-        JLabel subTitle = new JLabel("Add, update, delete, view courses, and assign course details for the Faculty of Technology.");
+        JLabel subTitle = new JLabel("Add new courses, update details, view enrollments, manage departments, and track credits.");
         subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         subTitle.setForeground(new Color(100, 116, 139));
 
@@ -87,27 +88,28 @@ public class CourseManagementPanel extends JPanel {
         titlePanel.add(Box.createVerticalStrut(4));
         titlePanel.add(subTitle);
 
-        // Controls: Actions (Left) and Filter/Search (Right)
-        JPanel controlsPanel = new JPanel(new BorderLayout(10, 10));
+        // Controls: Actions (Row 1) and Filter/Search (Row 2)
+        JPanel controlsPanel = new JPanel();
+        controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.Y_AXIS));
         controlsPanel.setOpaque(false);
 
-        // Left Action Buttons
+        // Row 1: Action Buttons
         JPanel actionButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         actionButtons.setOpaque(false);
 
-        viewButton = createActionButton("👁️ View Course", new Color(241, 245, 249), new Color(30, 41, 59));
+        viewButton = createActionButton("View Course", new Color(241, 245, 249), new Color(30, 41, 59));
         viewButton.addActionListener(e -> handleViewCourse());
 
-        addButton = createActionButton("➕ Add Course", new Color(16, 185, 129), Color.WHITE);
+        addButton = createActionButton("+ Add Course", new Color(16, 185, 129), Color.WHITE);
         addButton.addActionListener(e -> handleAddCourse());
 
-        updateButton = createActionButton("✏️ Update Course", new Color(241, 245, 249), new Color(30, 41, 59));
+        updateButton = createActionButton("Update Course", new Color(241, 245, 249), new Color(30, 41, 59));
         updateButton.addActionListener(e -> handleUpdateCourse());
 
-        deleteButton = createActionButton("🗑️ Delete Course", new Color(254, 242, 242), new Color(220, 38, 38));
+        deleteButton = createActionButton("Delete Course", new Color(254, 242, 242), new Color(220, 38, 38));
         deleteButton.addActionListener(e -> handleDeleteCourse());
 
-        refreshButton = createActionButton("🔄 Refresh", new Color(241, 245, 249), new Color(71, 85, 105));
+        refreshButton = createActionButton("Refresh", new Color(241, 245, 249), new Color(71, 85, 105));
         refreshButton.addActionListener(e -> {
             resetFilters();
             loadCourseDataFromBackend();
@@ -119,8 +121,8 @@ public class CourseManagementPanel extends JPanel {
         actionButtons.add(deleteButton);
         actionButtons.add(refreshButton);
 
-        // Right Search & Filter Bar
-        JPanel searchFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        // Row 2: Search & Filter Bar
+        JPanel searchFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         searchFilterPanel.setOpaque(false);
 
         JLabel filterLabel = new JLabel("Department:");
@@ -140,9 +142,13 @@ public class CourseManagementPanel extends JPanel {
         deptFilterComboBox.setBackground(Color.WHITE);
         deptFilterComboBox.addActionListener(e -> applyFilter());
 
+        JLabel searchLabel = new JLabel("Search:");
+        searchLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        searchLabel.setForeground(new Color(71, 85, 105));
+
         searchField = new JTextField();
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        searchField.setPreferredSize(new Dimension(160, 32));
+        searchField.setPreferredSize(new Dimension(180, 32));
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
                 new EmptyBorder(2, 8, 2, 8)
@@ -154,11 +160,14 @@ public class CourseManagementPanel extends JPanel {
 
         searchFilterPanel.add(filterLabel);
         searchFilterPanel.add(deptFilterComboBox);
+        searchFilterPanel.add(Box.createHorizontalStrut(12));
+        searchFilterPanel.add(searchLabel);
         searchFilterPanel.add(searchField);
         searchFilterPanel.add(searchBtn);
 
-        controlsPanel.add(actionButtons, BorderLayout.WEST);
-        controlsPanel.add(searchFilterPanel, BorderLayout.EAST);
+        controlsPanel.add(actionButtons);
+        controlsPanel.add(Box.createVerticalStrut(10));
+        controlsPanel.add(searchFilterPanel);
 
         topSection.add(titlePanel, BorderLayout.NORTH);
         topSection.add(controlsPanel, BorderLayout.SOUTH);
@@ -227,13 +236,10 @@ public class CourseManagementPanel extends JPanel {
     }
 
     private JButton createActionButton(String text, Color bg, Color fg) {
-        JButton btn = new JButton(text);
+        Color border = (bg.getRed() > 230 && bg.getGreen() > 230) ? new Color(203, 213, 225) : null;
+        CustomButton btn = new CustomButton(text, bg, fg, border);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setBackground(bg);
-        btn.setForeground(fg);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(btn.getPreferredSize().width + 10, 32));
+        btn.setPreferredSize(new Dimension(btn.getPreferredSize().width + 16, 34));
         return btn;
     }
 

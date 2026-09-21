@@ -19,7 +19,21 @@ public class CustomButton extends JButton {
     private int cornerRadius;
 
     /**
-     * Default constructor with customizable theme colors.
+     * Constructor taking text, background, and foreground colors.
+     */
+    public CustomButton(String text, Color bg, Color fg) {
+        this(text, bg, fg, null);
+    }
+
+    /**
+     * Constructor taking text, background, foreground, and border colors.
+     */
+    public CustomButton(String text, Color bg, Color fg, Color border) {
+        this(text, bg, computeHoverColor(bg), computePressedColor(bg), fg, border, 6);
+    }
+
+    /**
+     * Full constructor with customizable theme colors, states, border, and corner radius.
      */
     public CustomButton(String text, Color bg, Color hover, Color pressed, Color fg, Color border, int radius) {
         super(text);
@@ -35,6 +49,28 @@ public class CustomButton extends JButton {
         setContentAreaFilled(false);
         setOpaque(false);
         setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+
+    /**
+     * Computes a slightly darker or lighter shade for hover state.
+     */
+    private static Color computeHoverColor(Color color) {
+        if (color == null) return null;
+        int r = Math.max(0, Math.min(255, color.getRed() - 15));
+        int g = Math.max(0, Math.min(255, color.getGreen() - 15));
+        int b = Math.max(0, Math.min(255, color.getBlue() - 15));
+        return new Color(r, g, b);
+    }
+
+    /**
+     * Computes a deeper shade for pressed state.
+     */
+    private static Color computePressedColor(Color color) {
+        if (color == null) return null;
+        int r = Math.max(0, Math.min(255, color.getRed() - 30));
+        int g = Math.max(0, Math.min(255, color.getGreen() - 30));
+        int b = Math.max(0, Math.min(255, color.getBlue() - 30));
+        return new Color(r, g, b);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.faculty.management.gui.member1_admin;
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.gui.common.CustomButton;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
@@ -73,7 +74,7 @@ public class UserManagementPanel extends JPanel {
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setOpaque(false);
 
-        JLabel mainTitle = new JLabel("👥 User Profile & Access Management");
+        JLabel mainTitle = new JLabel("User Profile & Access Management");
         mainTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         mainTitle.setForeground(new Color(15, 23, 42));
 
@@ -85,34 +86,35 @@ public class UserManagementPanel extends JPanel {
         titlePanel.add(Box.createVerticalStrut(4));
         titlePanel.add(subTitle);
 
-        // Action Toolbar & Search / Filter Controls
-        JPanel controlsPanel = new JPanel(new BorderLayout(10, 10));
+        // Action Toolbar & Search / Filter Controls (Two clean rows to prevent clipping)
+        JPanel controlsPanel = new JPanel();
+        controlsPanel.setLayout(new BoxLayout(controlsPanel, BoxLayout.Y_AXIS));
         controlsPanel.setOpaque(false);
 
-        // Left Action Buttons (FlowLayout)
+        // Row 1: Action Buttons (FlowLayout)
         JPanel actionButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         actionButtons.setOpaque(false);
 
-        viewButton = createActionButton("👁️ View User", new Color(241, 245, 249), new Color(30, 41, 59));
+        viewButton = createActionButton("View User", new Color(241, 245, 249), new Color(30, 41, 59));
         viewButton.addActionListener(e -> handleViewUser());
 
-        createButton = createActionButton("➕ Create User", new Color(37, 99, 235), Color.WHITE);
+        createButton = createActionButton("+ Create User", new Color(37, 99, 235), Color.WHITE);
         createButton.addActionListener(e -> handleCreateUser());
 
-        updateButton = createActionButton("✏️ Update User", new Color(241, 245, 249), new Color(30, 41, 59));
+        updateButton = createActionButton("Update User", new Color(241, 245, 249), new Color(30, 41, 59));
         updateButton.addActionListener(e -> handleUpdateUser());
 
-        assignRoleButton = createActionButton("🎭 Assign Role", new Color(241, 245, 249), new Color(30, 41, 59));
+        assignRoleButton = createActionButton("Assign Role", new Color(241, 245, 249), new Color(30, 41, 59));
         assignRoleButton.addActionListener(e -> handleAssignRole());
 
-        maintainCredsButton = createActionButton("🔑 Maintain Credentials", new Color(241, 245, 249), new Color(30, 41, 59));
+        maintainCredsButton = createActionButton("Maintain Credentials", new Color(241, 245, 249), new Color(30, 41, 59));
         maintainCredsButton.setToolTipText("Maintain and update username and password for selected user");
         maintainCredsButton.addActionListener(e -> handleMaintainCredentials());
 
-        deleteButton = createActionButton("🗑️ Delete User", new Color(254, 242, 242), new Color(220, 38, 38));
+        deleteButton = createActionButton("Delete User", new Color(254, 242, 242), new Color(220, 38, 38));
         deleteButton.addActionListener(e -> handleDeleteUser());
 
-        refreshButton = createActionButton("🔄 Refresh", new Color(241, 245, 249), new Color(71, 85, 105));
+        refreshButton = createActionButton("Refresh", new Color(241, 245, 249), new Color(71, 85, 105));
         refreshButton.addActionListener(e -> {
             resetFilters();
             loadUserDataFromBackend();
@@ -126,11 +128,11 @@ public class UserManagementPanel extends JPanel {
         actionButtons.add(deleteButton);
         actionButtons.add(refreshButton);
 
-        // Right Search & Filter Bar
-        JPanel searchFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        // Row 2: Search & Filter Bar
+        JPanel searchFilterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         searchFilterPanel.setOpaque(false);
 
-        JLabel filterLabel = new JLabel("Filter:");
+        JLabel filterLabel = new JLabel("Filter by Role:");
         filterLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         filterLabel.setForeground(new Color(71, 85, 105));
 
@@ -141,9 +143,13 @@ public class UserManagementPanel extends JPanel {
         roleFilterComboBox.setBackground(Color.WHITE);
         roleFilterComboBox.addActionListener(e -> applyFilter());
 
+        JLabel searchLabel = new JLabel("Search:");
+        searchLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        searchLabel.setForeground(new Color(71, 85, 105));
+
         searchField = new JTextField();
         searchField.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        searchField.setPreferredSize(new Dimension(170, 32));
+        searchField.setPreferredSize(new Dimension(200, 32));
         searchField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
                 new EmptyBorder(2, 8, 2, 8)
@@ -155,11 +161,14 @@ public class UserManagementPanel extends JPanel {
 
         searchFilterPanel.add(filterLabel);
         searchFilterPanel.add(roleFilterComboBox);
+        searchFilterPanel.add(Box.createHorizontalStrut(12));
+        searchFilterPanel.add(searchLabel);
         searchFilterPanel.add(searchField);
         searchFilterPanel.add(searchBtn);
 
-        controlsPanel.add(actionButtons, BorderLayout.WEST);
-        controlsPanel.add(searchFilterPanel, BorderLayout.EAST);
+        controlsPanel.add(actionButtons);
+        controlsPanel.add(Box.createVerticalStrut(10));
+        controlsPanel.add(searchFilterPanel);
 
         topSection.add(titlePanel, BorderLayout.NORTH);
         topSection.add(controlsPanel, BorderLayout.SOUTH);
@@ -231,13 +240,10 @@ public class UserManagementPanel extends JPanel {
     }
 
     private JButton createActionButton(String text, Color bg, Color fg) {
-        JButton btn = new JButton(text);
+        Color border = (bg.getRed() > 230 && bg.getGreen() > 230) ? new Color(203, 213, 225) : null;
+        CustomButton btn = new CustomButton(text, bg, fg, border);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btn.setBackground(bg);
-        btn.setForeground(fg);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(btn.getPreferredSize().width + 10, 32));
+        btn.setPreferredSize(new Dimension(btn.getPreferredSize().width + 16, 34));
         return btn;
     }
 
