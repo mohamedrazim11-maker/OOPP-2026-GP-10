@@ -1,0 +1,116 @@
+================================================================================
+          FACULTY MANAGEMENT SYSTEM - SIMPLE SETUP GUIDE
+================================================================================
+
+This guide explains how to set up the database and run the project after 
+cloning from GitHub.
+
+Choose either METHOD 1 (XAMPP) or METHOD 2 (MySQL Server & Workbench).
+
+--------------------------------------------------------------------------------
+PREREQUISITES (Required for both methods)
+--------------------------------------------------------------------------------
+1. Java Development Kit (JDK 17 or higher):
+   - Check if installed in terminal: java -version
+   - Download if needed: https://adoptium.net/
+
+2. MySQL Driver (.jar file):
+   - Make sure 'mysql-connector-j-9.2.0.jar' is inside the 'lib/' folder.
+
+
+================================================================================
+METHOD 1: USING XAMPP (Most Common)
+================================================================================
+
+STEP 1: Start MySQL in XAMPP
+-----------------------------
+1. Download & install XAMPP: https://www.apachefriends.org/
+2. Open XAMPP Control Panel.
+3. Click "Start" on both Apache and MySQL.
+
+STEP 2: Import the Database
+----------------------------
+1. Open your browser and go to: http://localhost/phpmyadmin
+2. Click on "Import" (or "SQL") at the top.
+3. Open and run the 5 SQL files from the 'database/' folder IN THIS EXACT ORDER:
+   - database/01_create_database.sql
+   - database/02_create_tables.sql
+   - database/03_insert_roles.sql
+   - database/04_insert_users.sql
+   - database/05_insert_courses.sql
+
+STEP 3: Check MySQL Password
+----------------------------
+Open: src/com/faculty/management/config/DatabaseConnection.java
+- XAMPP default has NO password:
+    private static final String PASSWORD = "";
+  (Leave it empty unless you created a password in XAMPP).
+
+
+================================================================================
+METHOD 2: USING MYSQL COMMUNITY SERVER & WORKBENCH (Alternative to XAMPP)
+================================================================================
+Use this method if you do not want to install XAMPP.
+
+STEP 1: Install MySQL Server & Workbench
+-----------------------------------------
+1. Download MySQL Installer: https://dev.mysql.com/downloads/installer/
+2. Run the installer and choose "Developer Default" (or select MySQL Server + MySQL Workbench).
+3. During setup, set a password for the 'root' user and remember it!
+
+STEP 2: Import the Database in MySQL Workbench
+-----------------------------------------------
+1. Open MySQL Workbench and connect to your local MySQL instance (port 3306).
+2. Go to File -> Open SQL Script...
+3. Open and execute (click the lightning bolt icon) the 5 files in order:
+   - database/01_create_database.sql
+   - database/02_create_tables.sql
+   - database/03_insert_roles.sql
+   - database/04_insert_users.sql
+   - database/05_insert_courses.sql
+
+STEP 3: Set Your Password in Code
+----------------------------------
+Open: src/com/faculty/management/config/DatabaseConnection.java
+Change the PASSWORD line to the password you created during MySQL installation:
+    private static final String PASSWORD = "your_mysql_password";
+
+
+================================================================================
+HOW TO COMPILE & RUN THE APP
+================================================================================
+
+OPTION A: Using an IDE (IntelliJ IDEA / Eclipse / VS Code) - Recommended
+------------------------------------------------------------------------
+1. Open the project folder in your IDE.
+2. Ensure Java 17+ is set as the Project SDK.
+3. Make sure 'lib/mysql-connector-j-9.2.0.jar' is added to Project Libraries/Classpath.
+4. Open 'src/com/faculty/management/Main.java' -> Right-click -> Run.
+
+OPTION B: Using PowerShell / Terminal
+--------------------------------------
+Compile:
+  javac -cp "lib/mysql-connector-j-9.2.0.jar;resources" -d bin (Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName })
+
+Run:
+  java -cp "bin;lib/mysql-connector-j-9.2.0.jar;resources" com.faculty.management.Main
+
+
+================================================================================
+DEFAULT LOGIN CREDENTIALS
+================================================================================
+Role                 Username        Password
+-------------------------------------------------
+Admin                admin           admin123
+Lecturer             lec001          lec123
+Technical Officer    to001           to123
+Student              TG/2022/1001    stu123
+
+
+================================================================================
+NOTE: OFFLINE DEMO MODE
+================================================================================
+If MySQL is not installed or turned off, the application still works! It will
+automatically launch in "Offline Demo Mode" with sample in-memory data using
+the login credentials shown above.
+================================================================================
