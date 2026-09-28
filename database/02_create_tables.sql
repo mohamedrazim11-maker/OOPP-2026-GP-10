@@ -45,3 +45,65 @@ CREATE TABLE IF NOT EXISTS courses (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- =======================================================
+-- Member 2: Lecturer & Academic Management Module
+-- =======================================================
+
+-- 1. Course Materials Table
+CREATE TABLE IF NOT EXISTS course_materials (
+     material_id INT AUTO_INCREMENT PRIMARY KEY,
+     course_id INT NOT NULL,
+     uploaded_by INT NOT NULL, -- lecturer user_id
+     title VARCHAR(150) NOT NULL,
+     file_path VARCHAR(255) NOT NULL,
+     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     CONSTRAINT fk_materials_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+     CONSTRAINT fk_materials_lecturer FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- 2. Course Lecturers Mapping Table (Which lecturer teaches which course)
+CREATE TABLE IF NOT EXISTS course_lecturers (
+      course_id INT NOT NULL,
+      lecturer_id INT NOT NULL,
+      PRIMARY KEY (course_id, lecturer_id),
+      CONSTRAINT fk_cl_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT fk_cl_lecturer FOREIGN KEY (lecturer_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- 3. Evaluations Table (Quizzes, Assessments, Mid-term, Practical, Final)
+CREATE TABLE IF NOT EXISTS evaluations (
+      evaluation_id INT AUTO_INCREMENT PRIMARY KEY,
+      course_id INT NOT NULL,
+      title VARCHAR(100) NOT NULL, -- e.g., 'Quiz 1', 'Mid Semester Exam', 'Final Practical'
+      type ENUM('QUIZ', 'ASSESSMENT', 'MID_TERM', 'PRACTICAL', 'FINAL') NOT NULL,
+      weightage DOUBLE NOT NULL,   -- Percentage weightage (e.g., 10 for 10%)
+      max_marks DOUBLE DEFAULT 100,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_evaluations_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- 4. Marks Table (Marks obtained per student per evaluation, mandatory out of 100)
+CREATE TABLE IF NOT EXISTS marks (
+      mark_id INT AUTO_INCREMENT PRIMARY KEY,
+      student_id INT NOT NULL, -- user_id of the student
+      evaluation_id INT NOT NULL,
+      marks_obtained DOUBLE NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      CONSTRAINT fk_marks_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT fk_marks_evaluation FOREIGN KEY (evaluation_id) REFERENCES evaluations(evaluation_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT check_mark_range CHECK (marks_obtained >= 0 AND marks_obtained <= 100),
+      UNIQUE KEY unique_student_evaluation (student_id, evaluation_id)
+) ENGINE=InnoDB;
+
+-- 5. CA Eligibility Table
+CREATE TABLE IF NOT EXISTS eligibility (
+      eligibility_id INT AUTO_INCREMENT PRIMARY KEY,
+      student_id INT NOT NULL,
+      course_id INT NOT NULL,
+      ca_percentage DOUBLE NOT NULL,
+      is_eligible BOOLEAN NOT NULL, -- TRUE if ca_percentage >= 40.0
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      CONSTRAINT fk_eligibility_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT fk_eligibility_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+      UNIQUE KEY unique_student_course_eligibility (student_id, course_id)
+) ENGINE=InnoDB;
