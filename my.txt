@@ -1,0 +1,55 @@
+Strictly no frame works going to be used and its an desktop application
+MEMBER 1 — Admin & User Management
+1. Login & Authentication
+Develop:
+* Login GUI
+* Username/password validation
+* Role identification
+* Redirect users according to role: 
+* Admin
+* Lecturer
+* Technical Officer
+* Undergraduate
+2. User Profile Management
+Admin can:
+* Create users
+* Update users
+* Delete users
+* View users
+* Assign user roles
+* Maintain usernames/passwords
+Data should support:
+* 1 Admin
+* 5+ Lecturers
+* 4+ Technical Officers
+* 20+ Undergraduates
+3. Course Management
+Admin can:
+* Add courses
+* Update courses
+* Delete courses
+* View courses
+* Assign course information
+4. Notice Management
+Admin can:
+* Create notices
+* Edit notices
+* Delete notices
+* View notices
+Other users can view notices according to requirements.
+5. Database Work
+Member 1 should be responsible for tables such as:
+* users
+* roles
+* courses
+* notices
+6. OOP Concepts
+Member 1 should demonstrate:
+* Classes & Objects → User, Admin, Course
+* Inheritance → User → Admin
+* Abstraction → abstract User/common functionality
+* Polymorphism → role-specific methods
+* Encapsulation → private user fields + getters/setters
+* Exception Handling → login/database errors
+* Database Handling → CRUD operations
+* GUI → Login + Admin dashboard

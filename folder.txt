@@ -1,0 +1,193 @@
+FacultyManagementSystem/
+|
++-- src/
+|   +-- com/
+|       +-- faculty/
+|           +-- management/
+|
+|               +-- Main.java
+|               |
+|               +-- config/
+|               |   +-- DatabaseConnection.java
+|               |
+|               +-- model/
+|               |   |
+|               |   +-- User.java
+|               |   +-- Admin.java
+|               |   +-- Lecturer.java
+|               |   +-- TechnicalOfficer.java
+|               |   +-- Undergraduate.java
+|               |
+|               |   +-- Role.java
+|               |   +-- Department.java
+|               |   +-- Batch.java
+|               |
+|               |   +-- Course.java
+|               |   +-- CourseMaterial.java
+|               |   +-- Enrollment.java
+|               |
+|               |   +-- Notice.java
+|               |   +-- Timetable.java
+|               |   +-- TimetableEntry.java
+|               |
+|               |   +-- Evaluation.java
+|               |   +-- Mark.java
+|               |   +-- CAMark.java
+|               |   +-- FinalMark.java
+|               |   +-- Eligibility.java
+|               |   +-- Grade.java
+|               |   +-- Result.java
+|               |
+|               |   +-- Attendance.java
+|               |   +-- AttendanceSession.java
+|               |   +-- Medical.java
+|               |
+|               +-- dao/
+|               |   |
+|               |   +-- UserDAO.java
+|               |   +-- RoleDAO.java
+|               |   +-- CourseDAO.java
+|               |   +-- NoticeDAO.java
+|               |   |
+|               |   +-- LecturerDAO.java
+|               |   +-- CourseMaterialDAO.java
+|               |   +-- MarkDAO.java
+|               |   +-- EvaluationDAO.java
+|               |   +-- EligibilityDAO.java
+|               |
+|               |   +-- AttendanceDAO.java
+|               |   +-- AttendanceSessionDAO.java
+|               |   +-- MedicalDAO.java
+|               |
+|               |   +-- UndergraduateDAO.java
+|               |   +-- TimetableDAO.java
+|               |   +-- GradeDAO.java
+|               |   +-- ResultDAO.java
+|               |
+|               +-- service/
+|               |   |
+|               |   +-- AuthenticationService.java
+|               |   +-- UserService.java
+|               |   +-- CourseService.java
+|               |   +-- NoticeService.java
+|               |   |
+|               |   +-- LecturerService.java
+|               |   +-- CourseMaterialService.java
+|               |   +-- MarkService.java
+|               |   +-- EligibilityService.java
+|               |
+|               |   +-- AttendanceService.java
+|               |   +-- AttendanceEligibilityService.java
+|               |   +-- MedicalService.java
+|               |
+|               |   +-- UndergraduateService.java
+|               |   +-- TimetableService.java
+|               |   +-- GradeService.java
+|               |   +-- ResultService.java
+|               |   +-- GPAService.java
+|               |
+|               +-- controller/
+|               |   |
+|               |   +-- LoginController.java
+|               |   +-- AdminController.java
+|               |   +-- LecturerController.java
+|               |   +-- TechnicalOfficerController.java
+|               |   +-- UndergraduateController.java
+|               |
+|               +-- gui/
+|               |   |
+|               |   +-- common/
+|               |   |   +-- LoginFrame.java
+|               |   |   +-- MainFrame.java
+|               |   |   +-- HeaderPanel.java
+|               |   |   +-- SidebarPanel.java
+|               |   |   +-- MessageDialog.java
+|               |   |
+|               |   +-- member1_admin/
+|               |   |   +-- AdminDashboard.java
+|               |   |   +-- UserManagementPanel.java
+|               |   |   +-- UserFormDialog.java
+|               |   |   +-- CourseManagementPanel.java
+|               |   |   +-- CourseFormDialog.java
+|               |   |   +-- NoticeManagementPanel.java
+|               |   |   +-- NoticeFormDialog.java
+|               |   |
+|               |   +-- member2_lecturer/
+|               |   |   +-- LecturerDashboard.java
+|               |   |   +-- LecturerProfilePanel.java
+|               |   |   +-- CourseMaterialsPanel.java
+|               |   |   +-- MaterialFormDialog.java
+|               |   |   +-- StudentDetailsPanel.java
+|               |   |   +-- MarkManagementPanel.java
+|               |   |   +-- MarkEntryDialog.java
+|               |   |   +-- CASummaryPanel.java
+|               |   |   +-- EligibilityPanel.java
+|               |   |   +-- LecturerNoticePanel.java
+|               |   |
+|               |   +-- member3_attendance/
+|               |   |   +-- TechnicalOfficerDashboard.java
+|               |   |   +-- TechnicalOfficerProfilePanel.java
+|               |   |   +-- AttendanceManagementPanel.java
+|               |   |   +-- AttendanceEntryDialog.java
+|               |   |   +-- AttendanceSummaryPanel.java
+|               |   |   +-- BatchAttendancePanel.java
+|               |   |   +-- MedicalManagementPanel.java
+|               |   |   +-- MedicalFormDialog.java
+|               |   |   +-- MedicalApprovalDialog.java
+|               |   |
+|               |   +-- member4_student/
+|               |       +-- UndergraduateDashboard.java
+|               |       +-- StudentProfilePanel.java
+|               |       +-- StudentCoursePanel.java
+|               |       +-- StudentAttendancePanel.java
+|               |       +-- StudentMedicalPanel.java
+|               |       +-- TimetablePanel.java
+|               |       +-- GradePanel.java
+|               |       +-- ResultPanel.java
+|               |       +-- SGPA_Panel.java
+|               |       +-- CGPA_Panel.java
+|               |
+|               +-- exception/
+|               |   +-- DatabaseException.java
+|               |   +-- ValidationException.java
+|               |   +-- AuthenticationException.java
+|               |   +-- BusinessRuleException.java
+|               |
+|               +-- util/
+|                   +-- ValidationUtil.java
+|                   +-- PasswordUtil.java
+|                   +-- DateUtil.java
+|                   +-- AttendanceCalculator.java
+|                   +-- GradeCalculator.java
+|                   +-- GPACalculator.java
+|
++-- database/
+|   +-- 01_create_database.sql
+|   +-- 02_create_tables.sql
+|   +-- 03_insert_roles.sql
+|   +-- 04_insert_users.sql
+|   +-- 05_insert_courses.sql
+|   +-- 06_insert_attendance.sql
+|   +-- 07_insert_medicals.sql
+|   +-- 08_insert_marks.sql
+|   +-- 09_insert_timetable.sql
+|   +-- 10_insert_notices.sql
+|   +-- 11_test_queries.sql
+|
++-- docs/
+|   +-- SRS/
+|   |   +-- SRS.pdf
+|   |
+|   +-- UML/
+|   |   +-- ClassDiagram.pdf
+|   |
+|   +-- ERD/
+|   |   +-- ERDiagram.pdf
+|   |
+|   +-- Report/
+|       +-- FinalReport.pdf
+|
++-- resources/
+|   +-- images/
+|   +-- profile_pictures/
+|   +-- course_materials
