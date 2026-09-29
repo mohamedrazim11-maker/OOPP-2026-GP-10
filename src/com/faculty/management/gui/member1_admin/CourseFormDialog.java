@@ -10,27 +10,40 @@ import com.faculty.management.model.Course;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.List;
 
 /**
  * Course Form Dialog for Administrator (Member 1).
- * Allows adding new courses to the Faculty Management System.
+ * Supports both "Add Course" and "Update Course" operations for Faculty Management System.
  * 
  * Demonstrates Core OOP Principles:
  * - Classes and Objects: Dialog, Swing components, and Course model instantiation.
  * - Inheritance: Extends JDialog to inherit standard modal window behaviors.
- * - Abstraction: Interacts with business logic through AdminController.
- * - Polymorphism: Event dispatching and overloaded controller calls.
- * - Encapsulation: Private UI controls and data fields with public accessors.
- * - Error and Exception Handling: Catches ValidationException and DatabaseException.
- * - Database Handling: Connects to MySQL database through backend layers.
+ * - Abstraction: Interacts with business logic through AdminController and CourseService layers.
+ * - Polymorphism: Overloaded constructors, mode-based polymorphic form behavior (ADD vs UPDATE).
+ * - Encapsulation: Private UI controls, state variables, and data fields with public accessors.
+ * - Error and Exception Handling: Catches ValidationException and DatabaseException with descriptive feedback.
+ * - Database Handling: Connects to MySQL database through backend layers with offline fallback support.
  */
 public class CourseFormDialog extends JDialog {
 
+    /**
+     * Enumeration defining the operational mode of the dialog.
+     */
+    public enum FormMode {
+        ADD,
+        UPDATE
+    }
+
+    // Encapsulated Fields
+    private final FormMode mode;
     private final AdminController adminController;
     private boolean saved = false;
-    private Course createdCourse;
+    private Course course;
+    private int courseIdToUpdate = 0;
 
     // Encapsulated UI Components
+    private JComboBox<Course> courseSelectorComboBox;
     private JTextField courseCodeField;
     private JTextField courseNameField;
     private JSpinner creditSpinner;
@@ -43,29 +56,64 @@ public class CourseFormDialog extends JDialog {
     private JButton saveButton;
     private JButton cancelButton;
 
+    /**
+     * Default constructor for Add Course mode.
+     */
     public CourseFormDialog(JFrame parent, AdminController adminController) {
-        super(parent, "Add New Course — Faculty Management System", true);
-        this.adminController = (adminController != null) ? adminController : new AdminController();
-        initComponents();
+        this(parent, adminController, FormMode.ADD, null);
     }
 
+    /**
+     * Constructor specifying the operational mode (ADD or UPDATE).
+     */
+    public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode) {
+        this(parent, adminController, mode, null);
+    }
+
+    /**
+     * Overloaded constructor for Add or Update with an initial course entity.
+     */
+    public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode, Course initialCourse) {
+        super(parent, (mode == FormMode.UPDATE) ? "Update Course — Faculty Management System" : "Add New Course — Faculty Management System", true);
+        this.mode = (mode != null) ? mode : FormMode.ADD;
+        this.adminController = (adminController != null) ? adminController : new AdminController();
+        this.course = initialCourse;
+        if (initialCourse != null) {
+            this.courseIdToUpdate = initialCourse.getCourseId();
+        }
+
+        initComponents();
+
+        if (this.mode == FormMode.UPDATE) {
+            loadExistingCourses(initialCourse);
+        }
+    }
+
+    /**
+     * Initializes all UI components and layouts.
+     */
     private void initComponents() {
-        setSize(560, 680);
-        setMinimumSize(new Dimension(500, 600));
+        setSize(580, 720);
+        setMinimumSize(new Dimension(520, 640));
         setLocationRelativeTo(getParent());
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(248, 250, 252));
 
         // 1. Header Banner
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(30, 58, 138)); // Deep Navy Blue
+        Color headerBg = (mode == FormMode.UPDATE) ? new Color(15, 118, 110) : new Color(30, 58, 138); // Teal for Update, Navy for Add
+        headerPanel.setBackground(headerBg);
         headerPanel.setBorder(new EmptyBorder(18, 24, 18, 24));
 
-        JLabel titleLabel = new JLabel("Add New Course");
+        String titleText = (mode == FormMode.UPDATE) ? "Update Academic Course" : "Add New Course";
+        JLabel titleLabel = new JLabel(titleText);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titleLabel.setForeground(Color.WHITE);
 
-        JLabel subTitleLabel = new JLabel("Enter academic course details to register a new module in the curriculum");
+        String subTitleText = (mode == FormMode.UPDATE)
+                ? "Select an existing course module and modify its academic details in MySQL database"
+                : "Enter academic course details to register a new module in the curriculum";
+        JLabel subTitleLabel = new JLabel(subTitleText);
         subTitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         subTitleLabel.setForeground(new Color(226, 232, 240));
 
@@ -81,6 +129,23 @@ public class CourseFormDialog extends JDialog {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(6, 4, 6, 4);
         int gridY = 0;
+
+        // Course Selector (Strictly displayed in UPDATE mode)
+        if (mode == FormMode.UPDATE) {
+            gbc.gridx = 0;
+            gbc.gridy = gridY;
+            gbc.weightx = 0.35;
+            formPanel.add(createFieldLabel("Select Course *"), gbc);
+
+            gbc.gridx = 1;
+            gbc.weightx = 0.65;
+            courseSelectorComboBox = new JComboBox<>();
+            courseSelectorComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            courseSelectorComboBox.setBackground(Color.WHITE);
+            courseSelectorComboBox.addActionListener(e -> handleCourseSelectionChanged());
+            formPanel.add(courseSelectorComboBox, gbc);
+            gridY++;
+        }
 
         // Course Code
         gbc.gridx = 0;
@@ -212,9 +277,10 @@ public class CourseFormDialog extends JDialog {
         cancelButton.setPreferredSize(new Dimension(100, 38));
         cancelButton.addActionListener(e -> dispose());
 
-        saveButton = new PrimaryButton("Add Course");
-        saveButton.setPreferredSize(new Dimension(130, 38));
-        saveButton.addActionListener(e -> handleSaveCourse());
+        String saveText = (mode == FormMode.UPDATE) ? "Update Course" : "Add Course";
+        saveButton = new PrimaryButton(saveText);
+        saveButton.setPreferredSize(new Dimension(135, 38));
+        saveButton.addActionListener(e -> handleFormSubmission());
 
         buttonPanel.add(cancelButton);
         buttonPanel.add(saveButton);
@@ -232,10 +298,88 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Handles course submission, input validation, and database persistence.
+     * Loads existing courses from backend into the selector dropdown for UPDATE mode.
+     */
+    private void loadExistingCourses(Course initialSelection) {
+        try {
+            List<Course> courses = adminController.loadAllCourses();
+            courseSelectorComboBox.removeAllItems();
+
+            if (courses == null || courses.isEmpty()) {
+                errorLabel.setText("No courses found in database to update.");
+                saveButton.setEnabled(false);
+                return;
+            }
+
+            for (Course c : courses) {
+                courseSelectorComboBox.addItem(c);
+            }
+
+            if (initialSelection != null) {
+                for (int i = 0; i < courseSelectorComboBox.getItemCount(); i++) {
+                    Course c = courseSelectorComboBox.getItemAt(i);
+                    if (c.getCourseId() == initialSelection.getCourseId()) {
+                        courseSelectorComboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            } else if (courseSelectorComboBox.getItemCount() > 0) {
+                courseSelectorComboBox.setSelectedIndex(0);
+            }
+
+            Course current = (Course) courseSelectorComboBox.getSelectedItem();
+            if (current != null) {
+                populateFields(current);
+            }
+
+        } catch (DatabaseException ex) {
+            errorLabel.setText("Failed to load courses: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Handles course selection changes in UPDATE mode.
+     */
+    private void handleCourseSelectionChanged() {
+        Course selected = (Course) courseSelectorComboBox.getSelectedItem();
+        if (selected != null) {
+            populateFields(selected);
+        }
+    }
+
+    /**
+     * Populates form fields from a Course object.
+     */
+    private void populateFields(Course c) {
+        if (c == null) return;
+        this.courseIdToUpdate = c.getCourseId();
+        courseCodeField.setText(c.getCourseCode());
+        courseNameField.setText(c.getCourseName());
+        creditSpinner.setValue(c.getCreditValue());
+        theoryHoursSpinner.setValue(c.getTheoryHours());
+        practicalHoursSpinner.setValue(c.getPracticalHours());
+
+        if (c.getDepartment() != null) {
+            departmentComboBox.setSelectedItem(c.getDepartment());
+        } else {
+            departmentComboBox.setSelectedIndex(0);
+        }
+
+        if (c.getSemester() != null) {
+            semesterComboBox.setSelectedItem(c.getSemester());
+        } else {
+            semesterComboBox.setSelectedIndex(0);
+        }
+
+        descriptionArea.setText(c.getDescription() != null ? c.getDescription() : "");
+        errorLabel.setText(" ");
+    }
+
+    /**
+     * Handles course submission (Add or Update) with input validation and database persistence.
      * Demonstrates Error & Exception Handling, Encapsulation, and Database Handling.
      */
-    private void handleSaveCourse() {
+    private void handleFormSubmission() {
         errorLabel.setText(" ");
 
         try {
@@ -253,29 +397,52 @@ public class CourseFormDialog extends JDialog {
             }
 
             // Create course model (Classes and Objects, Encapsulation)
-            Course course = new Course();
-            course.setCourseCode(courseCode);
-            course.setCourseName(courseName);
-            course.setCreditValue(creditValue);
-            course.setTheoryHours(theoryHours);
-            course.setPracticalHours(practicalHours);
-            course.setDepartment(selectedDept);
-            course.setSemester(selectedSem);
-            course.setDescription(description);
+            Course targetCourse = new Course();
+            targetCourse.setCourseCode(courseCode);
+            targetCourse.setCourseName(courseName);
+            targetCourse.setCreditValue(creditValue);
+            targetCourse.setTheoryHours(theoryHours);
+            targetCourse.setPracticalHours(practicalHours);
+            targetCourse.setDepartment(selectedDept);
+            targetCourse.setSemester(selectedSem);
+            targetCourse.setDescription(description);
 
-            // Delegate to AdminController for validation and database persistence
-            createdCourse = adminController.handleAddCourse(course);
-            saved = true;
+            if (mode == FormMode.UPDATE) {
+                if (courseIdToUpdate <= 0) {
+                    throw new ValidationException("Please select a course to update.");
+                }
+                targetCourse.setCourseId(courseIdToUpdate);
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Course '" + createdCourse.getCourseCode() + " - " + createdCourse.getCourseName() +
-                    "' was successfully registered in the system!",
-                    "Course Added Successfully",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+                // Perform update in database via controller
+                boolean success = adminController.handleUpdateCourse(targetCourse);
+                if (success) {
+                    this.course = targetCourse;
+                    this.saved = true;
 
-            dispose();
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Course '" + targetCourse.getCourseCode() + " - " + targetCourse.getCourseName() +
+                            "' was successfully updated in the system!",
+                            "Course Updated Successfully",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    dispose();
+                }
+            } else {
+                // Perform addition in database via controller
+                Course created = adminController.handleAddCourse(targetCourse);
+                this.course = created;
+                this.saved = true;
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Course '" + created.getCourseCode() + " - " + created.getCourseName() +
+                        "' was successfully registered in the system!",
+                        "Course Added Successfully",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+                dispose();
+            }
 
         } catch (ValidationException ve) {
             errorLabel.setText(ve.getMessage());
@@ -295,6 +462,14 @@ public class CourseFormDialog extends JDialog {
     }
 
     public Course getCreatedCourse() {
-        return createdCourse;
+        return course;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public FormMode getMode() {
+        return mode;
     }
 }
