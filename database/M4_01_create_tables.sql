@@ -120,3 +120,37 @@ CREATE TABLE IF NOT EXISTS results (
     CONSTRAINT fk_results_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT uq_result UNIQUE (student_id, semester_number, academic_year)
 ) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------
+-- 7. Attendance â€” student-facing read-only summary per course
+-- ---------------------------------------------------------
+CREATE TABLE IF NOT EXISTS attendance_records (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    course_id INT NOT NULL,
+    theory_attended INT NOT NULL DEFAULT 0,
+    theory_total INT NOT NULL DEFAULT 0,
+    practical_attended INT NOT NULL DEFAULT 0,
+    practical_total INT NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_attendance_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    CONSTRAINT uq_attendance UNIQUE (student_id, course_id)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------
+-- 8. Medical submissions â€” students submit; status is read-only to them
+-- ---------------------------------------------------------
+CREATE TABLE IF NOT EXISTS medical_submissions (
+    medical_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    course_id INT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    reason VARCHAR(500) NOT NULL,
+    document_path VARCHAR(255),
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_medical_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_medical_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
