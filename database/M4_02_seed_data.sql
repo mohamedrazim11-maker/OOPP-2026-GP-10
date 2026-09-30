@@ -284,3 +284,14 @@ INSERT INTO timetable (course_id, day_of_week, start_time, end_time, session_typ
 ((SELECT course_id FROM courses WHERE course_code='CS204'), 'TUESDAY', '10:00:00', '12:00:00', 'THEORY', 'Mr. Sunil Fernando', 'Lecture Hall B2', 2, '2025/2026'),
 ((SELECT course_id FROM courses WHERE course_code='MA201'), 'WEDNESDAY', '08:00:00', '10:00:00', 'THEORY', 'Ms. Champa Wickramasinghe', 'Lecture Hall A1', 2, '2025/2026');
 
+-- ---------------------------------------------------------
+-- Attendance summaries for the student portal demo.
+-- Students can view these records but cannot edit them.
+-- ---------------------------------------------------------
+INSERT INTO attendance_records (student_id, course_id, theory_attended, theory_total, practical_attended, practical_total)
+SELECT e.student_id, e.course_id,
+       GREATEST(0, c.theory_sessions - 2), c.theory_sessions,
+       CASE WHEN c.practical_sessions > 0 THEN GREATEST(0, c.practical_sessions - 1) ELSE 0 END, c.practical_sessions
+FROM enrollments e JOIN courses c ON c.course_id = e.course_id
+ON DUPLICATE KEY UPDATE theory_attended = VALUES(theory_attended), theory_total = VALUES(theory_total),
+                        practical_attended = VALUES(practical_attended), practical_total = VALUES(practical_total);
