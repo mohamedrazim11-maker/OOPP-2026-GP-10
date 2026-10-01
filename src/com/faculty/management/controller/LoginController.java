@@ -4,9 +4,6 @@ import com.faculty.management.exception.AuthenticationException;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.gui.common.LoginFrame;
-import com.faculty.management.gui.member1_admin.AdminDashboard;
-import com.faculty.management.gui.member2_lecturer.LecturerDashboard;
-import com.faculty.management.gui.member3_attendance.TechnicalOfficerDashboard;
 import com.faculty.management.gui.member4_student.UndergraduateDashboard;
 import com.faculty.management.model.Role;
 import com.faculty.management.model.User;
@@ -55,7 +52,7 @@ public class LoginController {
     }
 
     /**
-     * Identifies the role and redirects the user to the corresponding dashboard.
+     * This build exposes the student portal only.
      *
      * @param user Authenticated user
      */
@@ -63,27 +60,13 @@ public class LoginController {
         String roleName = (user.getRole() != null) ? user.getRole().getRoleName() : "";
 
         SwingUtilities.invokeLater(() -> {
-            switch (roleName.toUpperCase()) {
-                case Role.ADMIN:
-                    new AdminDashboard(user).setVisible(true);
-                    break;
-                case Role.LECTURER:
-                    new LecturerDashboard(user).setVisible(true);
-                    break;
-                case Role.TECHNICAL_OFFICER:
-                    new TechnicalOfficerDashboard(user).setVisible(true);
-                    break;
-                case Role.UNDERGRADUATE:
-                case "STUDENT":
-                    new UndergraduateDashboard(user).setVisible(true);
-                    break;
-                default:
-                    JOptionPane.showMessageDialog(null, 
-                            "Unrecognized user role: " + roleName, 
-                            "Role Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                    showLogin();
-                    break;
+            if (Role.UNDERGRADUATE.equalsIgnoreCase(roleName) || "STUDENT".equalsIgnoreCase(roleName)) {
+                new UndergraduateDashboard(user).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "This version is available only for undergraduate student accounts.",
+                        "Student Portal Only", JOptionPane.WARNING_MESSAGE);
+                showLogin();
             }
         });
     }
