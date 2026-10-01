@@ -14,6 +14,13 @@ import com.faculty.management.service.GradeService;
 import com.faculty.management.service.ResultService;
 import com.faculty.management.service.TimetableService;
 import com.faculty.management.service.UndergraduateService;
+import com.faculty.management.service.AttendanceService;
+import com.faculty.management.service.MedicalSubmissionService;
+import com.faculty.management.model.AttendanceRecord;
+import com.faculty.management.model.MedicalSubmission;
+
+import java.time.LocalDate;
+import java.io.File;
 
 import java.util.List;
 
@@ -30,6 +37,9 @@ public class UndergraduateController {
     private final ResultService resultService = new ResultService();
     private final GPAService gpaService = new GPAService();
     private final EnrollmentDAO enrollmentDAO = new EnrollmentDAO();
+    private final AttendanceService attendanceService = new AttendanceService();
+    private final MedicalSubmissionService medicalSubmissionService = new MedicalSubmissionService();
+    private final com.faculty.management.service.NoticeService noticeService = new com.faculty.management.service.NoticeService();
 
     public Undergraduate getProfile(int studentId) throws DatabaseException, BusinessRuleException {
         return undergraduateService.getProfile(studentId);
@@ -74,5 +84,30 @@ public class UndergraduateController {
 
     public List<Result> getBatchResults(int semesterNumber, String academicYear) throws DatabaseException {
         return resultService.getBatchResults(semesterNumber, academicYear);
+    }
+
+    public List<AttendanceRecord> getAttendance(int studentId) throws DatabaseException {
+        return attendanceService.getStudentAttendance(studentId);
+    }
+
+    public void submitMedical(int studentId, Integer courseId, LocalDate start, LocalDate end, String reason, String documentPath)
+            throws ValidationException, DatabaseException {
+        medicalSubmissionService.submit(studentId, courseId, start, end, reason, documentPath);
+    }
+
+    public List<MedicalSubmission> getMedicalHistory(int studentId) throws DatabaseException {
+        return medicalSubmissionService.getHistory(studentId);
+    }
+
+    public String uploadMedicalPdf(int studentId, File pdf) throws ValidationException {
+        return medicalSubmissionService.storePdf(studentId, pdf);
+    }
+
+    public List<com.faculty.management.model.Notice> getNotices() throws DatabaseException {
+        return noticeService.getAllNotices();
+    }
+
+    public List<com.faculty.management.model.Notice> getNoticesByCategory(String category) throws DatabaseException {
+        return noticeService.getNoticesByCategory(category);
     }
 }

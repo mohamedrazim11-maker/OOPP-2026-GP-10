@@ -311,6 +311,14 @@ public class MedicalPanel extends JPanel {
 
         uploadBox.add(pdfIcon, BorderLayout.WEST);
         uploadBox.add(pdfInfoBox, BorderLayout.CENTER);
+        uploadBox.setToolTipText("Click to choose a PDF medical certificate");
+        uploadBox.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        uploadBox.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent event) {
+                choosePdf();
+            }
+        });
 
         JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         btnRow.setOpaque(false);
@@ -343,8 +351,16 @@ public class MedicalPanel extends JPanel {
         submitBtn.setPreferredSize(new Dimension(340, 42));
         submitBtn.addActionListener(e -> submitMedical());
 
+        // The form is deliberately scrollable: on shorter dashboard windows the
+        // certificate selector must never be hidden below the visible area.
+        JScrollPane formScroll = new JScrollPane(fieldsPanel);
+        formScroll.setBorder(null);
+        formScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        formScroll.getVerticalScrollBar().setUnitIncrement(16);
+        formScroll.getViewport().setBackground(UITheme.BG_CARD);
+
         formCard.add(titlePanel, BorderLayout.NORTH);
-        formCard.add(fieldsPanel, BorderLayout.CENTER);
+        formCard.add(formScroll, BorderLayout.CENTER);
         formCard.add(submitBtn, BorderLayout.SOUTH);
 
         return formCard;
@@ -461,6 +477,7 @@ public class MedicalPanel extends JPanel {
     private void choosePdf() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Select Official Medical Certificate (PDF)");
+        chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PDF Documents (*.pdf)", "pdf"));
 
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
