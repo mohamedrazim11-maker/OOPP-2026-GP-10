@@ -1,7 +1,8 @@
 package model;
 
 // Demonstrates Inheritance: Lecturer extends User
-public class Lecturer extends User {
+public class
+Lecturer extends User {
     private String department;
     private String contactNo;
     private String profilePicPath;

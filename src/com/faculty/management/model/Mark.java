@@ -1,6 +1,6 @@
-package model;
+package com.faculty.management.model;
 
-import exception.InvalidMarkException;
+import com.faculty.management.exception.InvalidMarkException;
 
 public class Mark {
     private int markId;
