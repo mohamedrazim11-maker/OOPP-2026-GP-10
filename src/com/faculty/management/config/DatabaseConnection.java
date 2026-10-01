@@ -43,7 +43,7 @@ public class DatabaseConnection {
      * @return Active SQL Connection
      * @throws DatabaseException If unable to connect to the database
      */
-    public Connection getConnection() throws DatabaseException {
+    public static Connection getConnection() throws DatabaseException {
         try {
             if (connection == null || connection.isClosed()) {
                 connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
