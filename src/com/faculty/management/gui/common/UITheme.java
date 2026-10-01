@@ -427,6 +427,11 @@ public class UITheme {
     // KPI STAT CARD (Metric display with icon, value, label)
     // =========================================================================
     public static JPanel createStatCard(String icon, String label, String value, Color accentColor) {
+        JLabel valueLbl = new JLabel(value);
+        return createStatCard(icon, label, valueLbl, accentColor);
+    }
+
+    public static JPanel createStatCard(String icon, String label, JLabel valueLbl, Color accentColor) {
         ModernCard card = new ModernCard(12);
         card.setLayout(new BorderLayout(12, 6));
         card.setBorder(new EmptyBorder(14, 16, 14, 16));
@@ -446,7 +451,6 @@ public class UITheme {
         topRow.add(titleLbl);
 
         // Value
-        JLabel valueLbl = new JLabel(value);
         valueLbl.setFont(FONT_KPI_VALUE);
         valueLbl.setForeground(accentColor != null ? accentColor : TEXT_MAIN);
         valueLbl.setBorder(new EmptyBorder(4, 4, 0, 0));
@@ -963,4 +967,137 @@ public class UITheme {
 
         return headerPanel;
     }
+
+    // =========================================================================
+    // MODERN ROUNDED PROGRESS BAR
+    // =========================================================================
+    public static class ModernProgressBar extends JComponent {
+        private double percentage = 0.0;
+        private String customText = null;
+        private Color customFillColor = null;
+        private int cornerRadius = 8;
+        private boolean showText = true;
+
+        public ModernProgressBar() {
+            this(0.0);
+        }
+
+        public ModernProgressBar(double percentage) {
+            this.percentage = Math.max(0.0, Math.min(100.0, percentage));
+            setPreferredSize(new Dimension(140, 20));
+            setOpaque(false);
+        }
+
+        public void setPercentage(double p) {
+            this.percentage = Math.max(0.0, Math.min(100.0, p));
+            repaint();
+        }
+
+        public double getPercentage() {
+            return percentage;
+        }
+
+        public void setCustomText(String text) {
+            this.customText = text;
+            repaint();
+        }
+
+        public void setCustomFillColor(Color c) {
+            this.customFillColor = c;
+            repaint();
+        }
+
+        public void setShowText(boolean show) {
+            this.showText = show;
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            int w = getWidth();
+            int h = getHeight();
+
+            // Background track
+            g2.setColor(new Color(241, 245, 249));
+            g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
+            g2.setColor(BORDER_LIGHT);
+            g2.setStroke(new BasicStroke(1.0f));
+            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, w - 1f, h - 1f, cornerRadius, cornerRadius));
+
+            // Fill color
+            Color fill;
+            if (customFillColor != null) {
+                fill = customFillColor;
+            } else if (percentage >= 80.0) {
+                fill = SUCCESS;
+            } else if (percentage >= 75.0) {
+                fill = WARNING;
+            } else {
+                fill = DANGER;
+            }
+
+            // Fill bar
+            int fillW = (int) Math.round((w * percentage) / 100.0);
+            if (fillW > 0) {
+                g2.setColor(fill);
+                g2.fill(new RoundRectangle2D.Float(0, 0, fillW, h, cornerRadius, cornerRadius));
+            }
+
+            // Text
+            if (showText) {
+                String text = customText != null ? customText : String.format("%.1f%%", percentage);
+                g2.setFont(FONT_SMALL_BOLD);
+                FontMetrics fm = g2.getFontMetrics();
+                int textX = (w - fm.stringWidth(text)) / 2;
+                int textY = (h - fm.getHeight()) / 2 + fm.getAscent();
+
+                g2.setColor(fillW > (textX + fm.stringWidth(text) / 2) ? Color.WHITE : TEXT_MAIN);
+                g2.drawString(text, textX, textY);
+            }
+
+            g2.dispose();
+        }
+    }
+
+    public static class ProgressBarTableCellRenderer extends DefaultTableCellRenderer {
+        private final ModernProgressBar progressBar = new ModernProgressBar();
+        private final JPanel panel = new JPanel(new GridBagLayout());
+
+        public ProgressBarTableCellRenderer() {
+            panel.setOpaque(true);
+            progressBar.setPreferredSize(new Dimension(130, 18));
+            panel.add(progressBar);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            Color rowBg = isSelected ? PRIMARY_LIGHT : (row % 2 == 0 ? Color.WHITE : BG_ALT_ROW);
+            panel.setBackground(rowBg);
+
+            if (value instanceof Number) {
+                double pct = ((Number) value).doubleValue();
+                progressBar.setPercentage(pct);
+                progressBar.setCustomText(String.format("%.1f%%", pct));
+            } else if (value != null) {
+                String s = value.toString().replace("%", "").trim();
+                try {
+                    double pct = Double.parseDouble(s);
+                    progressBar.setPercentage(pct);
+                    progressBar.setCustomText(String.format("%.1f%%", pct));
+                } catch (NumberFormatException e) {
+                    progressBar.setPercentage(0);
+                    progressBar.setCustomText(value.toString());
+                }
+            } else {
+                progressBar.setPercentage(0);
+                progressBar.setCustomText("-");
+            }
+            return panel;
+        }
+    }
 }
+

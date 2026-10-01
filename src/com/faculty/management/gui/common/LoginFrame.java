@@ -91,7 +91,7 @@ public class LoginFrame extends JFrame {
         highlightsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         highlightsPanel.setBorder(new EmptyBorder(16, 10, 16, 10));
 
-        addFeatureBullet(highlightsPanel, "✓ Complete Academic & Staff Operations");
+        addFeatureBullet(highlightsPanel, "✓ Student Academic Self-Service");
         addFeatureBullet(highlightsPanel, "✓ CA Eligibility & Automated SGPA/CGPA");
         addFeatureBullet(highlightsPanel, "✓ Department Timetables & Schedules");
 
@@ -110,13 +110,10 @@ public class LoginFrame extends JFrame {
         demoTitle.setForeground(new Color(199, 210, 254));
         demoTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel demoButtons = new JPanel(new GridLayout(2, 2, 6, 6));
+        JPanel demoButtons = new JPanel(new GridLayout(1, 1, 6, 6));
         demoButtons.setOpaque(false);
         demoButtons.setBorder(new EmptyBorder(8, 0, 0, 0));
 
-        demoButtons.add(createDemoFillButton("Admin", "admin", "admin123"));
-        demoButtons.add(createDemoFillButton("Lecturer", "lec_kamal", "lec123"));
-        demoButtons.add(createDemoFillButton("Tech Officer", "to_bandara", "to123"));
         demoButtons.add(createDemoFillButton("Student", "tg2021001", "std123"));
 
         demoBox.add(demoTitle);
@@ -172,11 +169,11 @@ public class LoginFrame extends JFrame {
         errorBanner.add(errorLabel);
 
         // Username
-        JLabel usernameLabel = new JLabel("Username / Student ID");
+        JLabel usernameLabel = new JLabel("Student ID");
         usernameLabel.setFont(UITheme.FONT_BODY_BOLD);
         usernameLabel.setForeground(UITheme.TEXT_BODY);
 
-        usernameField = new UITheme.ModernTextField("e.g. admin, tg2021001, lec_kamal", 20);
+        usernameField = new UITheme.ModernTextField("e.g. tg2021001", 20);
         usernameField.setPreferredSize(new Dimension(240, 40));
 
         // Password
