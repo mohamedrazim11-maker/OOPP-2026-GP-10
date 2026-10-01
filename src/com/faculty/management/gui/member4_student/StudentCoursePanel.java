@@ -69,9 +69,9 @@ public class StudentCoursePanel extends JPanel {
         totalCreditsLbl = new JLabel("0 Credits");
         practicalCoursesLbl = new JLabel("0 Labs");
 
-        statsBar.add(UITheme.createStatCard("📚", "Enrolled Courses", "0 Modules", UITheme.PRIMARY));
-        statsBar.add(UITheme.createStatCard("🎓", "Cumulative Credits", "0 Credits", UITheme.SUCCESS_DARK));
-        statsBar.add(UITheme.createStatCard("🔬", "Practical Courses", "0 Modules", UITheme.PURPLE));
+        statsBar.add(UITheme.createStatCard("📚", "Enrolled Courses", totalCoursesLbl, UITheme.PRIMARY));
+        statsBar.add(UITheme.createStatCard("🎓", "Cumulative Credits", totalCreditsLbl, UITheme.SUCCESS_DARK));
+        statsBar.add(UITheme.createStatCard("🔬", "Practical Courses", practicalCoursesLbl, UITheme.PURPLE));
 
         // 2. Search & Filter Bar
         JPanel searchBar = new JPanel(new BorderLayout(12, 0));
@@ -158,6 +158,9 @@ public class StudentCoursePanel extends JPanel {
                 });
             }
 
+            totalCoursesLbl.setText(enrollments.size() + " Modules");
+            totalCreditsLbl.setText(totalCredits + " Credits");
+            practicalCoursesLbl.setText(practicalCount + " Labs");
             statusLabel.setText("Showing " + enrollments.size() + " active course enrolment(s)");
         } catch (DatabaseException e) {
             statusLabel.setForeground(UITheme.DANGER_DARK);
