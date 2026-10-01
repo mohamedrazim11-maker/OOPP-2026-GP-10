@@ -35,7 +35,6 @@ public class AttendancePanel extends JPanel {
     private JLabel overallPctLabel;
     private JLabel totalSessionsLabel;
     private JLabel eligibilityLabel;
-    private JLabel theorySummaryLabel;
 
     // Filter & Search
     private UITheme.ModernTextField searchField;
@@ -294,7 +293,6 @@ public class AttendancePanel extends JPanel {
         if (title.contains("Overall")) overallPctLabel = val;
         else if (title.contains("Sessions")) totalSessionsLabel = val;
         else if (title.contains("Eligibility")) eligibilityLabel = val;
-        else if (title.contains("Requirement")) theorySummaryLabel = val;
 
         card.add(top, BorderLayout.NORTH);
         card.add(val, BorderLayout.CENTER);

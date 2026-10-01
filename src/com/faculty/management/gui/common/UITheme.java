@@ -2,13 +2,11 @@ package com.faculty.management.gui.common;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.AbstractBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -466,7 +464,6 @@ public class UITheme {
     // =========================================================================
     public static class PillBadge extends JLabel {
         private Color bgColor;
-        private Color textColor;
         private Color borderColor;
 
         public PillBadge(String text, Color bg, Color textCol) {
@@ -476,7 +473,6 @@ public class UITheme {
         public PillBadge(String text, Color bg, Color textCol, Color borderCol) {
             super(text);
             this.bgColor = bg;
-            this.textColor = textCol;
             this.borderColor = borderCol;
             setFont(FONT_SMALL_BOLD);
             setForeground(textCol);
@@ -487,7 +483,6 @@ public class UITheme {
 
         public void setColors(Color bg, Color textCol, Color borderCol) {
             this.bgColor = bg;
-            this.textColor = textCol;
             this.borderColor = borderCol;
             setForeground(textCol);
             repaint();
@@ -519,7 +514,6 @@ public class UITheme {
     public static class CircularAvatar extends JComponent {
         private BufferedImage image;
         private String placeholder = "👤";
-        private int diameter;
         private Color ringColor = PRIMARY;
         private float ringStroke = 3.0f;
         private Color bgColor = PRIMARY_LIGHT;
@@ -530,7 +524,6 @@ public class UITheme {
         }
 
         public CircularAvatar(int diameter, Color ringColor) {
-            this.diameter = diameter;
             this.ringColor = ringColor;
             setPreferredSize(new Dimension(diameter, diameter));
             setMinimumSize(new Dimension(diameter, diameter));

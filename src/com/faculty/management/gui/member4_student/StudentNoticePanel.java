@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class StudentNoticePanel extends JPanel {
 
     private final UndergraduateController controller;
-    private final int studentId;
 
     private List<Notice> allNotices = new ArrayList<>();
     private String selectedCategory = "ALL";
@@ -42,7 +41,6 @@ public class StudentNoticePanel extends JPanel {
 
     public StudentNoticePanel(UndergraduateController controller, int studentId) {
         this.controller = controller;
-        this.studentId = studentId;
 
         setLayout(new BorderLayout(0, 16));
         setBackground(UITheme.BG_PAGE);
