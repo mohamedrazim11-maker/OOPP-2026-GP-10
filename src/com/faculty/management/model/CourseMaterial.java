@@ -1,4 +1,4 @@
-package model;
+package com.faculty.management.model;
 
 import java.sql.Timestamp;
 
