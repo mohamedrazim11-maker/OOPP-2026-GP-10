@@ -1,6 +1,7 @@
 package com.faculty.management.dao;
 
 import com.faculty.management.config.DatabaseConnection;
+import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.model.Attendance;
 
 import java.sql.Connection;
@@ -12,9 +13,9 @@ import java.util.List;
 
 public class AttendanceDAO {
 
-    public boolean addAttendance(Attendance attendance) throws SQLException {
+    public boolean addAttendance(Attendance attendance) throws SQLException, DatabaseException {
         String query = "INSERT INTO attendance (session_id, student_id, status) VALUES (?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, attendance.getSessionId());
             stmt.setInt(2, attendance.getStudentId());
@@ -23,9 +24,9 @@ public class AttendanceDAO {
         }
     }
 
-    public boolean updateAttendance(Attendance attendance) throws SQLException {
+    public boolean updateAttendance(Attendance attendance) throws SQLException, DatabaseException {
         String query = "UPDATE attendance SET status = ? WHERE record_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, attendance.getStatus());
             stmt.setInt(2, attendance.getRecordId());
@@ -33,19 +34,19 @@ public class AttendanceDAO {
         }
     }
 
-    public boolean deleteAttendance(int recordId) throws SQLException {
+    public boolean deleteAttendance(int recordId) throws SQLException, DatabaseException {
         String query = "DELETE FROM attendance WHERE record_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, recordId);
             return stmt.executeUpdate() > 0;
         }
     }
 
-    public List<Attendance> getAttendanceBySession(int sessionId) throws SQLException {
+    public List<Attendance> getAttendanceBySession(int sessionId) throws SQLException, DatabaseException {
         List<Attendance> list = new ArrayList<>();
         String query = "SELECT * FROM attendance WHERE session_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, sessionId);
             try (ResultSet rs = stmt.executeQuery()) {
