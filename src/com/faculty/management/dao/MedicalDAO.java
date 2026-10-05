@@ -1,6 +1,7 @@
 package com.faculty.management.dao;
 
 import com.faculty.management.config.DatabaseConnection;
+import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.model.Medical;
 
 import java.sql.Connection;
@@ -13,9 +14,9 @@ import java.util.List;
 
 public class MedicalDAO {
 
-    public boolean addMedical(Medical medical) throws SQLException {
+    public boolean addMedical(Medical medical) throws SQLException, DatabaseException {
         String query = "INSERT INTO medical (student_id, course_id, session_id, medical_date, reason, status) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, medical.getStudentId());
             stmt.setString(2, medical.getCourseId());
@@ -31,9 +32,9 @@ public class MedicalDAO {
         }
     }
 
-    public boolean updateMedicalStatus(int medicalId, String status) throws SQLException {
+    public boolean updateMedicalStatus(int medicalId, String status) throws SQLException, DatabaseException {
         String query = "UPDATE medical SET status = ? WHERE medical_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, status);
             stmt.setInt(2, medicalId);
@@ -41,10 +42,10 @@ public class MedicalDAO {
         }
     }
 
-    public List<Medical> getMedicalsByStudent(int studentId) throws SQLException {
+    public List<Medical> getMedicalsByStudent(int studentId) throws SQLException, DatabaseException {
         List<Medical> list = new ArrayList<>();
         String query = "SELECT * FROM medical WHERE student_id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, studentId);
             try (ResultSet rs = stmt.executeQuery()) {
