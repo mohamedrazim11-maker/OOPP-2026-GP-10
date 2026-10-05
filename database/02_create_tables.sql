@@ -45,3 +45,39 @@ CREATE TABLE IF NOT EXISTS courses (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+
+-- 4. Table of attendance sessions (Theory or Practical sessions)
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id VARCHAR(20) NOT NULL,
+    session_type ENUM('THEORY', 'PRACTICAL') NOT NULL,
+    session_date DATE NOT NULL,
+    hours DECIMAL(3,1) DEFAULT 2.0,
+    created_by INT,
+    FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- 5. Attendance record table for each student
+CREATE TABLE IF NOT EXISTS attendance_records (
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    session_id INT NOT NULL,
+    student_id INT NOT NULL,
+    status ENUM('PRESENT', 'ABSENT') NOT NULL DEFAULT 'ABSENT',
+    FOREIGN KEY (session_id) REFERENCES attendance_sessions(session_id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_session_student (session_id, student_id)
+);
+
+-- 6. Medical certificate record table
+CREATE TABLE IF NOT EXISTS medical_records (
+    medical_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    course_id VARCHAR(20) NOT NULL,
+    session_id INT NULL,
+    medical_date DATE NOT NULL,
+    reason TEXT NOT NULL,
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (session_id) REFERENCES attendance_sessions(session_id) ON DELETE SET NULL
+);
