@@ -1,6 +1,7 @@
 package com.faculty.management.gui.member2_lecturer;
 
 import com.faculty.management.controller.LoginController;
+import com.faculty.management.model.Lecturer;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
@@ -9,26 +10,43 @@ import java.awt.*;
 
 /**
  * Lecturer Dashboard GUI.
- * Target redirect frame for Lecturer role.
+ * Redirect frame for Lecturer role supporting Profile & Material Management tabs.
  */
 public class LecturerDashboard extends JFrame {
 
     private final User currentUser;
+    private Lecturer currentLecturer;
+    private JTabbedPane tabbedPane;
 
     public LecturerDashboard(User user) {
         this.currentUser = user;
+
+        // Safely map User to Lecturer model
+        if (user instanceof Lecturer) {
+            this.currentLecturer = (Lecturer) user;
+        } else {
+            this.currentLecturer = new Lecturer();
+            this.currentLecturer.setUserId(user.getUserId());
+            this.currentLecturer.setUsername(user.getUsername());
+            this.currentLecturer.setFirstName(user.getFirstName());
+            this.currentLecturer.setLastName(user.getLastName());
+            this.currentLecturer.setEmail(user.getEmail());
+            this.currentLecturer.setContactNo(user.getContactNo());
+            this.currentLecturer.setProfilePic(user.getProfilePic());
+        }
+
         initComponents();
     }
 
     private void initComponents() {
         setTitle("Faculty Management System — Lecturer Portal");
-        setSize(950, 600);
-        setMinimumSize(new Dimension(800, 500));
+        setSize(1000, 700);
+        setMinimumSize(new Dimension(850, 550));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Header
+        // --- 1. Header (Preserved Leader Style) ---
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(new Color(15, 118, 110)); // Deep Teal
         headerPanel.setBorder(new EmptyBorder(15, 25, 15, 25));
@@ -64,10 +82,27 @@ public class LecturerDashboard extends JFrame {
         headerPanel.add(titleLabel, BorderLayout.WEST);
         headerPanel.add(userPanel, BorderLayout.EAST);
 
-        // Center Content
+        // --- 2. Main Tabbed Content Area ---
+        tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        // Tab 1: Welcome Overview
+        tabbedPane.addTab("🏠 Home Overview", createHomeOverviewPanel());
+
+        // Tab 2: Profile Management (Week 2 Requirement)
+        tabbedPane.addTab("👤 My Profile", new LecturerProfilePanel(currentLecturer));
+
+        // Tab 3: Course Materials (Week 2 Requirement)
+        tabbedPane.addTab("📄 Course Materials", new CourseMaterialsPanel());
+
+        add(headerPanel, BorderLayout.NORTH);
+        add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private JPanel createHomeOverviewPanel() {
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(new Color(248, 250, 252));
-        centerPanel.setBorder(new EmptyBorder(30, 30, 30, 30));
+        centerPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
         JPanel welcomeCard = new JPanel();
         welcomeCard.setLayout(new BoxLayout(welcomeCard, BoxLayout.Y_AXIS));
@@ -99,9 +134,7 @@ public class LecturerDashboard extends JFrame {
         welcomeCard.add(modulesGrid);
 
         centerPanel.add(welcomeCard, BorderLayout.CENTER);
-
-        add(headerPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
+        return centerPanel;
     }
 
     private JPanel createModuleCard(String title, String desc, Color accentColor) {
