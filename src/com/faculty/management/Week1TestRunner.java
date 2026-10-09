@@ -1,7 +1,7 @@
 package com.faculty.management;
-import com.faculty.management.model.Mark;
-import model.*;
-import com.faculty.management.config.DatabaseConnection ;
+
+import com.faculty.management.model.*;
+import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.exception.InvalidMarkException;
 import com.faculty.management.service.CAEligibilityCalculator;
 
@@ -13,9 +13,22 @@ public class Week1TestRunner {
     public static void main(String[] args) {
         System.out.println("=== Starting Week 1 Core Architecture Test ===");
 
-        // 1. Test Inheritance & Encapsulation
-        Lecturer lecturer = new Lecturer("LEC001", "Dr. Perera", "perera@fot.sjp.ac.lk", "ICT", "0711234567", "/uploads/perera.jpg");
-        System.out.println("Lecturer Created: " + lecturer.getName() + " | Role: " + lecturer.getRole());
+        // 1. Test Inheritance & Encapsulation using leader's Lecturer constructor
+        Lecturer lecturer = new Lecturer(
+                1,                      // userId (int)
+                "drperera",             // username
+                "pass123",              // password
+                "perera@fot.sjp.ac.lk", // email
+                "Dr.",                  // firstName
+                "Perera",               // lastName
+                null,                   // role (or Role.LECTURER if Role enum exists)
+                "0711234567",           // contactNo
+                "/uploads/perera.jpg",  // profilePic
+                "ACTIVE"                // status
+        );
+
+        System.out.println("Lecturer Created: " + lecturer.getFullName() + " | Title: " + lecturer.getRoleTitle());
+        System.out.println("Greeting: " + lecturer.getDashboardGreeting());
 
         // 2. Test Exception Handling
         try {
@@ -27,9 +40,9 @@ public class Week1TestRunner {
 
         // 3. Test Abstraction & Polymorphism Logic
         Map<String, Double> sampleCA = new HashMap<>();
-        sampleCA.put("Quiz1", 10.0);       // Weighted score
+        sampleCA.put("Quiz1", 10.0);
         sampleCA.put("Assessment", 15.0);
-        sampleCA.put("MidTerm", 20.0);     // Total CA = 45%
+        sampleCA.put("MidTerm", 20.0);
 
         CAEligibilityCalculator calculator = new CAEligibilityCalculator();
         double caScore = calculator.calculateCAPercentage(sampleCA);
