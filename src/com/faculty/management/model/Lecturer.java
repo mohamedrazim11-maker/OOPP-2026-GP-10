@@ -5,7 +5,7 @@ package com.faculty.management.model;
  * Demonstrates Inheritance from User.
  */
 public class Lecturer extends User {
-
+    //specific field
     private String department;
 
     public Lecturer() {
