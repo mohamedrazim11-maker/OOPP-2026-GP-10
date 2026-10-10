@@ -44,6 +44,16 @@ public class TechnicalOfficerDashboard extends JFrame {
         userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         userLabel.setForeground(Color.WHITE);
 
+        JButton profileButton = new JButton("My Profile");
+        profileButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        profileButton.setBackground(new Color(14, 165, 233));
+        profileButton.setForeground(Color.WHITE);
+        profileButton.setFocusPainted(false);
+        profileButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        profileButton.addActionListener(e -> {
+            new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true);
+        });
+
         JButton logoutButton = new JButton("Logout");
         logoutButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         logoutButton.setBackground(new Color(220, 38, 38));
@@ -59,6 +69,7 @@ public class TechnicalOfficerDashboard extends JFrame {
         });
 
         userPanel.add(userLabel);
+        userPanel.add(profileButton);
         userPanel.add(logoutButton);
 
         headerPanel.add(titleLabel, BorderLayout.WEST);
