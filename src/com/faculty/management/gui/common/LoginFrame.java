@@ -40,7 +40,7 @@ public class LoginFrame extends JFrame {
         JPanel mainContainer = new JPanel(new GridLayout(1, 2));
 
         // ---------------------------------------------------------------------
-        // 1. LEFT BRANDING PANEL (Gradient Hero + Quick Demo Access)
+        // 1. LEFT BRANDING PANEL (Gradient Hero + Student Demo Credentials)
         // ---------------------------------------------------------------------
         JPanel brandPanel = new JPanel() {
             @Override
@@ -105,7 +105,7 @@ public class LoginFrame extends JFrame {
         ));
         demoBox.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel demoTitle = new JLabel("⚡ Quick Demo Access (1-Click Fill):");
+        JLabel demoTitle = new JLabel("⚡ Student demo credentials (database required):");
         demoTitle.setFont(UITheme.FONT_SMALL_BOLD);
         demoTitle.setForeground(new Color(199, 210, 254));
         demoTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
