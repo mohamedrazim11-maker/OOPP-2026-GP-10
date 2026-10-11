@@ -16,6 +16,26 @@ The **Faculty Management System (FMS)** is a desktop-based application developed
 
 ---
 
+## 🗄️ MySQL Setup
+
+The application requires a running MySQL server; it does not authenticate with offline demo accounts.
+
+1. Start the MySQL service and create the schema by running `database/01_create_database.sql`.
+2. Run the remaining scripts in order: `02_create_tables.sql`, `03_insert_roles.sql`, `04_insert_users.sql`, `M4_01_create_tables.sql`, then `M4_02_seed_data.sql`.
+3. Configure the database login before launching the application. The default connection is `localhost:3306/faculty_management_db` with user `root` and an empty password. If your MySQL account uses a password or a different username, set `FMS_DB_USER` and `FMS_DB_PASSWORD`. You can also override the JDBC URL with `FMS_DB_URL`.
+4. Run the application from the project directory with `mvn compile exec:java -Dexec.mainClass=com.faculty.management.Main`.
+
+For PowerShell, set the values for the current terminal session before launching:
+
+```powershell
+$env:FMS_DB_USER = "root"
+$env:FMS_DB_PASSWORD = "your-local-mysql-password"
+```
+
+The same settings can be supplied as JVM properties: `-Dfms.db.user=...`, `-Dfms.db.password=...`, and `-Dfms.db.url=...`. When MySQL cannot be reached, login now shows a database connection error instead of silently switching to mock users.
+
+---
+
 ## 👥 User Roles & Key Responsibilities
 
 ```mermaid

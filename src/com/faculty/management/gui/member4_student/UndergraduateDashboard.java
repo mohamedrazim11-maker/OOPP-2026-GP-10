@@ -8,6 +8,8 @@ import com.faculty.management.model.User;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Modern Undergraduate Dashboard GUI — Member 4 (Undergraduate, Timetable & Results).
@@ -27,8 +29,8 @@ public class UndergraduateDashboard extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Student Portal (" + currentUser.getUsername() + ")");
-        setSize(1220, 780);
-        setMinimumSize(new Dimension(1020, 660));
+        setSize(1240, 800);
+        setMinimumSize(new Dimension(980, 640));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -67,17 +69,18 @@ public class UndergraduateDashboard extends JFrame {
         greetStack.setLayout(new BoxLayout(greetStack, BoxLayout.Y_AXIS));
         greetStack.setOpaque(false);
 
-        JLabel welcomeGreeting = new JLabel("👋 Welcome back, " + currentUser.getFullName());
+        JLabel welcomeGreeting = new JLabel(currentUser.getDashboardGreeting());
         welcomeGreeting.setFont(UITheme.FONT_BODY_BOLD);
         welcomeGreeting.setForeground(UITheme.TEXT_MAIN);
 
-        JLabel degreeInfo = new JLabel("Bachelor of Information and Communication Technology (BICT Hons) • Level II");
-        degreeInfo.setFont(UITheme.FONT_SMALL);
-        degreeInfo.setForeground(UITheme.TEXT_MUTED);
+        JLabel dateInfo = new JLabel(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"))
+                + "  •  Your academic workspace");
+        dateInfo.setFont(UITheme.FONT_SMALL);
+        dateInfo.setForeground(UITheme.TEXT_MUTED);
 
         greetStack.add(welcomeGreeting);
         greetStack.add(Box.createVerticalStrut(1));
-        greetStack.add(degreeInfo);
+        greetStack.add(dateInfo);
 
         leftIdentityBox.add(avatarThumb);
         leftIdentityBox.add(greetStack);
@@ -87,13 +90,9 @@ public class UndergraduateDashboard extends JFrame {
         pillsPanel.setOpaque(false);
 
         UITheme.PillBadge idBadge = new UITheme.PillBadge("REG: " + currentUser.getUsername(), UITheme.PRIMARY_LIGHT, UITheme.PRIMARY, UITheme.PRIMARY_TINT);
-        UITheme.PillBadge semBadge = new UITheme.PillBadge("SEMESTER 2 (2025/2026)", UITheme.PURPLE_LIGHT, UITheme.PURPLE, new Color(221, 214, 254));
-        UITheme.PillBadge facBadge = new UITheme.PillBadge("FACULTY OF TECHNOLOGY", UITheme.ACCENT_BLUE_LIGHT, UITheme.ACCENT_BLUE, new Color(191, 219, 254));
         UITheme.PillBadge statusBadge = new UITheme.PillBadge(currentUser.getStatus() != null ? currentUser.getStatus() : "ACTIVE", UITheme.SUCCESS_LIGHT, UITheme.SUCCESS_DARK, UITheme.SUCCESS_BORDER);
 
         pillsPanel.add(idBadge);
-        pillsPanel.add(semBadge);
-        pillsPanel.add(facBadge);
         pillsPanel.add(statusBadge);
 
         subBanner.add(leftIdentityBox, BorderLayout.WEST);
