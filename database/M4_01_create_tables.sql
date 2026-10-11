@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS enrollments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_enroll_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_enroll_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
-    CONSTRAINT uq_enrollment UNIQUE (student_id, course_id, academic_year)
+    CONSTRAINT uq_enrollment UNIQUE (student_id, course_id, semester_number, academic_year)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS grades (
     computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_grades_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_grades_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
-    CONSTRAINT uq_grade UNIQUE (student_id, course_id)
+    CONSTRAINT uq_grade UNIQUE (student_id, course_id, semester_number, academic_year)
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
