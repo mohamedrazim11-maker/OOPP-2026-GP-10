@@ -48,10 +48,12 @@ public class UndergraduateDashboard extends JFrame {
 
         // 2. Student Identity & Quick Status Banner
         JPanel subBanner = new JPanel(new BorderLayout());
-        subBanner.setBackground(Color.WHITE);
+        subBanner.setBackground(UITheme.LAVENDER_SURFACE);
         subBanner.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, UITheme.BORDER_LIGHT),
-                new EmptyBorder(10, 24, 10, 24)
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(UITheme.LAVENDER_BORDER, 1),
+                        new EmptyBorder(10, 16, 10, 16)),
+                new EmptyBorder(8, 24, 8, 24)
         ));
 
         // Left: Avatar + Greeting Stack
@@ -98,7 +100,11 @@ public class UndergraduateDashboard extends JFrame {
         subBanner.add(leftIdentityBox, BorderLayout.WEST);
         subBanner.add(pillsPanel, BorderLayout.EAST);
 
-        topContainer.add(subBanner);
+        JPanel bannerMargin = new JPanel(new BorderLayout());
+        bannerMargin.setBackground(UITheme.BG_PAGE);
+        bannerMargin.setBorder(new EmptyBorder(12, 24, 8, 24));
+        bannerMargin.add(subBanner, BorderLayout.CENTER);
+        topContainer.add(bannerMargin);
 
         add(topContainer, BorderLayout.NORTH);
         add(buildTabs(), BorderLayout.CENTER);
