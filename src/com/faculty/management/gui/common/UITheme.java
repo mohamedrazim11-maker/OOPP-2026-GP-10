@@ -27,11 +27,15 @@ public class UITheme {
     // =========================================================================
     // COLOR PALETTE (Modern Slate & Indigo Enterprise Palette)
     // =========================================================================
-    public static final Color PRIMARY = new Color(67, 56, 202);
-    public static final Color PRIMARY_HOVER = new Color(79, 70, 229);
-    public static final Color PRIMARY_DARK = new Color(49, 46, 129);
-    public static final Color PRIMARY_LIGHT = new Color(238, 242, 255);
-    public static final Color PRIMARY_TINT = new Color(224, 231, 255);
+    public static final Color PRIMARY = new Color(82, 60, 229);
+    public static final Color PRIMARY_HOVER = new Color(104, 78, 240);
+    public static final Color PRIMARY_DARK = new Color(57, 43, 177);
+    public static final Color PRIMARY_LIGHT = new Color(241, 238, 255);
+    public static final Color PRIMARY_TINT = new Color(224, 218, 255);
+    public static final Color PURPLE_BRIGHT = new Color(112, 55, 238);
+    public static final Color PURPLE_GRADIENT_END = new Color(73, 82, 222);
+    public static final Color LAVENDER_SURFACE = new Color(244, 243, 255);
+    public static final Color LAVENDER_BORDER = new Color(224, 222, 255);
 
     public static final Color ACCENT_BLUE = new Color(37, 99, 235);
     public static final Color ACCENT_BLUE_LIGHT = new Color(239, 246, 255);
@@ -57,13 +61,13 @@ public class UITheme {
     public static final Color TEAL = new Color(13, 148, 136);
     public static final Color TEAL_LIGHT = new Color(240, 253, 250);
 
-    public static final Color BG_PAGE = new Color(248, 250, 252);
+    public static final Color BG_PAGE = new Color(246, 247, 255);
     public static final Color BG_CARD = Color.WHITE;
-    public static final Color BG_ALT_ROW = new Color(248, 250, 252);
-    public static final Color BG_HEADER = new Color(241, 245, 249);
+    public static final Color BG_ALT_ROW = new Color(249, 249, 255);
+    public static final Color BG_HEADER = new Color(241, 240, 250);
 
-    public static final Color BORDER_LIGHT = new Color(226, 232, 240);
-    public static final Color BORDER_FOCUS = new Color(99, 102, 241);
+    public static final Color BORDER_LIGHT = new Color(226, 226, 245);
+    public static final Color BORDER_FOCUS = new Color(119, 91, 244);
 
     public static final Color TEXT_MAIN = new Color(15, 23, 42);
     public static final Color TEXT_BODY = new Color(51, 65, 85);
@@ -123,7 +127,7 @@ public class UITheme {
         public ModernButton(String text, ButtonStyle style, int cornerRadius) {
             super(text);
             this.style = style;
-            this.cornerRadius = Math.min(cornerRadius, 5);
+            this.cornerRadius = Math.min(cornerRadius, 12);
             setFont(FONT_BODY_BOLD);
             setFocusPainted(false);
             setBorderPainted(false);
@@ -201,9 +205,16 @@ public class UITheme {
             setForeground(fg);
 
             // Fill background
-            g2.setColor(bg);
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
-                    cornerRadius, cornerRadius));
+            Shape buttonShape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius);
+            if (style == ButtonStyle.PRIMARY) {
+                Color start = isPressed ? PRIMARY_DARK : (isHovered ? PRIMARY_HOVER : PURPLE_BRIGHT);
+                Color end = isPressed ? PRIMARY : (isHovered ? PURPLE_BRIGHT : PURPLE_GRADIENT_END);
+                g2.setPaint(new GradientPaint(0, 0, start, getWidth(), getHeight(), end));
+            } else {
+                g2.setColor(bg);
+            }
+            g2.fill(buttonShape);
 
             // Paint border if applicable
             if (border != null) {
@@ -224,7 +235,7 @@ public class UITheme {
     public static class ModernTextField extends JTextField {
         private String placeholder = "";
         private boolean isFocused = false;
-        private int cornerRadius = 4;
+        private int cornerRadius = 7;
 
         public ModernTextField() {
             this("");
@@ -306,7 +317,7 @@ public class UITheme {
     public static class ModernPasswordField extends JPasswordField {
         private String placeholder = "";
         private boolean isFocused = false;
-        private int cornerRadius = 4;
+        private int cornerRadius = 7;
 
         public ModernPasswordField() {
             this("");
@@ -391,7 +402,7 @@ public class UITheme {
 
         public ModernCard(int cornerRadius) {
             super();
-            this.cornerRadius = Math.min(cornerRadius, 5);
+            this.cornerRadius = Math.min(cornerRadius, 14);
             setOpaque(false);
             setBorder(new EmptyBorder(16, 20, 16, 20));
         }
@@ -497,7 +508,7 @@ public class UITheme {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            int arc = 4;
+            int arc = getHeight();
             g2.setColor(bgColor);
             g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
                     arc, arc));
@@ -750,8 +761,9 @@ public class UITheme {
     // =========================================================================
     public static void styleTabbedPane(JTabbedPane tabbedPane) {
         tabbedPane.setFont(FONT_BODY_BOLD);
-        tabbedPane.setBackground(BG_PAGE);
+        tabbedPane.setBackground(PRIMARY_LIGHT);
         tabbedPane.setFocusable(false);
+        tabbedPane.setBorder(new EmptyBorder(10, 20, 0, 20));
         tabbedPane.setUI(new ModernTabbedPaneUI());
     }
 
@@ -759,7 +771,7 @@ public class UITheme {
         @Override
         protected void installDefaults() {
             super.installDefaults();
-            tabInsets = new Insets(10, 18, 10, 18);
+            tabInsets = new Insets(10, 12, 10, 12);
             selectedTabPadInsets = new Insets(0, 0, 0, 0);
         }
 
@@ -774,24 +786,18 @@ public class UITheme {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             if (isSelected) {
-                g2.setColor(Color.WHITE);
-                g2.fillRect(x, y, w, h);
-                // Active indicator line at bottom
-                g2.setColor(PRIMARY);
-                g2.fillRect(x + 4, y + h - 3, w - 8, 3);
+                Shape activeTab = new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 14, 14);
+                g2.setPaint(new GradientPaint(x, y, PURPLE_BRIGHT, x + w, y + h, PURPLE_GRADIENT_END));
+                g2.fill(activeTab);
             } else {
-                g2.setColor(new Color(241, 245, 249));
-                g2.fillRect(x, y, w, h);
+                g2.setColor(LAVENDER_SURFACE);
+                g2.fill(new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 14, 14));
             }
             g2.dispose();
         }
 
         @Override
         protected void paintContentBorder(Graphics g, int tabPlacement, int selectedIndex) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(BORDER_LIGHT);
-            g2.drawLine(0, 0, tabPane.getWidth(), 0);
-            g2.dispose();
         }
 
         @Override
@@ -799,7 +805,7 @@ public class UITheme {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g2.setFont(font);
-            g2.setColor(isSelected ? PRIMARY : TEXT_MUTED);
+            g2.setColor(isSelected ? Color.WHITE : TEXT_BODY);
             g2.drawString(title, textRect.x, textRect.y + metrics.getAscent());
             g2.dispose();
         }
@@ -881,10 +887,20 @@ public class UITheme {
     // STANDARDIZED DASHBOARD HEADER BUILDER
     // =========================================================================
     public static JPanel buildHeader(JFrame frame, String portalTitle, String userName, String roleLabel, Runnable onLogout) {
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(PRIMARY);
+        JPanel headerPanel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setPaint(new GradientPaint(0, 0, PURPLE_BRIGHT,
+                        getWidth(), getHeight(), PURPLE_GRADIENT_END));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 3, 0, PRIMARY_DARK),
+                BorderFactory.createMatteBorder(0, 0, 3, 0, new Color(75, 68, 200)),
                 new EmptyBorder(12, 24, 12, 24)));
 
         // Left branding
@@ -931,7 +947,7 @@ public class UITheme {
         userCard.add(userText);
         userCard.add(roleText);
 
-        ModernButton logoutBtn = new ModernButton("Sign out", ButtonStyle.OUTLINE, 4);
+        ModernButton logoutBtn = new ModernButton("Sign out", ButtonStyle.OUTLINE, 6);
         logoutBtn.setFont(FONT_SMALL_BOLD);
         logoutBtn.setBorder(new EmptyBorder(6, 14, 6, 14));
         logoutBtn.setBackground(new Color(224, 228, 229));
@@ -1044,7 +1060,7 @@ public class UITheme {
                 int textX = (w - fm.stringWidth(text)) / 2;
                 int textY = (h - fm.getHeight()) / 2 + fm.getAscent();
 
-                g2.setColor(fillW > (textX + fm.stringWidth(text) / 2) ? Color.WHITE : TEXT_MAIN);
+                    g2.setColor(fillW > (textX + fm.stringWidth(text) / 2) ? Color.WHITE : TEXT_MAIN);
                 g2.drawString(text, textX, textY);
             }
 
