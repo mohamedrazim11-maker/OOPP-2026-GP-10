@@ -18,7 +18,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 
 /**
- * Unified Modern UI Design System for Faculty Management System.
+ * Unified university-style UI design system for the Faculty Management System.
  * Pure Java Swing / Java 2D - No external dependencies.
  * Provides consistent colors, typography, custom components, tables, and buttons.
  */
@@ -27,48 +27,48 @@ public class UITheme {
     // =========================================================================
     // COLOR PALETTE (Modern Slate & Indigo Enterprise Palette)
     // =========================================================================
-    public static final Color PRIMARY = new Color(67, 56, 202);         // Indigo 700
-    public static final Color PRIMARY_HOVER = new Color(79, 70, 229);   // Indigo 600
-    public static final Color PRIMARY_DARK = new Color(49, 46, 129);    // Indigo 900
-    public static final Color PRIMARY_LIGHT = new Color(238, 242, 255); // Indigo 50
-    public static final Color PRIMARY_TINT = new Color(224, 231, 255);  // Indigo 100
+    public static final Color PRIMARY = new Color(67, 56, 202);
+    public static final Color PRIMARY_HOVER = new Color(79, 70, 229);
+    public static final Color PRIMARY_DARK = new Color(49, 46, 129);
+    public static final Color PRIMARY_LIGHT = new Color(238, 242, 255);
+    public static final Color PRIMARY_TINT = new Color(224, 231, 255);
 
-    public static final Color ACCENT_BLUE = new Color(37, 99, 235);    // Blue 600
+    public static final Color ACCENT_BLUE = new Color(37, 99, 235);
     public static final Color ACCENT_BLUE_LIGHT = new Color(239, 246, 255);
 
-    public static final Color SUCCESS = new Color(16, 185, 129);       // Emerald 500
+    public static final Color SUCCESS = new Color(16, 185, 129);
     public static final Color SUCCESS_DARK = new Color(5, 150, 105);
     public static final Color SUCCESS_LIGHT = new Color(236, 253, 245);
     public static final Color SUCCESS_BORDER = new Color(167, 243, 208);
 
-    public static final Color WARNING = new Color(245, 158, 11);       // Amber 500
+    public static final Color WARNING = new Color(245, 158, 11);
     public static final Color WARNING_DARK = new Color(217, 119, 6);
     public static final Color WARNING_LIGHT = new Color(254, 243, 199);
     public static final Color WARNING_BORDER = new Color(253, 230, 138);
 
-    public static final Color DANGER = new Color(239, 68, 68);         // Red 500
-    public static final Color DANGER_DARK = new Color(220, 38, 38);    // Red 600
+    public static final Color DANGER = new Color(239, 68, 68);
+    public static final Color DANGER_DARK = new Color(220, 38, 38);
     public static final Color DANGER_LIGHT = new Color(254, 242, 242);
     public static final Color DANGER_BORDER = new Color(254, 202, 202);
 
-    public static final Color PURPLE = new Color(139, 92, 246);        // Purple 500
+    public static final Color PURPLE = new Color(139, 92, 246);
     public static final Color PURPLE_LIGHT = new Color(245, 243, 255);
 
-    public static final Color TEAL = new Color(13, 148, 136);          // Teal 600
+    public static final Color TEAL = new Color(13, 148, 136);
     public static final Color TEAL_LIGHT = new Color(240, 253, 250);
 
-    public static final Color BG_PAGE = new Color(248, 250, 252);      // Slate 50
+    public static final Color BG_PAGE = new Color(248, 250, 252);
     public static final Color BG_CARD = Color.WHITE;
     public static final Color BG_ALT_ROW = new Color(248, 250, 252);
-    public static final Color BG_HEADER = new Color(241, 245, 249);    // Slate 100
+    public static final Color BG_HEADER = new Color(241, 245, 249);
 
-    public static final Color BORDER_LIGHT = new Color(226, 232, 240); // Slate 200
-    public static final Color BORDER_FOCUS = new Color(99, 102, 241);  // Indigo 500
+    public static final Color BORDER_LIGHT = new Color(226, 232, 240);
+    public static final Color BORDER_FOCUS = new Color(99, 102, 241);
 
-    public static final Color TEXT_MAIN = new Color(15, 23, 42);       // Slate 900
-    public static final Color TEXT_BODY = new Color(51, 65, 85);       // Slate 700
-    public static final Color TEXT_MUTED = new Color(100, 116, 139);   // Slate 500
-    public static final Color TEXT_LIGHT = new Color(148, 163, 184);   // Slate 400
+    public static final Color TEXT_MAIN = new Color(15, 23, 42);
+    public static final Color TEXT_BODY = new Color(51, 65, 85);
+    public static final Color TEXT_MUTED = new Color(100, 116, 139);
+    public static final Color TEXT_LIGHT = new Color(148, 163, 184);
 
     // =========================================================================
     // TYPOGRAPHY (Segoe UI on Windows, with robust fallbacks)
@@ -123,7 +123,7 @@ public class UITheme {
         public ModernButton(String text, ButtonStyle style, int cornerRadius) {
             super(text);
             this.style = style;
-            this.cornerRadius = cornerRadius;
+            this.cornerRadius = Math.min(cornerRadius, 5);
             setFont(FONT_BODY_BOLD);
             setFocusPainted(false);
             setBorderPainted(false);
@@ -174,7 +174,7 @@ public class UITheme {
                     fg = Color.WHITE;
                     break;
                 case SUCCESS:
-                    bg = isPressed ? SUCCESS_DARK : (isHovered ? new Color(16, 185, 129) : SUCCESS_DARK);
+                    bg = isPressed ? SUCCESS_DARK : (isHovered ? SUCCESS : SUCCESS_DARK);
                     fg = Color.WHITE;
                     break;
                 case DANGER:
@@ -202,13 +202,15 @@ public class UITheme {
 
             // Fill background
             g2.setColor(bg);
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius));
 
             // Paint border if applicable
             if (border != null) {
                 g2.setColor(border);
                 g2.setStroke(new BasicStroke(1.2f));
-                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f, getHeight() - 1f, cornerRadius, cornerRadius));
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                        getHeight() - 1f, cornerRadius, cornerRadius));
             }
 
             g2.dispose();
@@ -222,7 +224,7 @@ public class UITheme {
     public static class ModernTextField extends JTextField {
         private String placeholder = "";
         private boolean isFocused = false;
-        private int cornerRadius = 10;
+        private int cornerRadius = 4;
 
         public ModernTextField() {
             this("");
@@ -269,7 +271,8 @@ public class UITheme {
 
             // Background
             g2.setColor(isEditable() ? Color.WHITE : new Color(248, 250, 252));
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius));
 
             // Border
             if (isFocused) {
@@ -279,7 +282,8 @@ public class UITheme {
                 g2.setColor(BORDER_LIGHT);
                 g2.setStroke(new BasicStroke(1.0f));
             }
-            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f, getHeight() - 1f, cornerRadius, cornerRadius));
+            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                    getHeight() - 1f, cornerRadius, cornerRadius));
 
             g2.dispose();
             super.paintComponent(g);
@@ -302,7 +306,7 @@ public class UITheme {
     public static class ModernPasswordField extends JPasswordField {
         private String placeholder = "";
         private boolean isFocused = false;
-        private int cornerRadius = 10;
+        private int cornerRadius = 4;
 
         public ModernPasswordField() {
             this("");
@@ -343,7 +347,8 @@ public class UITheme {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2.setColor(isEditable() ? Color.WHITE : new Color(248, 250, 252));
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius));
 
             if (isFocused) {
                 g2.setColor(BORDER_FOCUS);
@@ -352,7 +357,8 @@ public class UITheme {
                 g2.setColor(BORDER_LIGHT);
                 g2.setStroke(new BasicStroke(1.0f));
             }
-            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f, getHeight() - 1f, cornerRadius, cornerRadius));
+            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                    getHeight() - 1f, cornerRadius, cornerRadius));
 
             g2.dispose();
             super.paintComponent(g);
@@ -385,7 +391,7 @@ public class UITheme {
 
         public ModernCard(int cornerRadius) {
             super();
-            this.cornerRadius = cornerRadius;
+            this.cornerRadius = Math.min(cornerRadius, 5);
             setOpaque(false);
             setBorder(new EmptyBorder(16, 20, 16, 20));
         }
@@ -407,13 +413,15 @@ public class UITheme {
 
             // Card surface
             g2.setColor(cardBackground);
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius));
 
             // Card border
             if (borderColor != null) {
                 g2.setColor(borderColor);
                 g2.setStroke(new BasicStroke(1.0f));
-                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f, getHeight() - 1f, cornerRadius, cornerRadius));
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                        getHeight() - 1f, cornerRadius, cornerRadius));
             }
 
             g2.dispose();
@@ -434,22 +442,18 @@ public class UITheme {
         card.setLayout(new BorderLayout(12, 6));
         card.setBorder(new EmptyBorder(14, 16, 14, 16));
 
-        // Top Row: Icon badge + Label
-        JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        // Top row: plain metric label
+        JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         topRow.setOpaque(false);
 
-        JLabel iconLbl = new JLabel(icon);
-        iconLbl.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
-
-        JLabel titleLbl = new JLabel(label.toUpperCase());
+        JLabel titleLbl = new JLabel(label);
         titleLbl.setFont(FONT_SMALL_BOLD);
         titleLbl.setForeground(TEXT_MUTED);
 
-        topRow.add(iconLbl);
         topRow.add(titleLbl);
 
         // Value
-        valueLbl.setFont(FONT_KPI_VALUE);
+        valueLbl.setFont(new Font(FONT_NAME, Font.BOLD, 23));
         valueLbl.setForeground(accentColor != null ? accentColor : TEXT_MAIN);
         valueLbl.setBorder(new EmptyBorder(4, 4, 0, 0));
 
@@ -460,7 +464,7 @@ public class UITheme {
     }
 
     // =========================================================================
-    // PILL BADGE (Status / Category chip)
+    // COMPACT BADGE (Status / Category label)
     // =========================================================================
     public static class PillBadge extends JLabel {
         private Color bgColor;
@@ -493,14 +497,16 @@ public class UITheme {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            int arc = getHeight();
+            int arc = 4;
             g2.setColor(bgColor);
-            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    arc, arc));
 
             if (borderColor != null) {
                 g2.setColor(borderColor);
                 g2.setStroke(new BasicStroke(1.0f));
-                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f, getHeight() - 1f, arc, arc));
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                        getHeight() - 1f, arc, arc));
             }
 
             g2.dispose();
@@ -877,14 +883,18 @@ public class UITheme {
     public static JPanel buildHeader(JFrame frame, String portalTitle, String userName, String roleLabel, Runnable onLogout) {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(PRIMARY);
-        headerPanel.setBorder(new EmptyBorder(14, 24, 14, 24));
+        headerPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 3, 0, PRIMARY_DARK),
+                new EmptyBorder(12, 24, 12, 24)));
 
-        // Left Branding
+        // Left branding
         JPanel brandBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         brandBox.setOpaque(false);
 
-        JLabel logoLabel = new JLabel("🏛️");
-        logoLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 28));
+        JLabel logoLabel = new JLabel("FMS");
+        logoLabel.setFont(new Font(FONT_NAME, Font.BOLD, 19));
+        logoLabel.setForeground(Color.WHITE);
+        logoLabel.setBorder(new EmptyBorder(0, 0, 0, 4));
 
         JPanel titleBox = new JPanel();
         titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
@@ -894,7 +904,7 @@ public class UITheme {
         appTitle.setFont(new Font(FONT_NAME, Font.BOLD, 17));
         appTitle.setForeground(Color.WHITE);
 
-        JLabel portalSub = new JLabel(portalTitle + " • Faculty of Technology");
+        JLabel portalSub = new JLabel(portalTitle + " | Faculty of Technology");
         portalSub.setFont(new Font(FONT_NAME, Font.PLAIN, 12));
         portalSub.setForeground(new Color(199, 210, 254));
 
@@ -909,36 +919,22 @@ public class UITheme {
         userBox.setOpaque(false);
 
         JPanel userCard = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        userCard.setBackground(new Color(49, 46, 129, 160));
-        userCard.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(99, 102, 241, 100), 1),
-                new EmptyBorder(2, 10, 2, 10)
-        ));
-
-        CircularAvatar userAvatar = new CircularAvatar(26, new Color(129, 140, 248));
-        userAvatar.setRingStroke(1.5f);
-        userAvatar.setBgColor(new Color(67, 56, 202));
-        userAvatar.setTextColor(Color.WHITE);
-        userAvatar.setPlaceholder("👤");
-
+        userCard.setOpaque(false);
         JLabel userText = new JLabel(userName);
         userText.setFont(FONT_BODY_BOLD);
         userText.setForeground(Color.WHITE);
 
-        JLabel rolePill = new JLabel(" " + roleLabel + " ");
-        rolePill.setFont(FONT_SMALL_BOLD);
-        rolePill.setOpaque(true);
-        rolePill.setBackground(new Color(99, 102, 241));
-        rolePill.setForeground(Color.WHITE);
-        rolePill.setBorder(new EmptyBorder(1, 4, 1, 4));
+        JLabel roleText = new JLabel(roleLabel.toUpperCase());
+        roleText.setFont(FONT_SMALL_BOLD);
+        roleText.setForeground(new Color(224, 231, 255));
 
-        userCard.add(userAvatar);
         userCard.add(userText);
-        userCard.add(rolePill);
+        userCard.add(roleText);
 
-        ModernButton logoutBtn = new ModernButton("Sign Out", ButtonStyle.DANGER, 8);
+        ModernButton logoutBtn = new ModernButton("Sign out", ButtonStyle.OUTLINE, 4);
         logoutBtn.setFont(FONT_SMALL_BOLD);
         logoutBtn.setBorder(new EmptyBorder(6, 14, 6, 14));
+        logoutBtn.setBackground(new Color(224, 228, 229));
         logoutBtn.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(frame,
                     "Are you sure you want to sign out?",
@@ -1093,4 +1089,3 @@ public class UITheme {
         }
     }
 }
-

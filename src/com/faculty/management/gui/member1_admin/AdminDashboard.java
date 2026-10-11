@@ -66,8 +66,8 @@ public class AdminDashboard extends JFrame {
 
         JPanel badgeBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         badgeBox.setOpaque(false);
-        UITheme.PillBadge activeBadge = new UITheme.PillBadge("SYSTEM ONLINE", UITheme.SUCCESS_LIGHT, UITheme.SUCCESS_DARK, UITheme.SUCCESS_BORDER);
-        UITheme.PillBadge roleBadge = new UITheme.PillBadge("ROOT ACCESS", UITheme.PRIMARY_LIGHT, UITheme.PRIMARY, UITheme.PRIMARY_TINT);
+        UITheme.PillBadge activeBadge = new UITheme.PillBadge("SYSTEM ACTIVE", UITheme.SUCCESS_LIGHT, UITheme.SUCCESS_DARK, UITheme.SUCCESS_BORDER);
+        UITheme.PillBadge roleBadge = new UITheme.PillBadge("ADMINISTRATOR", UITheme.PRIMARY_LIGHT, UITheme.PRIMARY, UITheme.PRIMARY_TINT);
         badgeBox.add(activeBadge);
         badgeBox.add(roleBadge);
 
@@ -79,10 +79,10 @@ public class AdminDashboard extends JFrame {
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
 
-        statsGrid.add(UITheme.createStatCard("👥", "Total Users", "15 Accounts", UITheme.PRIMARY));
-        statsGrid.add(UITheme.createStatCard("📚", "Active Courses", "10 Modules", UITheme.SUCCESS));
-        statsGrid.add(UITheme.createStatCard("🗓️", "Timetable Entries", "Active Schedule", UITheme.ACCENT_BLUE));
-        statsGrid.add(UITheme.createStatCard("📢", "Notices & Alerts", "4 Published", UITheme.WARNING_DARK));
+        statsGrid.add(UITheme.createStatCard("", "Total Users", "15 Accounts", UITheme.PRIMARY));
+        statsGrid.add(UITheme.createStatCard("", "Active Courses", "10 Modules", UITheme.SUCCESS));
+        statsGrid.add(UITheme.createStatCard("", "Timetable Entries", "Active Schedule", UITheme.ACCENT_BLUE));
+        statsGrid.add(UITheme.createStatCard("", "Notices & Alerts", "4 Published", UITheme.WARNING_DARK));
 
         // 3. Modules Header
         JLabel sectionTitle = new JLabel("Core Administrative Modules");
@@ -94,19 +94,19 @@ public class AdminDashboard extends JFrame {
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
         modulesGrid.setOpaque(false);
 
-        modulesGrid.add(createModuleCard("👥 User Management",
+        modulesGrid.add(createModuleCard("User Management",
                 "Create, edit, view and manage system users (Lecturers, Technical Officers, Undergraduates). Assign credentials and permissions.",
                 UITheme.PRIMARY, "Manage Users"));
 
-        modulesGrid.add(createModuleCard("📚 Course Management",
+        modulesGrid.add(createModuleCard("Course Management",
                 "Add courses, assign credits, specify theory and practical session requirements, and organize academic module offerings.",
                 UITheme.SUCCESS_DARK, "Configure Courses"));
 
-        modulesGrid.add(createModuleCard("📢 Notice Board",
+        modulesGrid.add(createModuleCard("Notice Board",
                 "Publish, edit, and broadcast official faculty notices, academic circulars, and departmental memos to staff and students.",
                 UITheme.WARNING_DARK, "Publish Notices"));
 
-        modulesGrid.add(createModuleCard("🗓️ Timetable Management",
+        modulesGrid.add(createModuleCard("Timetable Management",
                 "Create, adjust, and maintain departmental lecture schedules, laboratory sessions, and venue allocations.",
                 UITheme.PURPLE, "Manage Timetables"));
 
@@ -135,7 +135,7 @@ public class AdminDashboard extends JFrame {
 
         JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         bottomRow.setOpaque(false);
-        UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText + " →", UITheme.ButtonStyle.OUTLINE, 8);
+        UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText, UITheme.ButtonStyle.OUTLINE, 4);
         actionBtn.setFont(UITheme.FONT_SMALL_BOLD);
         actionBtn.addActionListener(e -> {
             JOptionPane.showMessageDialog(this,

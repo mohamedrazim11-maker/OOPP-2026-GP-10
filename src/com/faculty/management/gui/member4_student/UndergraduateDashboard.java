@@ -63,7 +63,7 @@ public class UndergraduateDashboard extends JFrame {
         if (currentUser.getProfilePic() != null && !currentUser.getProfilePic().isBlank()) {
             avatarThumb.setImagePath(currentUser.getProfilePic());
         }
-        avatarThumb.setPlaceholder("👤");
+        avatarThumb.setPlaceholder("S");
 
         JPanel greetStack = new JPanel();
         greetStack.setLayout(new BoxLayout(greetStack, BoxLayout.Y_AXIS));
@@ -74,7 +74,7 @@ public class UndergraduateDashboard extends JFrame {
         welcomeGreeting.setForeground(UITheme.TEXT_MAIN);
 
         JLabel dateInfo = new JLabel(LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"))
-                + "  •  Your academic workspace");
+                + " | Student portal");
         dateInfo.setFont(UITheme.FONT_SMALL);
         dateInfo.setForeground(UITheme.TEXT_MUTED);
 
@@ -110,16 +110,16 @@ public class UndergraduateDashboard extends JFrame {
 
         int studentId = currentUser.getUserId();
 
-        tabs.addTab("👤  Profile", new StudentProfilePanel(controller, studentId));
-        tabs.addTab("📚  My Courses", new StudentCoursePanel(controller, studentId));
-        tabs.addTab("🗓️  Timetable", new TimetablePanel(controller, studentId));
-        tabs.addTab("📊  Attendance", new AttendancePanel(controller, studentId));
-        tabs.addTab("🏥  Medical", new MedicalPanel(controller, studentId));
-        tabs.addTab("📢  Notices", new StudentNoticePanel(controller, studentId));
-        tabs.addTab("🏆  Grades", new GradePanel(controller, studentId));
-        tabs.addTab("📋  Results", new ResultPanel(controller, studentId));
-        tabs.addTab("Σ  SGPA", new SGPA_Panel(controller, studentId));
-        tabs.addTab("ΣΣ  CGPA", new CGPA_Panel(controller, studentId));
+        tabs.addTab("Profile", new StudentProfilePanel(controller, studentId));
+        tabs.addTab("Courses", new StudentCoursePanel(controller, studentId));
+        tabs.addTab("Timetable", new TimetablePanel(controller, studentId));
+        tabs.addTab("Attendance", new AttendancePanel(controller, studentId));
+        tabs.addTab("Medical", new MedicalPanel(controller, studentId));
+        tabs.addTab("Notices", new StudentNoticePanel(controller, studentId));
+        tabs.addTab("Grades", new GradePanel(controller, studentId));
+        tabs.addTab("Results", new ResultPanel(controller, studentId));
+        tabs.addTab("SGPA", new SGPA_Panel(controller, studentId));
+        tabs.addTab("CGPA", new CGPA_Panel(controller, studentId));
 
         return tabs;
     }
