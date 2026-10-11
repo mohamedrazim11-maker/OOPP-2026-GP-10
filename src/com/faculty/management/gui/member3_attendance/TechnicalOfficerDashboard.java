@@ -79,10 +79,10 @@ public class TechnicalOfficerDashboard extends JFrame {
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
 
-        statsGrid.add(UITheme.createStatCard("📋", "Today's Sessions", "4 Active Labs", UITheme.WARNING_DARK));
-        statsGrid.add(UITheme.createStatCard("🏥", "Medical Requests", "3 Pending Review", UITheme.DANGER));
-        statsGrid.add(UITheme.createStatCard("📊", "Batch Attendance", "Overall 84.5%", UITheme.PRIMARY));
-        statsGrid.add(UITheme.createStatCard("🗓️", "Lab Venues", "5 Department Labs", UITheme.SUCCESS));
+        statsGrid.add(UITheme.createStatCard("", "Today's Sessions", "4 Active Labs", UITheme.WARNING_DARK));
+        statsGrid.add(UITheme.createStatCard("", "Medical Requests", "3 Pending Review", UITheme.DANGER));
+        statsGrid.add(UITheme.createStatCard("", "Batch Attendance", "Overall 84.5%", UITheme.PRIMARY));
+        statsGrid.add(UITheme.createStatCard("", "Lab Venues", "5 Department Labs", UITheme.SUCCESS));
 
         // 3. Section Title
         JLabel sectionTitle = new JLabel("Technical & Attendance Operations");
@@ -94,19 +94,19 @@ public class TechnicalOfficerDashboard extends JFrame {
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
         modulesGrid.setOpaque(false);
 
-        modulesGrid.add(createModuleCard("📋 Attendance Entry",
+        modulesGrid.add(createModuleCard("Attendance Entry",
                 "Record and update daily undergraduate attendance for theory lectures and laboratory practical sessions.",
                 UITheme.WARNING_DARK, "Log Attendance"));
 
-        modulesGrid.add(createModuleCard("🏥 Medical Certificates",
+        modulesGrid.add(createModuleCard("Medical Certificates",
                 "Log medical submissions, inspect doctor certs, and update verification/approval status for excused absences.",
                 UITheme.DANGER, "Review Medicals"));
 
-        modulesGrid.add(createModuleCard("📊 Batch Attendance Summary",
+        modulesGrid.add(createModuleCard("Batch Attendance Summary",
                 "View and compute aggregate semester attendance percentages by course, batch, and academic specialization.",
                 UITheme.PRIMARY, "View Summaries"));
 
-        modulesGrid.add(createModuleCard("🗓️ Department Timetables",
+        modulesGrid.add(createModuleCard("Department Timetables",
                 "View departmental lab time slots, equipment allocation, and lecture timetable schedules.",
                 UITheme.SUCCESS_DARK, "Check Schedules"));
 
@@ -135,7 +135,7 @@ public class TechnicalOfficerDashboard extends JFrame {
 
         JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         bottomRow.setOpaque(false);
-        UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText + " →", UITheme.ButtonStyle.OUTLINE, 8);
+        UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText, UITheme.ButtonStyle.OUTLINE, 4);
         actionBtn.setFont(UITheme.FONT_SMALL_BOLD);
         actionBtn.addActionListener(e -> {
             JOptionPane.showMessageDialog(this,
