@@ -79,10 +79,10 @@ public class LecturerDashboard extends JFrame {
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
 
-        statsGrid.add(UITheme.createStatCard("📖", "Assigned Courses", "3 Modules", UITheme.TEAL));
-        statsGrid.add(UITheme.createStatCard("📝", "Marks Submitted", "Continuous Assess.", UITheme.ACCENT_BLUE));
-        statsGrid.add(UITheme.createStatCard("🎯", "Eligibility Status", "40% CA Threshold", UITheme.PURPLE));
-        statsGrid.add(UITheme.createStatCard("📊", "Attendance Ratio", "80% Required", UITheme.WARNING_DARK));
+        statsGrid.add(UITheme.createStatCard("", "Assigned Courses", "3 Modules", UITheme.TEAL));
+        statsGrid.add(UITheme.createStatCard("", "Marks Submitted", "Continuous Assess.", UITheme.ACCENT_BLUE));
+        statsGrid.add(UITheme.createStatCard("", "Eligibility Status", "40% CA Threshold", UITheme.PURPLE));
+        statsGrid.add(UITheme.createStatCard("", "Attendance Ratio", "80% Required", UITheme.WARNING_DARK));
 
         // 3. Section Title
         JLabel sectionTitle = new JLabel("Academic & Teaching Operations");
@@ -94,19 +94,19 @@ public class LecturerDashboard extends JFrame {
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
         modulesGrid.setOpaque(false);
 
-        modulesGrid.add(createModuleCard("📄 Course Materials",
+        modulesGrid.add(createModuleCard("Course Materials",
                 "Upload lecture slides, tutorial sheets, assignment specifications, and syllabus guidelines for assigned courses.",
                 UITheme.TEAL, "Upload Materials"));
 
-        modulesGrid.add(createModuleCard("📝 Assessment & Exam Marks",
+        modulesGrid.add(createModuleCard("Assessment & Exam Marks",
                 "Enter, edit, and calculate Continuous Assessment (CA) components, quizzes, midterms, and End-Semester final marks.",
                 UITheme.ACCENT_BLUE, "Enter Marks"));
 
-        modulesGrid.add(createModuleCard("🎯 Student Eligibility & GPA",
+        modulesGrid.add(createModuleCard("Student Eligibility & GPA",
                 "Verify exam eligibility based on CA >= 40% and 80% attendance. Review automated UGC circular grade points and SGPA.",
                 UITheme.PURPLE, "Review Eligibility"));
 
-        modulesGrid.add(createModuleCard("📊 Attendance & Medical Records",
+        modulesGrid.add(createModuleCard("Attendance & Medical Records",
                 "Audit undergraduate student attendance percentages and inspect approved medical certificates for missed sessions.",
                 UITheme.WARNING_DARK, "View Attendance"));
 
@@ -135,7 +135,7 @@ public class LecturerDashboard extends JFrame {
 
         JPanel bottomRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         bottomRow.setOpaque(false);
-        UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText + " →", UITheme.ButtonStyle.OUTLINE, 8);
+        UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText, UITheme.ButtonStyle.OUTLINE, 4);
         actionBtn.setFont(UITheme.FONT_SMALL_BOLD);
         actionBtn.addActionListener(e -> {
             JOptionPane.showMessageDialog(this,
