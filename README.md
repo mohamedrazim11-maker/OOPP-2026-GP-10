@@ -25,12 +25,16 @@ The application requires a running MySQL server; it does not authenticate with o
 3. Configure the database login before launching the application. The default connection is `localhost:3306/faculty_management_db` with user `root` and an empty password. If your MySQL account uses a password or a different username, set `FMS_DB_USER` and `FMS_DB_PASSWORD`. You can also override the JDBC URL with `FMS_DB_URL`.
 4. Run the application from the project directory with `mvn compile exec:java -Dexec.mainClass=com.faculty.management.Main`.
 
-For PowerShell, set the values for the current terminal session before launching:
+For PowerShell, enter your password securely, then launch the application from the same terminal:
 
 ```powershell
 $env:FMS_DB_USER = "root"
-$env:FMS_DB_PASSWORD = "your-local-mysql-password"
+$securePassword = Read-Host "Enter your MySQL password" -AsSecureString
+$env:FMS_DB_PASSWORD = [System.Net.NetworkCredential]::new("", $securePassword).Password
+mvn compile exec:java -Dexec.mainClass=com.faculty.management.Main
 ```
+
+For project-local credentials, create `database/local.properties` with `fms.db.user=root` and `fms.db.password=your-mysql-password`. This file is ignored by Git. System properties and environment variables override values in the local file. If MySQL error `1045` appears, MySQL is reachable but rejected the configured username or password.
 
 The same settings can be supplied as JVM properties: `-Dfms.db.user=...`, `-Dfms.db.password=...`, and `-Dfms.db.url=...`. When MySQL cannot be reached, login now shows a database connection error instead of silently switching to mock users.
 

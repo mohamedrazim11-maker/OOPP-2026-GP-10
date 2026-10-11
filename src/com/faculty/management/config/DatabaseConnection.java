@@ -1,6 +1,10 @@
 package com.faculty.management.config;
 
 import com.faculty.management.exception.DatabaseException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,6 +16,7 @@ import java.util.Properties;
  */
 public class DatabaseConnection {
 
+    private static final Properties LOCAL_SETTINGS = loadLocalSettings();
     private static final String URL = setting("fms.db.url", "FMS_DB_URL",
             "jdbc:mysql://localhost:3306/faculty_management_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=5000");
     private static final String USERNAME = setting("fms.db.user", "FMS_DB_USER", "root");
@@ -28,7 +33,26 @@ public class DatabaseConnection {
         if (value == null || value.isBlank()) {
             value = System.getenv(environmentName);
         }
+        if (value == null || value.isBlank()) {
+            value = LOCAL_SETTINGS.getProperty(propertyName);
+        }
         return value == null || value.isBlank() ? defaultValue : value;
+    }
+
+    private static Properties loadLocalSettings() {
+        Path settingsFile = Path.of("database", "local.properties");
+        Properties settings = new Properties();
+        if (!Files.exists(settingsFile)) {
+            return settings;
+        }
+
+        try (InputStream input = Files.newInputStream(settingsFile)) {
+            settings.load(input);
+            return settings;
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(
+                    "Could not read " + settingsFile + ": " + e.getMessage());
+        }
     }
 
     /**
@@ -64,12 +88,21 @@ public class DatabaseConnection {
             connection = DriverManager.getConnection(URL, properties);
             return connection;
         } catch (SQLException e) {
-            throw new DatabaseException(
-                    "Cannot connect to the configured MySQL database. Start the MySQL service, create "
-                            + "faculty_management_db, and configure "
-                            + "FMS_DB_USER/FMS_DB_PASSWORD (or -Dfms.db.user/-Dfms.db.password). "
-                            + "Details: " + e.getMessage(),
-                    e);
+            String guidance = switch (e.getErrorCode()) {
+                case 1045 -> "MySQL rejected the configured username or password. Configure "
+                        + "FMS_DB_USER/FMS_DB_PASSWORD (or -Dfms.db.user/-Dfms.db.password) "
+                        + "with your MySQL credentials.";
+                case 1044 -> "The configured MySQL user does not have access to "
+                        + "faculty_management_db. Grant database privileges or configure a user "
+                        + "that has access.";
+                case 1049 -> "The faculty_management_db database does not exist. Run "
+                        + "database/01_create_database.sql, then the remaining setup scripts.";
+                default -> "Cannot connect to the configured MySQL database. Ensure the MySQL "
+                        + "service is running and configure FMS_DB_USER/FMS_DB_PASSWORD (or "
+                        + "-Dfms.db.user/-Dfms.db.password).";
+            };
+            throw new DatabaseException(guidance + " MySQL error " + e.getErrorCode() + ": "
+                    + e.getMessage(), e);
         }
     }
 
