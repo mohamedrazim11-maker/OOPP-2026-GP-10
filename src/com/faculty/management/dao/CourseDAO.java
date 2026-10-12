@@ -4,29 +4,11 @@ import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.model.Course;
 
-<<<<<<< HEAD
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-=======
 import java.sql.*;
->>>>>>> test
 import java.util.ArrayList;
 import java.util.List;
 
 /**
-<<<<<<< HEAD
- * Data Access Object for the shared Course reference table.
- * Read-only from Member 4's perspective — Course creation/editing belongs
- * to Member 1 (Admin & User Management).
- */
-public class CourseDAO {
-
-    public Course findById(int courseId) throws DatabaseException {
-        String sql = "SELECT * FROM courses WHERE course_id = ?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-=======
  * Data Access Object for Course entity operations using JDBC.
  * Demonstrates Database Handling, Abstraction, Polymorphism, and Exception Handling.
  */
@@ -101,6 +83,13 @@ public class CourseDAO {
     }
 
     /**
+     * Alias for getAllCourses() for cross-module compatibility.
+     */
+    public List<Course> findAll() throws DatabaseException {
+        return getAllCourses();
+    }
+
+    /**
      * Finds a course by unique course ID.
      *
      * @param courseId ID of the course
@@ -113,49 +102,10 @@ public class CourseDAO {
 
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
->>>>>>> test
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, courseId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-<<<<<<< HEAD
-                    return mapRow(rs);
-                }
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to fetch course: " + e.getMessage(), e);
-        }
-        return null;
-    }
-
-    public List<Course> findAll() throws DatabaseException {
-        String sql = "SELECT * FROM courses ORDER BY academic_year DESC, semester_number, course_code";
-        List<Course> courses = new ArrayList<>();
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                courses.add(mapRow(rs));
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to fetch courses: " + e.getMessage(), e);
-        }
-        return courses;
-    }
-
-    Course mapRow(ResultSet rs) throws SQLException {
-        return new Course(
-                rs.getInt("course_id"),
-                rs.getString("course_code"),
-                rs.getString("course_name"),
-                rs.getInt("credits"),
-                rs.getInt("theory_sessions"),
-                rs.getInt("practical_sessions"),
-                rs.getInt("semester_number"),
-                rs.getString("academic_year"),
-                rs.getString("department")
-        );
-=======
                     return mapResultSetToCourse(rs);
                 }
             }
@@ -344,6 +294,9 @@ public class CourseDAO {
         c.setSemester(rs.getString("semester"));
         c.setDescription(rs.getString("description"));
         return c;
->>>>>>> test
+    }
+
+    Course mapRow(ResultSet rs) throws SQLException {
+        return mapResultSetToCourse(rs);
     }
 }

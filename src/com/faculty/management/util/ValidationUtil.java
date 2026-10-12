@@ -1,18 +1,12 @@
 package com.faculty.management.util;
 
 import com.faculty.management.exception.ValidationException;
-<<<<<<< HEAD
-
-/**
- * Utility class providing validation methods for user inputs.
-=======
 import com.faculty.management.model.Course;
 import com.faculty.management.model.User;
 
 /**
  * Utility class providing validation methods for user inputs, user creation, and updates.
  * Demonstrates Encapsulation and Error/Exception Handling.
->>>>>>> test
  */
 public class ValidationUtil {
 
@@ -28,8 +22,6 @@ public class ValidationUtil {
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Validates that username, password, and role are valid and not empty.
      *
      * @param username The entered username
@@ -53,7 +45,6 @@ public class ValidationUtil {
     }
 
     /**
->>>>>>> test
      * Validates that username and password are not empty.
      *
      * @param username The entered username
@@ -73,18 +64,17 @@ public class ValidationUtil {
     }
 
     /**
-<<<<<<< HEAD
      * Validates a Sri Lankan contact number: 9-10 digits, optionally
      * prefixed with '+', e.g. "0771234567" or "+94771234567".
-     * Used by Member 4's profile self-update (contact number is one of
-     * the few fields an Undergraduate/Lecturer/Technical Officer may edit).
      */
     public static boolean isValidPhoneNumber(String phone) {
         if (isEmpty(phone)) {
             return false;
         }
         return phone.trim().matches("^\\+?[0-9]{9,12}$");
-=======
+    }
+
+    /**
      * Validates all required fields for creating a new user.
      *
      * @param user            User object containing user information
@@ -300,6 +290,5 @@ public class ValidationUtil {
         if (isEmpty(course.getDepartment())) {
             throw new ValidationException("Department selection is required.");
         }
->>>>>>> test
     }
 }
