@@ -12,4 +12,7 @@ public class AuthenticationException extends Exception {
         super(message, cause);
     }
 }
+<<<<<<< HEAD
 //
+=======
+>>>>>>> test
