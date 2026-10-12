@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 /**
  * Login GUI for Faculty Management System.
  * Pure Java Swing - No third-party frameworks.
+ * Connects directly to MySQL database using role-based authentication.
  */
 public class LoginFrame extends JFrame {
 
@@ -70,42 +71,37 @@ public class LoginFrame extends JFrame {
         facLabel.setForeground(new Color(148, 163, 184));
         facLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Demo Accounts Guide Box
-        JPanel demoBox = new JPanel();
-        demoBox.setLayout(new BoxLayout(demoBox, BoxLayout.Y_AXIS));
-        demoBox.setBackground(new Color(23, 37, 84));
-        demoBox.setBorder(BorderFactory.createCompoundBorder(
+        // System Info Box (Clean database connection info, no hardcoded fake accounts)
+        JPanel infoBox = new JPanel();
+        infoBox.setLayout(new BoxLayout(infoBox, BoxLayout.Y_AXIS));
+        infoBox.setBackground(new Color(23, 37, 84));
+        infoBox.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(59, 130, 246), 1),
-                new EmptyBorder(10, 10, 10, 10)
+                new EmptyBorder(12, 14, 12, 14)
         ));
-        demoBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        infoBox.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel demoTitle = new JLabel("Demo Accounts:");
-        demoTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        demoTitle.setForeground(new Color(147, 197, 253));
+        JLabel infoTitle = new JLabel("Database Authentication");
+        infoTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        infoTitle.setForeground(new Color(147, 197, 253));
 
-        JLabel demoAdmin = new JLabel("• Admin: admin / admin123");
-        demoAdmin.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        demoAdmin.setForeground(new Color(203, 213, 225));
+        JLabel infoDesc1 = new JLabel("• MySQL Database: Connected");
+        infoDesc1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        infoDesc1.setForeground(new Color(203, 213, 225));
 
-        JLabel demoLec = new JLabel("• Lecturer: lec_kamal / lec123");
-        demoLec.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        demoLec.setForeground(new Color(203, 213, 225));
+        JLabel infoDesc2 = new JLabel("• Role-Based Access Control");
+        infoDesc2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        infoDesc2.setForeground(new Color(203, 213, 225));
 
-        JLabel demoTO = new JLabel("• TO: to_bandara / to123");
-        demoTO.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        demoTO.setForeground(new Color(203, 213, 225));
+        JLabel infoDesc3 = new JLabel("• Enter your faculty credentials");
+        infoDesc3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        infoDesc3.setForeground(new Color(203, 213, 225));
 
-        JLabel demoStd = new JLabel("• Student: tg2021001 / std123");
-        demoStd.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        demoStd.setForeground(new Color(203, 213, 225));
-
-        demoBox.add(demoTitle);
-        demoBox.add(Box.createVerticalStrut(4));
-        demoBox.add(demoAdmin);
-        demoBox.add(demoLec);
-        demoBox.add(demoTO);
-        demoBox.add(demoStd);
+        infoBox.add(infoTitle);
+        infoBox.add(Box.createVerticalStrut(4));
+        infoBox.add(infoDesc1);
+        infoBox.add(infoDesc2);
+        infoBox.add(infoDesc3);
 
         brandPanel.add(Box.createVerticalGlue());
         brandPanel.add(logoIconLabel);
@@ -116,7 +112,7 @@ public class LoginFrame extends JFrame {
         brandPanel.add(uniLabel);
         brandPanel.add(facLabel);
         brandPanel.add(Box.createVerticalStrut(20));
-        brandPanel.add(demoBox);
+        brandPanel.add(infoBox);
         brandPanel.add(Box.createVerticalGlue());
 
         // 2. Right Login Form Panel

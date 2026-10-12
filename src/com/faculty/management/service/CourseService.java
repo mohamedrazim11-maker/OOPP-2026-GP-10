@@ -1,46 +1,45 @@
 package com.faculty.management.service;
 
-import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.dao.CourseDAO;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.Course;
 import com.faculty.management.util.ValidationUtil;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Service layer handling Course management business rules, validations, and database persistence.
- * Demonstrates Classes & Objects, Encapsulation, Abstraction, Polymorphism,
- * Error/Exception Handling, and Database Handling.
+ * Service layer handling Course management business rules, validations, and real MySQL database persistence.
+ * 
+ * Directly connected to MySQL via CourseDAO using pure JDBC.
+ * Completely free of mock or hardcoded data.
+ * 
+ * OOP Principles Applied:
+ * - Classes & Objects: Instantiates Course domain models and DAO components.
+ * - Inheritance: Object inheritance for entity models and exceptions.
+ * - Abstraction: Encapsulates SQL queries behind service methods.
+ * - Polymorphism: Overloaded methods for entity-based, code-based, and parameter-based operations.
+ * - Encapsulation: Private CourseDAO and validation logic protecting domain integrity.
+ * - Error/Exception Handling: Uses ValidationException and DatabaseException.
+ * - Database Handling: Parameterized SQL CRUD operations via CourseDAO.
  */
 public class CourseService {
 
     private final CourseDAO courseDAO;
-
-    // In-memory mock storage for fallback demo mode when database is offline
-    private static final List<Course> mockCourses = new ArrayList<>();
-    private static final AtomicInteger mockIdGenerator = new AtomicInteger(10);
-
-    static {
-        initMockData();
-    }
 
     public CourseService() {
         this.courseDAO = new CourseDAO();
     }
 
     public CourseService(CourseDAO courseDAO) {
-        this.courseDAO = courseDAO;
+        this.courseDAO = (courseDAO != null) ? courseDAO : new CourseDAO();
     }
 
     /**
-     * Adds a new course to the system after validation and uniqueness checks.
+     * Adds a new course to the database after validation and uniqueness checks.
      *
      * @param course Course entity to add
-     * @return Saved Course entity with assigned ID
+     * @return Saved Course entity with assigned database ID
      * @throws ValidationException If validation fails (empty fields, duplicate code)
      * @throws DatabaseException   If database error occurs
      */
@@ -51,26 +50,13 @@ public class CourseService {
         String trimmedCode = course.getCourseCode().trim().toUpperCase();
         course.setCourseCode(trimmedCode);
 
-        // 2. Database persistence when connected
-        if (DatabaseConnection.getInstance().isConnected()) {
-            if (courseDAO.existsByCode(trimmedCode)) {
-                throw new ValidationException("Course Code '" + trimmedCode + "' already exists in the system.");
-            }
-            Course saved = courseDAO.createCourse(course);
-            mockCourses.add(saved);
-            return saved;
+        // 2. Uniqueness check against MySQL database
+        if (courseDAO.existsByCode(trimmedCode)) {
+            throw new ValidationException("Course Code '" + trimmedCode + "' already exists in the database.");
         }
 
-        // 3. Offline Fallback Demo Mode
-        for (Course c : mockCourses) {
-            if (c.getCourseCode().equalsIgnoreCase(trimmedCode)) {
-                throw new ValidationException("Course Code '" + trimmedCode + "' already exists in the system.");
-            }
-        }
-
-        course.setCourseId(mockIdGenerator.incrementAndGet());
-        mockCourses.add(course);
-        return course;
+        // 3. Direct SQL INSERT via CourseDAO
+        return courseDAO.createCourse(course);
     }
 
     /**
@@ -84,58 +70,42 @@ public class CourseService {
     }
 
     /**
-     * Retrieves all courses in the system.
+     * Retrieves all courses in the system directly from MySQL database.
      *
-     * @return List of Course entities
-     * @throws DatabaseException If database error occurs
+     * @return List of Course entities from courses table
+     * @throws DatabaseException If database query fails
      */
     public List<Course> getAllCourses() throws DatabaseException {
-        if (DatabaseConnection.getInstance().isConnected()) {
-            return courseDAO.getAllCourses();
-        }
-        return new ArrayList<>(mockCourses);
+        return courseDAO.getAllCourses();
     }
 
     /**
-     * Retrieves a course by its unique ID.
+     * Retrieves a course by its unique primary key ID from MySQL.
      *
      * @param courseId ID of the course
      * @return Course entity or null if not found
-     * @throws DatabaseException If database error occurs
+     * @throws DatabaseException If database query fails
      */
     public Course getCourseById(int courseId) throws DatabaseException {
-        if (DatabaseConnection.getInstance().isConnected()) {
-            return courseDAO.findById(courseId);
+        if (courseId <= 0) {
+            return null;
         }
-        for (Course c : mockCourses) {
-            if (c.getCourseId() == courseId) {
-                return c;
-            }
-        }
-        return null;
+        return courseDAO.findById(courseId);
     }
 
     /**
-     * Retrieves a course by its course code.
+     * Retrieves a course by its unique course code from MySQL.
      *
      * @param courseCode Course code (e.g. "ICT2132")
      * @return Course entity or null
-     * @throws DatabaseException If database error occurs
+     * @throws DatabaseException If database query fails
      */
     public Course getCourseByCode(String courseCode) throws DatabaseException {
         if (courseCode == null || courseCode.trim().isEmpty()) {
             return null;
         }
         String trimmed = courseCode.trim().toUpperCase();
-        if (DatabaseConnection.getInstance().isConnected()) {
-            return courseDAO.findByCode(trimmed);
-        }
-        for (Course c : mockCourses) {
-            if (c.getCourseCode().equalsIgnoreCase(trimmed)) {
-                return c;
-            }
-        }
-        return null;
+        return courseDAO.findByCode(trimmed);
     }
 
     /**
@@ -154,12 +124,12 @@ public class CourseService {
     }
 
     /**
-     * Updates an existing course record with validation and uniqueness checks.
+     * Updates an existing course record in MySQL with validation and uniqueness checks.
      *
      * @param course Course entity with updated values
-     * @return true if updated successfully
+     * @return true if updated successfully in MySQL
      * @throws ValidationException If validation fails
-     * @throws DatabaseException   If database error occurs
+     * @throws DatabaseException   If database update fails
      */
     public boolean updateCourse(Course course) throws ValidationException, DatabaseException {
         if (course == null || course.getCourseId() <= 0) {
@@ -170,24 +140,13 @@ public class CourseService {
         String trimmedCode = course.getCourseCode().trim().toUpperCase();
         course.setCourseCode(trimmedCode);
 
-        // Database persistence when connected
-        if (DatabaseConnection.getInstance().isConnected()) {
-            if (courseDAO.existsByCodeExcludingCourse(trimmedCode, course.getCourseId())) {
-                throw new ValidationException("Course Code '" + trimmedCode + "' is already in use by another course.");
-            }
-            boolean updated = courseDAO.updateCourse(course);
-            updateMockCourse(course);
-            return updated;
+        // Check uniqueness excluding current course ID
+        if (courseDAO.existsByCodeExcludingCourse(trimmedCode, course.getCourseId())) {
+            throw new ValidationException("Course Code '" + trimmedCode + "' is already in use by another course in the database.");
         }
 
-        // Offline Fallback Demo Mode
-        for (Course c : mockCourses) {
-            if (c.getCourseId() != course.getCourseId() && c.getCourseCode().equalsIgnoreCase(trimmedCode)) {
-                throw new ValidationException("Course Code '" + trimmedCode + "' is already in use by another course.");
-            }
-        }
-
-        return updateMockCourse(course);
+        // Direct SQL UPDATE via CourseDAO
+        return courseDAO.updateCourse(course);
     }
 
     /**
@@ -201,12 +160,12 @@ public class CourseService {
     }
 
     /**
-     * Deletes a course by its ID.
+     * Deletes a course by its ID directly from MySQL database.
      *
      * @param courseId ID of the course to delete
      * @return true if deleted
      * @throws ValidationException If validation fails
-     * @throws DatabaseException   If database error occurs
+     * @throws DatabaseException   If database deletion fails
      */
     public boolean deleteCourse(int courseId) throws ValidationException, DatabaseException {
         if (courseId <= 0) {
@@ -215,16 +174,10 @@ public class CourseService {
 
         Course course = getCourseById(courseId);
         if (course == null) {
-            throw new ValidationException("Course with ID " + courseId + " does not exist.");
+            throw new ValidationException("Course with ID " + courseId + " does not exist in the database.");
         }
 
-        if (DatabaseConnection.getInstance().isConnected()) {
-            boolean deleted = courseDAO.deleteCourse(courseId);
-            mockCourses.removeIf(c -> c.getCourseId() == courseId);
-            return deleted;
-        }
-
-        return mockCourses.removeIf(c -> c.getCourseId() == courseId);
+        return courseDAO.deleteCourse(courseId);
     }
 
     /**
@@ -241,7 +194,7 @@ public class CourseService {
         }
         Course course = getCourseByCode(courseCode.trim());
         if (course == null) {
-            throw new ValidationException("Course with code '" + courseCode + "' does not exist.");
+            throw new ValidationException("Course with code '" + courseCode + "' does not exist in the database.");
         }
         return deleteCourse(course.getCourseId());
     }
@@ -259,23 +212,5 @@ public class CourseService {
             throw new ValidationException("Course entity cannot be null.");
         }
         return deleteCourse(course.getCourseId());
-    }
-
-    private boolean updateMockCourse(Course course) {
-        for (int i = 0; i < mockCourses.size(); i++) {
-            if (mockCourses.get(i).getCourseId() == course.getCourseId()) {
-                mockCourses.set(i, course);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void initMockData() {
-        mockCourses.add(new Course(1, "ICT2112", "Data Structures and Algorithms", 2, 30, 30, "Department of Information & Communication Technology", "Semester 2", "Core data structures and algorithmic complexity"));
-        mockCourses.add(new Course(2, "ICT2123", "Database Management Systems", 3, 30, 60, "Department of Information & Communication Technology", "Semester 2", "Relational database concepts, normalization, and SQL"));
-        mockCourses.add(new Course(3, "ICT2132", "Object Oriented Programming Practicum", 2, 0, 60, "Department of Information & Communication Technology", "Semester 2", "Hands-on object-oriented programming with Java Swing & MySQL"));
-        mockCourses.add(new Course(4, "BST2113", "Bioprocess Technology", 3, 30, 60, "Department of Biosystems Technology", "Semester 2", "Bioprocess fundamentals and industrial biotechnology applications"));
-        mockCourses.add(new Course(5, "ENG2113", "Engineering Mechanics", 3, 30, 60, "Department of Engineering Technology", "Semester 2", "Applied statics, dynamics, and engineering mechanics principles"));
     }
 }
