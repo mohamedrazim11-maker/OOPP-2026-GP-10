@@ -181,7 +181,16 @@ Polymorphism
 Encapsulation 
 Error and exception handling 
 Database Handlin . and commit it to github
+[PROMPT 18] - Remove Fake/Hardcoded Data & Connect Directly to Real MySQL Database
+--------------------------------------------------------------------------------
+remove the fake data/hardcoded data from the system connect with real data base using sql and use folliwing also Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
 ================================================================================
+
 
 
 
