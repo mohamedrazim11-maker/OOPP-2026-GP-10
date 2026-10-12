@@ -7,10 +7,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-/**
- * Technical Officer Dashboard GUI.
- * Target redirect frame for Technical Officer role.
- */
+
 public class TechnicalOfficerDashboard extends JFrame {
 
     private final User currentUser;
@@ -30,7 +27,7 @@ public class TechnicalOfficerDashboard extends JFrame {
 
         // Header
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(124, 45, 18)); // Rust Amber / Bronze
+        headerPanel.setBackground(new Color(124, 45, 18)); 
         headerPanel.setBorder(new EmptyBorder(15, 25, 15, 25));
 
         JLabel titleLabel = new JLabel("Faculty Management System — Technical Operations");
@@ -100,10 +97,12 @@ public class TechnicalOfficerDashboard extends JFrame {
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 20, 20));
         modulesGrid.setOpaque(false);
 
-        modulesGrid.add(createModuleCard("📋 Attendance Entry", "Record and update undergraduate attendance for theory and practical sessions.", new Color(217, 119, 6)));
-        modulesGrid.add(createModuleCard("🏥 Medical Certificates", "Log medical certificates and manage verification/approval status.", new Color(225, 29, 72)));
-        modulesGrid.add(createModuleCard("📊 Batch Attendance Summary", "View semester attendance percentages by course and batch.", new Color(79, 70, 229)));
-        modulesGrid.add(createModuleCard("🗓️ Department Timetables", "View departmental lab and lecture timetable schedules.", new Color(5, 150, 105)));
+        modulesGrid.add(createModuleCard("📋 Attendance Entry", "Record and update undergraduate attendance for theory and practical sessions.", new Color(217, 119, 6), null));
+        modulesGrid.add(createModuleCard("🏥 Medical Certificates", "Log medical certificates and manage verification/approval status.", new Color(225, 29, 72), () -> {
+            new MedicalManagementDialog(this).setVisible(true);
+        }));
+        modulesGrid.add(createModuleCard("📊 Batch Attendance Summary", "View semester attendance percentages by course and batch.", new Color(79, 70, 229), null));
+        modulesGrid.add(createModuleCard("🗓️ Department Timetables", "View departmental lab and lecture timetable schedules.", new Color(5, 150, 105), null));
 
         welcomeCard.add(welcomeLabel);
         welcomeCard.add(roleDescLabel);
@@ -115,13 +114,28 @@ public class TechnicalOfficerDashboard extends JFrame {
         add(centerPanel, BorderLayout.CENTER);
     }
 
-    private JPanel createModuleCard(String title, String desc, Color accentColor) {
+    private JPanel createModuleCard(String title, String desc, Color accentColor, Runnable onClick) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(new Color(241, 245, 249));
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor),
                 new EmptyBorder(15, 15, 15, 15)
         ));
+        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (onClick != null) onClick.run();
+            }
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                card.setBackground(new Color(226, 232, 240));
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                card.setBackground(new Color(241, 245, 249));
+            }
+        });
 
         JLabel titleLbl = new JLabel(title);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 15));
