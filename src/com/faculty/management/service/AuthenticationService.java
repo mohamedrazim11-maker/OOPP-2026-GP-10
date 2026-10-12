@@ -1,10 +1,19 @@
 package com.faculty.management.service;
 
+<<<<<<< HEAD
+=======
 import com.faculty.management.config.DatabaseConnection;
+>>>>>>> test
 import com.faculty.management.dao.UserDAO;
 import com.faculty.management.exception.AuthenticationException;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+<<<<<<< HEAD
+import com.faculty.management.model.User;
+import com.faculty.management.util.PasswordUtil;
+import com.faculty.management.util.ValidationUtil;
+
+=======
 import com.faculty.management.model.*;
 import com.faculty.management.util.PasswordUtil;
 import com.faculty.management.util.ValidationUtil;
@@ -12,12 +21,48 @@ import com.faculty.management.util.ValidationUtil;
 import java.util.HashMap;
 import java.util.Map;
 
+>>>>>>> test
 /**
  * Service handling authentication logic, credential validation, and role identification.
  */
 public class AuthenticationService {
 
     private final UserDAO userDAO;
+<<<<<<< HEAD
+
+    public AuthenticationService() {
+        this.userDAO = new UserDAO();
+    }
+
+    /**
+     * Authenticates a user with given credentials.
+     *
+     * @param username User-entered username
+     * @param password User-entered password
+     * @return Authenticated User object (Admin, Lecturer, TechnicalOfficer, or Undergraduate)
+     * @throws ValidationException If inputs are invalid or empty
+     * @throws AuthenticationException If username/password do not match or account is inactive
+     * @throws DatabaseException If database communication fails
+     */
+    public User authenticate(String username, String password) 
+            throws ValidationException, AuthenticationException, DatabaseException {
+
+        // 1. Validate inputs
+        ValidationUtil.validateLoginInput(username, password);
+
+        String trimmedUsername = username.trim();
+
+        User user = userDAO.findByUsername(trimmedUsername);
+        if (user == null || !PasswordUtil.verifyPassword(password, user.getPassword())) {
+            throw new AuthenticationException("Invalid username or password.");
+        }
+
+        if (!user.isActive()) {
+            throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
+        }
+
+        return user;
+=======
     private final Map<String, User> mockUsers;
 
     public AuthenticationService() {
@@ -144,5 +189,6 @@ public class AuthenticationService {
 
         mockUsers.put("tg2021001", new Undergraduate(11, "tg2021001", "std123", "tg2021001@fot.ruh.ac.lk", 
                 "Kasun", "Kalhara", stdRole, "0701122334", null, "ACTIVE"));
+>>>>>>> test
     }
 }

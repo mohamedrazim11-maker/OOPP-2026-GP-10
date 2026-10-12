@@ -3,6 +3,7 @@
 
 # Log files
 *.log
+/database/local.properties
 
 # Package Files
 *.jar
