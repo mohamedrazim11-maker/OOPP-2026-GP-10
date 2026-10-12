@@ -1,15 +1,42 @@
 # Faculty Management System (FMS)
 
+**Repository:** https://github.com/mohamedrazim11-maker/OOPP-2026-GP-10.git  
+**Active Branch:** Rashkan
+
 **University of Ruhuna — Faculty of Technology**  
 **Bachelor of Information and Communication Technology (BICT) Degree**  
 **Course Unit:** ICT2132 – Object Oriented Programming Practicum  
-**Academic Level:** Level II (Semester I) – Mini Project  
+**Academic Level:** Level II (Semester I) – Mini Project
 
 ---
 
 ## 📌 Project Overview
 
 The **Faculty Management System (FMS)** is a desktop-based application developed using **Java** and **MySQL** tailored for the Faculty of Technology, University of Ruhuna. The system streamlines academic administration and operations by managing user profiles, course modules, attendance tracking, medical submissions, continuous assessment (CA) and final examination marks, eligibility calculations, grading (under UGC guidelines), timetables, and notice boards.
+
+---
+
+## 🗄️ MySQL Setup
+
+The application requires a running MySQL server; it does not authenticate with offline demo accounts.
+
+1. Start the MySQL service and create the schema by running `database/01_create_database.sql`.
+2. Run the remaining scripts in order: `02_create_tables.sql`, `03_insert_roles.sql`, `04_insert_users.sql`, `M4_01_create_tables.sql`, then `M4_02_seed_data.sql`.
+3. Configure the database login before launching the application. The default connection is `localhost:3306/faculty_management_db` with user `root` and an empty password. If your MySQL account uses a password or a different username, set `FMS_DB_USER` and `FMS_DB_PASSWORD`. You can also override the JDBC URL with `FMS_DB_URL`.
+4. Run the application from the project directory with `mvn compile exec:java -Dexec.mainClass=com.faculty.management.Main`.
+
+For PowerShell, enter your password securely, then launch the application from the same terminal:
+
+```powershell
+$env:FMS_DB_USER = "root"
+$securePassword = Read-Host "Enter your MySQL password" -AsSecureString
+$env:FMS_DB_PASSWORD = [System.Net.NetworkCredential]::new("", $securePassword).Password
+mvn compile exec:java -Dexec.mainClass=com.faculty.management.Main
+```
+
+For project-local credentials, create `database/local.properties` with `fms.db.user=root` and `fms.db.password=your-mysql-password`. This file is ignored by Git. System properties and environment variables override values in the local file. If MySQL error `1045` appears, MySQL is reachable but rejected the configured username or password.
+
+The same settings can be supplied as JVM properties: `-Dfms.db.user=...`, `-Dfms.db.password=...`, and `-Dfms.db.url=...`. When MySQL cannot be reached, login now shows a database connection error instead of silently switching to mock users.
 
 ---
 
@@ -35,12 +62,14 @@ graph TD
 ```
 
 ### 1. 🛡️ Administrator
+
 - **User Management**: Create and maintain all system user profiles (Admin, Lecturer, Technical Officer, Undergraduate).
 - **Course Management**: Add, update, and manage course modules and credit allocations.
 - **Timetable Management**: Create and maintain departmental lecture and practical timetables.
 - **Notice Management**: Publish, update, and manage official faculty notices.
 
 ### 2. 👨‍🏫 Lecturer
+
 - **Profile Management**: Update personal profile details (excluding username/password credentials).
 - **Course Materials**: Upload, manage, and modify course resources and lecture materials.
 - **Marks & Assessments**: Upload marks for all types of examinations and Continuous Assessments (CA) out of 100.
@@ -52,12 +81,14 @@ graph TD
 - **Notices**: View faculty notices and announcements.
 
 ### 3. 🛠️ Technical Officer (TO)
+
 - **Profile Management**: Update profile details (excluding username/password credentials).
 - **Attendance Management**: Record and maintain undergraduate daily attendance for lectures and practical sessions.
 - **Medical Records**: Add and maintain medical certificates submitted by students (including approval status).
 - **Timetables & Notices**: View department-specific timetables and general faculty notices.
 
 ### 4. 🎓 Undergraduate (Student)
+
 - **Profile Management**: Update contact details (phone, email, address) and upload/update profile picture.
 - **Academic Progress**:
   - View course modules, syllabus, and uploaded learning materials.
@@ -71,7 +102,9 @@ graph TD
 ## ⚙️ Core System Specifications & Business Rules
 
 ### 1. Database Seeding & Mock Data Requirements
+
 The system database must be pre-populated with realistic test records representing:
+
 - **01** System Administrator
 - **At least 05** Lecturers
 - **At least 04** Technical Officers
@@ -80,6 +113,7 @@ The system database must be pre-populated with realistic test records representi
 ---
 
 ### 2. Attendance & Medical Handling
+
 - **Semester Structure**: Assumes **15 sessions** per semester for both Theory and Practical components.
 - **Session Credit Mapping**:
   - $1 \text{ Theory Credit (1T)} = 2 \text{ hours/session}$
@@ -101,6 +135,7 @@ $$\text{Attendance \%} = \left( \frac{\text{Attended Sessions} + \text{Approved 
 ---
 
 ### 3. Continuous Assessment (CA), Marks & Exam Eligibility
+
 - **Marking Standard**: All assessment marks (quizzes, assignments, midterms, end-semester exams) are recorded out of **100**.
 - **CA Eligibility Criteria**: A student must score **$\ge 40\%$** in the continuous assessment component.
 - **Final Exam Eligibility Criteria**:
@@ -113,6 +148,7 @@ $$\text{Attendance \%} = \left( \frac{\text{Attended Sessions} + \text{Approved 
 ---
 
 ### 4. Grading System & GPA Calculation
+
 - **Grading Scheme**: Fully compliant with **UGC Commission Circular No. 12-2024**.
 - Calculates:
   - **Subject Grades & Grade Point Values (GPV)**
@@ -127,16 +163,16 @@ $$\text{SGPA / CGPA} = \frac{\sum (\text{Course Credit} \times \text{GPV})}{\sum
 
 This application is built applying strict **Object-Oriented Programming (OOP)** paradigms and clean code architecture:
 
-| Concept | Implementation Strategy |
-| :--- | :--- |
-| **Classes & Objects** | Modeling real-world entities (`User`, `Student`, `Lecturer`, `Course`, `Attendance`, `Medical`, `MarkSheet`). |
-| **Inheritance** | Base `User` class extended by `Admin`, `Lecturer`, `TechnicalOfficer`, and `Student`. |
-| **Abstraction** | Abstract service classes and interfaces for data access (DAO pattern) and business logic. |
-| **Polymorphism** | Dynamic method overriding for role-based permissions and overloaded utility methods. |
-| **Encapsulation** | Private attributes exposed via standard getters, setters, and internal state validation. |
-| **Exception Handling** | Custom and built-in exception handling for SQL operations, validation, and file I/O. |
-| **Database Handling** | Secure **JDBC** connectivity, PreparedStatements, and connection pooling for **MySQL**. |
-| **GUI Framework** | Modern graphical user interface (Java Swing / JavaFX) with structured navigation and data tables. |
+| Concept                | Implementation Strategy                                                                                       |
+| :--------------------- | :------------------------------------------------------------------------------------------------------------ |
+| **Classes & Objects**  | Modeling real-world entities (`User`, `Student`, `Lecturer`, `Course`, `Attendance`, `Medical`, `MarkSheet`). |
+| **Inheritance**        | Base `User` class extended by `Admin`, `Lecturer`, `TechnicalOfficer`, and `Student`.                         |
+| **Abstraction**        | Abstract service classes and interfaces for data access (DAO pattern) and business logic.                     |
+| **Polymorphism**       | Dynamic method overriding for role-based permissions and overloaded utility methods.                          |
+| **Encapsulation**      | Private attributes exposed via standard getters, setters, and internal state validation.                      |
+| **Exception Handling** | Custom and built-in exception handling for SQL operations, validation, and file I/O.                          |
+| **Database Handling**  | Secure **JDBC** connectivity, PreparedStatements, and connection pooling for **MySQL**.                       |
+| **GUI Framework**      | Modern graphical user interface (Java Swing / JavaFX) with structured navigation and data tables.             |
 
 ---
 
@@ -158,11 +194,11 @@ FacultyManagementSystem/
 
 ## 📅 Project Milestones & Submission Timeline
 
-| # | Deliverable | Due Date | Format / Platform |
-| :---: | :--- | :--- | :--- |
-| **01** | **Software Requirement Specification (SRS)** | **13th September 2026** | PDF upload to LMS (Group) |
-| **02** | **UML Class Diagram & Database ER Diagram** | **20th September 2026** | PDF upload to LMS (Group) |
-| **03** | **Mini Project Completion & Project Report** | **01st November 2026** (11:59 PM) | LMS Report + Git Repository |
-| **04** | **Project Presentation & Evaluation** | **05th November 2026** | 15 min presentation + 10 min Q&A |
+|   #    | Deliverable                                  | Due Date                          | Format / Platform                |
+| :----: | :------------------------------------------- | :-------------------------------- | :------------------------------- |
+| **01** | **Software Requirement Specification (SRS)** | **13th September 2026**           | PDF upload to LMS (Group)        |
+| **02** | **UML Class Diagram & Database ER Diagram**  | **20th September 2026**           | PDF upload to LMS (Group)        |
+| **03** | **Mini Project Completion & Project Report** | **01st November 2026** (11:59 PM) | LMS Report + Git Repository      |
+| **04** | **Project Presentation & Evaluation**        | **05th November 2026**            | 15 min presentation + 10 min Q&A |
 
 > **Note**: Each group member must submit an individual contribution sheet (1 page per member) and demonstrate individual coding mastery in OOP, Exception Handling, Database Handling, and GUI design during the evaluation.

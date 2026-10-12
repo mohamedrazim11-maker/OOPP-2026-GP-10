@@ -4,6 +4,15 @@ import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.model.*;
 
+<<<<<<< HEAD
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+/**
+ * Data Access Object for User operations using pure JDBC.
+=======
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +20,13 @@ import java.util.List;
 /**
  * Data Access Object for User operations using pure JDBC.
  * Demonstrates Database Handling, Abstraction, Polymorphism, and Exception Handling.
+>>>>>>> test
  */
 public class UserDAO {
 
     /**
+<<<<<<< HEAD
+=======
      * Inserts a new user record into the users table.
      *
      * @param user The User subclass object (Admin, Lecturer, TechnicalOfficer, Undergraduate)
@@ -57,6 +69,7 @@ public class UserDAO {
     }
 
     /**
+>>>>>>> test
      * Finds a user by username, joining the role information.
      *
      * @param username The username to look up
@@ -88,6 +101,8 @@ public class UserDAO {
     }
 
     /**
+<<<<<<< HEAD
+=======
      * Finds a user by unique user ID.
      *
      * @param userId The ID of the user
@@ -471,6 +486,7 @@ public class UserDAO {
     }
 
     /**
+>>>>>>> test
      * Helper method to map a database ResultSet row to the appropriate User subclass (Polymorphism).
      */
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
@@ -496,8 +512,15 @@ public class UserDAO {
             user = new Lecturer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         } else if (Role.TECHNICAL_OFFICER.equalsIgnoreCase(roleName)) {
             user = new TechnicalOfficer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+<<<<<<< HEAD
+        } else if (Role.UNDERGRADUATE.equalsIgnoreCase(roleName) || "STUDENT".equalsIgnoreCase(roleName)) {
+            user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+        } else {
+            // Default to Undergraduate if unknown
+=======
         } else {
             // Default to Undergraduate / Student
+>>>>>>> test
             user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         }
 
