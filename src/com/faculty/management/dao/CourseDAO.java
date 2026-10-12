@@ -244,6 +244,24 @@ public class CourseDAO {
     }
 
     /**
+     * Polymorphic overload to delete a course using its unique Course Code.
+     *
+     * @param courseCode Course code (e.g. "ICT2132")
+     * @return true if deleted
+     * @throws DatabaseException If database operation fails
+     */
+    public boolean deleteCourse(String courseCode) throws DatabaseException {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new DatabaseException("Course code cannot be empty for deletion.");
+        }
+        Course course = findByCode(courseCode.trim());
+        if (course == null) {
+            throw new DatabaseException("No course found with code '" + courseCode + "' to delete.");
+        }
+        return deleteCourse(course.getCourseId());
+    }
+
+    /**
      * Polymorphic overload to delete a course using a Course entity.
      *
      * @param course Course entity to delete

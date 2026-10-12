@@ -3,6 +3,7 @@ package com.faculty.management.gui.member1_admin;
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
+import com.faculty.management.gui.common.CustomButton;
 import com.faculty.management.gui.common.PrimaryButton;
 import com.faculty.management.gui.common.SecondaryButton;
 import com.faculty.management.model.Course;
@@ -14,13 +15,13 @@ import java.util.List;
 
 /**
  * Course Form Dialog for Administrator (Member 1).
- * Supports both "Add Course" and "Update Course" operations for Faculty Management System.
+ * Supports "Add Course", "Update Course", and "Delete Course" operations for Faculty Management System.
  * 
  * Demonstrates Core OOP Principles:
  * - Classes and Objects: Dialog, Swing components, and Course model instantiation.
  * - Inheritance: Extends JDialog to inherit standard modal window behaviors.
  * - Abstraction: Interacts with business logic through AdminController and CourseService layers.
- * - Polymorphism: Overloaded constructors, mode-based polymorphic form behavior (ADD vs UPDATE).
+ * - Polymorphism: Overloaded constructors, mode-based polymorphic form behavior (ADD, UPDATE, DELETE).
  * - Encapsulation: Private UI controls, state variables, and data fields with public accessors.
  * - Error and Exception Handling: Catches ValidationException and DatabaseException with descriptive feedback.
  * - Database Handling: Connects to MySQL database through backend layers with offline fallback support.
@@ -32,7 +33,8 @@ public class CourseFormDialog extends JDialog {
      */
     public enum FormMode {
         ADD,
-        UPDATE
+        UPDATE,
+        DELETE
     }
 
     // Encapsulated Fields
@@ -64,17 +66,17 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Constructor specifying the operational mode (ADD or UPDATE).
+     * Constructor specifying the operational mode (ADD, UPDATE, or DELETE).
      */
     public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode) {
         this(parent, adminController, mode, null);
     }
 
     /**
-     * Overloaded constructor for Add or Update with an initial course entity.
+     * Overloaded constructor for Add, Update, or Delete with an initial course entity.
      */
     public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode, Course initialCourse) {
-        super(parent, (mode == FormMode.UPDATE) ? "Update Course — Faculty Management System" : "Add New Course — Faculty Management System", true);
+        super(parent, getDialogTitle(mode), true);
         this.mode = (mode != null) ? mode : FormMode.ADD;
         this.adminController = (adminController != null) ? adminController : new AdminController();
         this.course = initialCourse;
@@ -84,9 +86,18 @@ public class CourseFormDialog extends JDialog {
 
         initComponents();
 
-        if (this.mode == FormMode.UPDATE) {
+        if (this.mode == FormMode.UPDATE || this.mode == FormMode.DELETE) {
             loadExistingCourses(initialCourse);
         }
+    }
+
+    private static String getDialogTitle(FormMode mode) {
+        if (mode == FormMode.DELETE) {
+            return "Delete Course — Faculty Management System";
+        } else if (mode == FormMode.UPDATE) {
+            return "Update Course — Faculty Management System";
+        }
+        return "Add New Course — Faculty Management System";
     }
 
     /**
@@ -101,18 +112,37 @@ public class CourseFormDialog extends JDialog {
 
         // 1. Header Banner
         JPanel headerPanel = new JPanel(new BorderLayout());
-        Color headerBg = (mode == FormMode.UPDATE) ? new Color(15, 118, 110) : new Color(30, 58, 138); // Teal for Update, Navy for Add
+        Color headerBg;
+        if (mode == FormMode.DELETE) {
+            headerBg = new Color(220, 38, 38); // Red for Delete
+        } else if (mode == FormMode.UPDATE) {
+            headerBg = new Color(15, 118, 110); // Teal for Update
+        } else {
+            headerBg = new Color(30, 58, 138); // Navy for Add
+        }
         headerPanel.setBackground(headerBg);
         headerPanel.setBorder(new EmptyBorder(18, 24, 18, 24));
 
-        String titleText = (mode == FormMode.UPDATE) ? "Update Academic Course" : "Add New Course";
+        String titleText;
+        if (mode == FormMode.DELETE) {
+            titleText = "Delete Academic Course";
+        } else if (mode == FormMode.UPDATE) {
+            titleText = "Update Academic Course";
+        } else {
+            titleText = "Add New Course";
+        }
         JLabel titleLabel = new JLabel(titleText);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titleLabel.setForeground(Color.WHITE);
 
-        String subTitleText = (mode == FormMode.UPDATE)
-                ? "Select an existing course module and modify its academic details in MySQL database"
-                : "Enter academic course details to register a new module in the curriculum";
+        String subTitleText;
+        if (mode == FormMode.DELETE) {
+            subTitleText = "Select an existing course module to permanently delete from MySQL database";
+        } else if (mode == FormMode.UPDATE) {
+            subTitleText = "Select an existing course module and modify its academic details in MySQL database";
+        } else {
+            subTitleText = "Enter academic course details to register a new module in the curriculum";
+        }
         JLabel subTitleLabel = new JLabel(subTitleText);
         subTitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         subTitleLabel.setForeground(new Color(226, 232, 240));
@@ -130,12 +160,13 @@ public class CourseFormDialog extends JDialog {
         gbc.insets = new Insets(6, 4, 6, 4);
         int gridY = 0;
 
-        // Course Selector (Strictly displayed in UPDATE mode)
-        if (mode == FormMode.UPDATE) {
+        // Course Selector (Displayed in UPDATE and DELETE modes)
+        if (mode == FormMode.UPDATE || mode == FormMode.DELETE) {
             gbc.gridx = 0;
             gbc.gridy = gridY;
             gbc.weightx = 0.35;
-            formPanel.add(createFieldLabel("Select Course *"), gbc);
+            String selectorLabel = (mode == FormMode.DELETE) ? "Select Course to Delete *" : "Select Course *";
+            formPanel.add(createFieldLabel(selectorLabel), gbc);
 
             gbc.gridx = 1;
             gbc.weightx = 0.65;
@@ -255,6 +286,21 @@ public class CourseFormDialog extends JDialog {
         JScrollPane descScroll = new JScrollPane(descriptionArea);
         formPanel.add(descScroll, gbc);
 
+        // Set fields read-only in DELETE mode
+        if (mode == FormMode.DELETE) {
+            courseCodeField.setEditable(false);
+            courseCodeField.setBackground(new Color(241, 245, 249));
+            courseNameField.setEditable(false);
+            courseNameField.setBackground(new Color(241, 245, 249));
+            creditSpinner.setEnabled(false);
+            theoryHoursSpinner.setEnabled(false);
+            practicalHoursSpinner.setEnabled(false);
+            departmentComboBox.setEnabled(false);
+            semesterComboBox.setEnabled(false);
+            descriptionArea.setEditable(false);
+            descriptionArea.setBackground(new Color(241, 245, 249));
+        }
+
         // Error message banner
         gridY++;
         gbc.gridx = 0;
@@ -277,9 +323,25 @@ public class CourseFormDialog extends JDialog {
         cancelButton.setPreferredSize(new Dimension(100, 38));
         cancelButton.addActionListener(e -> dispose());
 
-        String saveText = (mode == FormMode.UPDATE) ? "Update Course" : "Add Course";
-        saveButton = new PrimaryButton(saveText);
-        saveButton.setPreferredSize(new Dimension(135, 38));
+        if (mode == FormMode.DELETE) {
+            saveButton = new CustomButton(
+                    "🗑️  Delete Course",
+                    new Color(220, 38, 38), // Red 600
+                    new Color(185, 28, 28), // Hover Red 700
+                    new Color(153, 27, 27), // Pressed Red 800
+                    Color.WHITE,
+                    null,
+                    8
+            );
+            saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            saveButton.setPreferredSize(new Dimension(150, 38));
+        } else if (mode == FormMode.UPDATE) {
+            saveButton = new PrimaryButton("Update Course");
+            saveButton.setPreferredSize(new Dimension(135, 38));
+        } else {
+            saveButton = new PrimaryButton("Add Course");
+            saveButton.setPreferredSize(new Dimension(135, 38));
+        }
         saveButton.addActionListener(e -> handleFormSubmission());
 
         buttonPanel.add(cancelButton);
@@ -298,7 +360,7 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Loads existing courses from backend into the selector dropdown for UPDATE mode.
+     * Loads existing courses from backend into the selector dropdown for UPDATE or DELETE mode.
      */
     private void loadExistingCourses(Course initialSelection) {
         try {
@@ -306,7 +368,10 @@ public class CourseFormDialog extends JDialog {
             courseSelectorComboBox.removeAllItems();
 
             if (courses == null || courses.isEmpty()) {
-                errorLabel.setText("No courses found in database to update.");
+                String emptyMsg = (mode == FormMode.DELETE)
+                        ? "No courses found in database to delete."
+                        : "No courses found in database to update.";
+                errorLabel.setText(emptyMsg);
                 saveButton.setEnabled(false);
                 return;
             }
@@ -338,7 +403,7 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Handles course selection changes in UPDATE mode.
+     * Handles course selection changes in UPDATE and DELETE modes.
      */
     private void handleCourseSelectionChanged() {
         Course selected = (Course) courseSelectorComboBox.getSelectedItem();
@@ -376,13 +441,52 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Handles course submission (Add or Update) with input validation and database persistence.
+     * Handles course submission (Add, Update, or Delete) with input validation and database persistence.
      * Demonstrates Error & Exception Handling, Encapsulation, and Database Handling.
      */
     private void handleFormSubmission() {
         errorLabel.setText(" ");
 
         try {
+            // If in DELETE mode, perform delete confirmation and execution
+            if (mode == FormMode.DELETE) {
+                if (courseIdToUpdate <= 0) {
+                    throw new ValidationException("Please select a valid course to delete.");
+                }
+
+                Course selectedCourse = (Course) courseSelectorComboBox.getSelectedItem();
+                String courseInfo = (selectedCourse != null)
+                        ? selectedCourse.getCourseCode() + " - " + selectedCourse.getCourseName()
+                        : "ID #" + courseIdToUpdate;
+
+                int confirm = JOptionPane.showConfirmDialog(
+                        this,
+                        "Are you sure you want to permanently delete course '" + courseInfo + "'?\nThis action cannot be undone!",
+                        "Confirm Course Deletion",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                if (confirm != JOptionPane.YES_OPTION) {
+                    return;
+                }
+
+                boolean success = adminController.handleDeleteCourse(courseIdToUpdate);
+                if (success) {
+                    this.course = selectedCourse;
+                    this.saved = true;
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Course '" + courseInfo + "' was successfully deleted from the system!",
+                            "Course Deleted Successfully",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    dispose();
+                }
+                return;
+            }
+
             String courseCode = courseCodeField.getText().trim();
             String courseName = courseNameField.getText().trim();
             int creditValue = (Integer) creditSpinner.getValue();

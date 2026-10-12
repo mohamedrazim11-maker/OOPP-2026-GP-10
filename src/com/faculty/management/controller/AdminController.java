@@ -402,6 +402,18 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to delete course using a course code string.
+     *
+     * @param courseCode Course code (e.g. "ICT2132")
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleDeleteCourse(String courseCode) throws ValidationException, DatabaseException {
+        return courseService.deleteCourse(courseCode);
+    }
+
+    /**
      * Retrieves all courses in the system.
      *
      * @return List of Course entities

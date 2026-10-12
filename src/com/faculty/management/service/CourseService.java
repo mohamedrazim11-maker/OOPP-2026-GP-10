@@ -213,6 +213,25 @@ public class CourseService {
     }
 
     /**
+     * Polymorphic overload to delete a course using a Course Code string.
+     *
+     * @param courseCode Course code (e.g. "ICT2132")
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean deleteCourse(String courseCode) throws ValidationException, DatabaseException {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new ValidationException("Course Code cannot be empty for deletion.");
+        }
+        Course course = getCourseByCode(courseCode.trim());
+        if (course == null) {
+            throw new ValidationException("Course with code '" + courseCode + "' does not exist.");
+        }
+        return deleteCourse(course.getCourseId());
+    }
+
+    /**
      * Polymorphic overload to delete a course using a Course entity.
      *
      * @param course Course entity to delete
