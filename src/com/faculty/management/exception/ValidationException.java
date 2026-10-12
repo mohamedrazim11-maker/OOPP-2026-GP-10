@@ -12,3 +12,7 @@ public class ValidationException extends Exception {
         super(message, cause);
     }
 }
+<<<<<<< HEAD
+//
+=======
+>>>>>>> test
