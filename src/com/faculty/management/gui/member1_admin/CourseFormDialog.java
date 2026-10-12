@@ -15,13 +15,13 @@ import java.util.List;
 
 /**
  * Course Form Dialog for Administrator (Member 1).
- * Supports "Add Course", "Update Course", and "Delete Course" operations for Faculty Management System.
+ * Supports "Add Course", "Update Course", "Delete Course", and "View Course" operations for Faculty Management System.
  * 
  * Demonstrates Core OOP Principles:
  * - Classes and Objects: Dialog, Swing components, and Course model instantiation.
  * - Inheritance: Extends JDialog to inherit standard modal window behaviors.
  * - Abstraction: Interacts with business logic through AdminController and CourseService layers.
- * - Polymorphism: Overloaded constructors, mode-based polymorphic form behavior (ADD, UPDATE, DELETE).
+ * - Polymorphism: Overloaded constructors, mode-based polymorphic form behavior (ADD, UPDATE, DELETE, VIEW).
  * - Encapsulation: Private UI controls, state variables, and data fields with public accessors.
  * - Error and Exception Handling: Catches ValidationException and DatabaseException with descriptive feedback.
  * - Database Handling: Connects to MySQL database through backend layers with offline fallback support.
@@ -34,7 +34,8 @@ public class CourseFormDialog extends JDialog {
     public enum FormMode {
         ADD,
         UPDATE,
-        DELETE
+        DELETE,
+        VIEW
     }
 
     // Encapsulated Fields
@@ -66,14 +67,14 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Constructor specifying the operational mode (ADD, UPDATE, or DELETE).
+     * Constructor specifying the operational mode (ADD, UPDATE, DELETE, or VIEW).
      */
     public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode) {
         this(parent, adminController, mode, null);
     }
 
     /**
-     * Overloaded constructor for Add, Update, or Delete with an initial course entity.
+     * Overloaded constructor for Add, Update, Delete, or View with an initial course entity.
      */
     public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode, Course initialCourse) {
         super(parent, getDialogTitle(mode), true);
@@ -86,7 +87,7 @@ public class CourseFormDialog extends JDialog {
 
         initComponents();
 
-        if (this.mode == FormMode.UPDATE || this.mode == FormMode.DELETE) {
+        if (this.mode == FormMode.UPDATE || this.mode == FormMode.DELETE || this.mode == FormMode.VIEW) {
             loadExistingCourses(initialCourse);
         }
     }
@@ -96,6 +97,8 @@ public class CourseFormDialog extends JDialog {
             return "Delete Course — Faculty Management System";
         } else if (mode == FormMode.UPDATE) {
             return "Update Course — Faculty Management System";
+        } else if (mode == FormMode.VIEW) {
+            return "View Course Details — Faculty Management System";
         }
         return "Add New Course — Faculty Management System";
     }
@@ -117,6 +120,8 @@ public class CourseFormDialog extends JDialog {
             headerBg = new Color(220, 38, 38); // Red for Delete
         } else if (mode == FormMode.UPDATE) {
             headerBg = new Color(15, 118, 110); // Teal for Update
+        } else if (mode == FormMode.VIEW) {
+            headerBg = new Color(37, 99, 235); // Royal Blue for View
         } else {
             headerBg = new Color(30, 58, 138); // Navy for Add
         }
@@ -128,6 +133,8 @@ public class CourseFormDialog extends JDialog {
             titleText = "Delete Academic Course";
         } else if (mode == FormMode.UPDATE) {
             titleText = "Update Academic Course";
+        } else if (mode == FormMode.VIEW) {
+            titleText = "View Academic Course Details";
         } else {
             titleText = "Add New Course";
         }
@@ -140,6 +147,8 @@ public class CourseFormDialog extends JDialog {
             subTitleText = "Select an existing course module to permanently delete from MySQL database";
         } else if (mode == FormMode.UPDATE) {
             subTitleText = "Select an existing course module and modify its academic details in MySQL database";
+        } else if (mode == FormMode.VIEW) {
+            subTitleText = "Select an existing course module to inspect comprehensive curriculum details from MySQL database";
         } else {
             subTitleText = "Enter academic course details to register a new module in the curriculum";
         }
@@ -160,12 +169,19 @@ public class CourseFormDialog extends JDialog {
         gbc.insets = new Insets(6, 4, 6, 4);
         int gridY = 0;
 
-        // Course Selector (Displayed in UPDATE and DELETE modes)
-        if (mode == FormMode.UPDATE || mode == FormMode.DELETE) {
+        // Course Selector (Displayed in UPDATE, DELETE, and VIEW modes)
+        if (mode == FormMode.UPDATE || mode == FormMode.DELETE || mode == FormMode.VIEW) {
             gbc.gridx = 0;
             gbc.gridy = gridY;
             gbc.weightx = 0.35;
-            String selectorLabel = (mode == FormMode.DELETE) ? "Select Course to Delete *" : "Select Course *";
+            String selectorLabel;
+            if (mode == FormMode.DELETE) {
+                selectorLabel = "Select Course to Delete *";
+            } else if (mode == FormMode.VIEW) {
+                selectorLabel = "Select Course to View *";
+            } else {
+                selectorLabel = "Select Course *";
+            }
             formPanel.add(createFieldLabel(selectorLabel), gbc);
 
             gbc.gridx = 1;
@@ -286,8 +302,8 @@ public class CourseFormDialog extends JDialog {
         JScrollPane descScroll = new JScrollPane(descriptionArea);
         formPanel.add(descScroll, gbc);
 
-        // Set fields read-only in DELETE mode
-        if (mode == FormMode.DELETE) {
+        // Set fields read-only in DELETE and VIEW modes
+        if (mode == FormMode.DELETE || mode == FormMode.VIEW) {
             courseCodeField.setEditable(false);
             courseCodeField.setBackground(new Color(241, 245, 249));
             courseNameField.setEditable(false);
@@ -319,33 +335,40 @@ public class CourseFormDialog extends JDialog {
         buttonPanel.setBackground(new Color(241, 245, 249));
         buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(226, 232, 240)));
 
-        cancelButton = new SecondaryButton("Cancel");
-        cancelButton.setPreferredSize(new Dimension(100, 38));
-        cancelButton.addActionListener(e -> dispose());
-
-        if (mode == FormMode.DELETE) {
-            saveButton = new CustomButton(
-                    "🗑️  Delete Course",
-                    new Color(220, 38, 38), // Red 600
-                    new Color(185, 28, 28), // Hover Red 700
-                    new Color(153, 27, 27), // Pressed Red 800
-                    Color.WHITE,
-                    null,
-                    8
-            );
-            saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            saveButton.setPreferredSize(new Dimension(150, 38));
-        } else if (mode == FormMode.UPDATE) {
-            saveButton = new PrimaryButton("Update Course");
-            saveButton.setPreferredSize(new Dimension(135, 38));
+        if (mode == FormMode.VIEW) {
+            cancelButton = new PrimaryButton("Close");
+            cancelButton.setPreferredSize(new Dimension(110, 38));
+            cancelButton.addActionListener(e -> dispose());
+            buttonPanel.add(cancelButton);
         } else {
-            saveButton = new PrimaryButton("Add Course");
-            saveButton.setPreferredSize(new Dimension(135, 38));
-        }
-        saveButton.addActionListener(e -> handleFormSubmission());
+            cancelButton = new SecondaryButton("Cancel");
+            cancelButton.setPreferredSize(new Dimension(100, 38));
+            cancelButton.addActionListener(e -> dispose());
 
-        buttonPanel.add(cancelButton);
-        buttonPanel.add(saveButton);
+            if (mode == FormMode.DELETE) {
+                saveButton = new CustomButton(
+                        "🗑️  Delete Course",
+                        new Color(220, 38, 38), // Red 600
+                        new Color(185, 28, 28), // Hover Red 700
+                        new Color(153, 27, 27), // Pressed Red 800
+                        Color.WHITE,
+                        null,
+                        8
+                );
+                saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                saveButton.setPreferredSize(new Dimension(150, 38));
+            } else if (mode == FormMode.UPDATE) {
+                saveButton = new PrimaryButton("Update Course");
+                saveButton.setPreferredSize(new Dimension(135, 38));
+            } else {
+                saveButton = new PrimaryButton("Add Course");
+                saveButton.setPreferredSize(new Dimension(135, 38));
+            }
+            saveButton.addActionListener(e -> handleFormSubmission());
+
+            buttonPanel.add(cancelButton);
+            buttonPanel.add(saveButton);
+        }
 
         add(headerPanel, BorderLayout.NORTH);
         add(centerScroll, BorderLayout.CENTER);
@@ -360,7 +383,7 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Loads existing courses from backend into the selector dropdown for UPDATE or DELETE mode.
+     * Loads existing courses from backend into the selector dropdown for UPDATE, DELETE, or VIEW mode.
      */
     private void loadExistingCourses(Course initialSelection) {
         try {
@@ -368,11 +391,18 @@ public class CourseFormDialog extends JDialog {
             courseSelectorComboBox.removeAllItems();
 
             if (courses == null || courses.isEmpty()) {
-                String emptyMsg = (mode == FormMode.DELETE)
-                        ? "No courses found in database to delete."
-                        : "No courses found in database to update.";
+                String emptyMsg;
+                if (mode == FormMode.DELETE) {
+                    emptyMsg = "No courses found in database to delete.";
+                } else if (mode == FormMode.VIEW) {
+                    emptyMsg = "No courses found in database to view.";
+                } else {
+                    emptyMsg = "No courses found in database to update.";
+                }
                 errorLabel.setText(emptyMsg);
-                saveButton.setEnabled(false);
+                if (saveButton != null) {
+                    saveButton.setEnabled(false);
+                }
                 return;
             }
 
@@ -570,6 +600,13 @@ public class CourseFormDialog extends JDialog {
     }
 
     public Course getCourse() {
+        return course;
+    }
+
+    public Course getSelectedCourse() {
+        if (courseSelectorComboBox != null && courseSelectorComboBox.getSelectedItem() != null) {
+            return (Course) courseSelectorComboBox.getSelectedItem();
+        }
         return course;
     }
 
