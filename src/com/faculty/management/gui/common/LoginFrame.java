@@ -1,5 +1,6 @@
 package com.faculty.management.gui.common;
 
+import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.controller.LoginController;
 
 import javax.swing.*;
@@ -71,7 +72,7 @@ public class LoginFrame extends JFrame {
         facLabel.setForeground(new Color(148, 163, 184));
         facLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // System Info Box (Clean database connection info, no hardcoded fake accounts)
+        // System Info Box (Dynamically checks MySQL connection status)
         JPanel infoBox = new JPanel();
         infoBox.setLayout(new BoxLayout(infoBox, BoxLayout.Y_AXIS));
         infoBox.setBackground(new Color(23, 37, 84));
@@ -85,9 +86,10 @@ public class LoginFrame extends JFrame {
         infoTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
         infoTitle.setForeground(new Color(147, 197, 253));
 
-        JLabel infoDesc1 = new JLabel("• MySQL Database: Connected");
+        boolean isDbConnected = DatabaseConnection.getInstance().isConnected();
+        JLabel infoDesc1 = new JLabel(isDbConnected ? "• MySQL Database: Connected" : "• MySQL Database: Offline (Start MySQL)");
         infoDesc1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        infoDesc1.setForeground(new Color(203, 213, 225));
+        infoDesc1.setForeground(isDbConnected ? new Color(134, 239, 172) : new Color(253, 224, 71));
 
         JLabel infoDesc2 = new JLabel("• Role-Based Access Control");
         infoDesc2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -135,9 +137,9 @@ public class LoginFrame extends JFrame {
         signInSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         signInSub.setForeground(new Color(100, 116, 139));
 
-        // Error message label
+        // Error message label with word wrapping
         errorLabel = new JLabel(" ");
-        errorLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        errorLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         errorLabel.setForeground(new Color(220, 38, 38));
 
         // Role Selection Dropdown
@@ -272,7 +274,7 @@ public class LoginFrame extends JFrame {
     }
 
     public void showErrorMessage(String message) {
-        errorLabel.setText("⚠️ " + message);
+        errorLabel.setText("<html><body style='width: 290px; color: #DC2626;'>⚠️ " + message + "</body></html>");
     }
 
     public void clearErrorMessage() {
