@@ -2,17 +2,27 @@ package com.faculty.management.gui.member4_student;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.controller.UndergraduateController;
+import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.gui.common.UITheme;
+import com.faculty.management.model.AttendanceRecord;
+import com.faculty.management.model.Enrollment;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class UndergraduateDashboard extends JFrame {
 
     private final User currentUser;
     private final UndergraduateController controller = new UndergraduateController();
+    private JLabel coursesValue;
+    private JLabel attendanceValue;
+    private JLabel cgpaValue;
+    private JLabel noticesValue;
+    private JLabel dashboardStatus;
 
     public UndergraduateDashboard(User user) {
         this.currentUser = user;
@@ -73,10 +83,14 @@ public class UndergraduateDashboard extends JFrame {
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
 
-        statsGrid.add(UITheme.createStatCard("", "Current Courses", "6 Subjects", UITheme.PRIMARY));
-        statsGrid.add(UITheme.createStatCard("", "Attendance", "92%", UITheme.SUCCESS));
-        statsGrid.add(UITheme.createStatCard("", "Current GPA", "3.52", UITheme.ACCENT_BLUE));
-        statsGrid.add(UITheme.createStatCard("", "Notices", "3 New", UITheme.WARNING_DARK));
+        coursesValue = new JLabel("Loading...");
+        attendanceValue = new JLabel("Loading...");
+        cgpaValue = new JLabel("Loading...");
+        noticesValue = new JLabel("Loading...");
+        statsGrid.add(UITheme.createStatCard("", "Current Courses", coursesValue, UITheme.PRIMARY));
+        statsGrid.add(UITheme.createStatCard("", "Attendance", attendanceValue, UITheme.SUCCESS));
+        statsGrid.add(UITheme.createStatCard("", "Cumulative GPA", cgpaValue, UITheme.ACCENT_BLUE));
+        statsGrid.add(UITheme.createStatCard("", "Notices", noticesValue, UITheme.WARNING_DARK));
 
         JLabel sectionTitle = new JLabel("Student Services");
         sectionTitle.setFont(UITheme.FONT_SECTION_TITLE);
@@ -97,6 +111,14 @@ public class UndergraduateDashboard extends JFrame {
         mainContent.add(modulesGrid);
 
         add(UITheme.createModernScrollPane(mainContent), BorderLayout.CENTER);
+
+        dashboardStatus = new JLabel("Loading your student records...");
+        dashboardStatus.setFont(UITheme.FONT_SMALL);
+        dashboardStatus.setForeground(UITheme.TEXT_MUTED);
+        dashboardStatus.setBorder(new EmptyBorder(4, 28, 10, 28));
+        add(dashboardStatus, BorderLayout.SOUTH);
+
+        loadDashboardSummary();
     }
 
     private JPanel createModuleCard(String title, String desc, Color accentColor, String actionText) {
@@ -118,7 +140,7 @@ public class UndergraduateDashboard extends JFrame {
         bottomRow.setOpaque(false);
         UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText, UITheme.ButtonStyle.OUTLINE, 4);
         actionBtn.setFont(UITheme.FONT_SMALL_BOLD);
-        actionBtn.addActionListener(e -> JOptionPane.showMessageDialog(this, title + " module is ready.", title, JOptionPane.INFORMATION_MESSAGE));
+        actionBtn.addActionListener(e -> openModule(title));
         bottomRow.add(actionBtn);
 
         card.add(titleLbl, BorderLayout.NORTH);
@@ -126,5 +148,111 @@ public class UndergraduateDashboard extends JFrame {
         card.add(bottomRow, BorderLayout.SOUTH);
 
         return card;
+    }
+
+    private void loadDashboardSummary() {
+        SwingWorker<DashboardSummary, Void> worker = new SwingWorker<DashboardSummary, Void>() {
+            @Override
+            protected DashboardSummary doInBackground() throws DatabaseException {
+                List<Enrollment> enrollments = controller.getCourseDetails(currentUser.getUserId());
+                List<AttendanceRecord> attendance = controller.getAttendance(currentUser.getUserId());
+                double cgpa = controller.getCgpa(currentUser.getUserId());
+                int noticeCount = controller.getNotices().size();
+
+                long currentCourseCount = enrollments.stream()
+                        .filter(enrollment -> Enrollment.ONGOING.equalsIgnoreCase(enrollment.getStatus())
+                                || Enrollment.REPEAT.equalsIgnoreCase(enrollment.getStatus()))
+                        .count();
+                long attendedSessions = attendance.stream()
+                        .mapToLong(record -> record.getTheoryAttended() + record.getPracticalAttended())
+                        .sum();
+                long totalSessions = attendance.stream()
+                        .mapToLong(record -> record.getTheoryTotal() + record.getPracticalTotal())
+                        .sum();
+
+                String attendanceText = totalSessions == 0
+                        ? "No records"
+                        : String.format("%.1f%%", attendedSessions * 100.0 / totalSessions);
+                return new DashboardSummary(currentCourseCount, attendanceText, cgpa, noticeCount);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    DashboardSummary summary = get();
+                    coursesValue.setText(summary.currentCourses + " Subjects");
+                    attendanceValue.setText(summary.attendance);
+                    cgpaValue.setText(String.format("%.3f", summary.cgpa));
+                    noticesValue.setText(summary.noticeCount + " Notices");
+                    dashboardStatus.setText("Dashboard data loaded for " + currentUser.getUsername() + ".");
+                    dashboardStatus.setForeground(UITheme.TEXT_MUTED);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    showSummaryError("Loading dashboard data was interrupted.");
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    String message = cause == null ? e.getMessage() : cause.getMessage();
+                    showSummaryError("Could not load dashboard data: " + message);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void showSummaryError(String message) {
+        coursesValue.setText("Unavailable");
+        attendanceValue.setText("Unavailable");
+        cgpaValue.setText("Unavailable");
+        noticesValue.setText("Unavailable");
+        dashboardStatus.setText(message);
+        dashboardStatus.setForeground(UITheme.DANGER_DARK);
+    }
+
+    private void openModule(String title) {
+        JTabbedPane tabs = new JTabbedPane();
+        UITheme.styleTabbedPane(tabs);
+        int studentId = currentUser.getUserId();
+
+        switch (title) {
+            case "My Courses":
+                tabs.addTab("Enrolled Courses", new StudentCoursePanel(controller, studentId));
+                tabs.addTab("Timetable", new TimetablePanel(controller, studentId));
+                break;
+            case "Attendance":
+                tabs.addTab("Attendance", new AttendancePanel(controller, studentId));
+                tabs.addTab("Medical Submissions", new MedicalPanel(controller, studentId));
+                break;
+            case "Results":
+                tabs.addTab("Grades", new GradePanel(controller, studentId));
+                tabs.addTab("Official Results", new ResultPanel(controller, studentId));
+                tabs.addTab("Cumulative GPA", new CGPA_Panel(controller, studentId));
+                break;
+            case "Notices":
+                tabs.addTab("Faculty Notices", new StudentNoticePanel(controller, studentId));
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown student module: " + title);
+        }
+
+        JDialog dialog = new JDialog(this, title, true);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        dialog.add(tabs, BorderLayout.CENTER);
+        dialog.setSize(1120, 720);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
+    private static final class DashboardSummary {
+        private final long currentCourses;
+        private final String attendance;
+        private final double cgpa;
+        private final int noticeCount;
+
+        private DashboardSummary(long currentCourses, String attendance, double cgpa, int noticeCount) {
+            this.currentCourses = currentCourses;
+            this.attendance = attendance;
+            this.cgpa = cgpa;
+            this.noticeCount = noticeCount;
+        }
     }
 }
