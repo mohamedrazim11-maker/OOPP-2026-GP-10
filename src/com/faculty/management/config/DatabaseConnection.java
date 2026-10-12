@@ -1,7 +1,6 @@
 package com.faculty.management.config;
 
 import com.faculty.management.exception.DatabaseException;
-<<<<<<< HEAD
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -10,11 +9,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-=======
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
->>>>>>> test
 
 /**
  * Singleton Database Connection Manager for Faculty Management System.
@@ -22,23 +16,16 @@ import java.sql.SQLException;
  */
 public class DatabaseConnection {
 
-<<<<<<< HEAD
     private static final Properties LOCAL_SETTINGS = loadLocalSettings();
     private static final String URL = setting("fms.db.url", "FMS_DB_URL",
             "jdbc:mysql://localhost:3306/faculty_management_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=5000");
     private static final String USERNAME = setting("fms.db.user", "FMS_DB_USER", "root");
     private static final String PASSWORD = setting("fms.db.password", "FMS_DB_PASSWORD", "");
-=======
-    private static final String URL = "jdbc:mysql://localhost:3306/faculty_management_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "";
->>>>>>> test
 
     private static DatabaseConnection instance;
     private Connection connection;
 
     private DatabaseConnection() {
-<<<<<<< HEAD
     }
 
     private static String setting(String propertyName, String environmentName, String defaultValue) {
@@ -65,12 +52,6 @@ public class DatabaseConnection {
         } catch (IOException e) {
             throw new ExceptionInInitializerError(
                     "Could not read " + settingsFile + ": " + e.getMessage());
-=======
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("MySQL Driver not found in classpath: " + e.getMessage());
->>>>>>> test
         }
     }
 
@@ -91,7 +72,6 @@ public class DatabaseConnection {
      * @return Active SQL Connection
      * @throws DatabaseException If unable to connect to the database
      */
-<<<<<<< HEAD
     public synchronized Connection getConnection() throws DatabaseException {
         try {
             if (connection != null && !connection.isClosed() && connection.isValid(2)) {
@@ -123,47 +103,17 @@ public class DatabaseConnection {
             };
             throw new DatabaseException(guidance + " MySQL error " + e.getErrorCode() + ": "
                     + e.getMessage(), e);
-=======
-    public Connection getConnection() throws DatabaseException {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            }
-            return connection;
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to connect to MySQL database: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Checks if the database connection can be established.
-     *
-     * @return true if database is reachable, false otherwise
-     */
-    public boolean isConnected() {
-        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
-            return conn != null && !conn.isClosed();
-        } catch (Exception e) {
-            return false;
->>>>>>> test
         }
     }
 
     /**
      * Closes the connection cleanly.
      */
-<<<<<<< HEAD
     public synchronized void closeConnection() {
         if (connection != null) {
             try {
                 connection.close();
                 connection = null;
-=======
-    public void closeConnection() {
-        if (connection != null) {
-            try {
-                connection.close();
->>>>>>> test
             } catch (SQLException e) {
                 System.err.println("Error closing database connection: " + e.getMessage());
             }
