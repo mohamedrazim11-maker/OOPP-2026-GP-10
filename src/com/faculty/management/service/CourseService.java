@@ -139,6 +139,21 @@ public class CourseService {
     }
 
     /**
+     * Polymorphic overload to retrieve course entity details from Course object.
+     *
+     * @param course Course entity
+     * @return Full Course entity
+     * @throws ValidationException If course is null or invalid
+     * @throws DatabaseException   If database error occurs
+     */
+    public Course getCourse(Course course) throws ValidationException, DatabaseException {
+        if (course == null) {
+            throw new ValidationException("Course entity cannot be null.");
+        }
+        return getCourseById(course.getCourseId());
+    }
+
+    /**
      * Updates an existing course record with validation and uniqueness checks.
      *
      * @param course Course entity with updated values

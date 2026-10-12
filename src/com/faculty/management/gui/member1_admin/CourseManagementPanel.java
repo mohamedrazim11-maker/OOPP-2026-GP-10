@@ -15,7 +15,7 @@ import java.util.List;
  * Course Management Panel for Administrator (Member 1).
  * Represents the Course Management section in the Admin Dashboard.
  * 
- * Provides strictly the "Add Course", "Update Course", and "Delete Course" options UI for managing academic courses.
+ * Provides strictly the "Add Course", "Update Course", "Delete Course", and "View Courses" options UI for managing academic courses.
  * Strictly avoids adding any other options inside course management as requested.
  * 
  * Demonstrates Core OOP Principles:
@@ -34,6 +34,7 @@ public class CourseManagementPanel extends JPanel {
     private PrimaryButton addCourseButton;
     private CustomButton updateCourseButton;
     private CustomButton deleteCourseButton;
+    private CustomButton viewCourseButton;
     private JLabel lastActionCourseLabel;
 
     public CourseManagementPanel() {
@@ -68,12 +69,12 @@ public class CourseManagementPanel extends JPanel {
         headerPanel.add(Box.createVerticalStrut(4));
         headerPanel.add(subTitleLabel);
 
-        // 2. Main Content Area with strictly "Add Course", "Update Course", and "Delete Course" Options UI
+        // 2. Main Content Area with strictly "Add Course", "Update Course", "Delete Course", and "View Courses" Options UI
         JPanel mainContentPanel = new JPanel();
         mainContentPanel.setLayout(new BoxLayout(mainContentPanel, BoxLayout.Y_AXIS));
         mainContentPanel.setOpaque(false);
 
-        // Action Toolbar (Strictly only "Add Course", "Update Course", and "Delete Course" options)
+        // Action Toolbar (Strictly only "Add Course", "Update Course", "Delete Course", and "View Courses" options)
         JPanel actionToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
         actionToolbar.setOpaque(false);
 
@@ -110,9 +111,24 @@ public class CourseManagementPanel extends JPanel {
         deleteCourseButton.setToolTipText("Select and permanently remove an existing academic course module");
         deleteCourseButton.addActionListener(e -> handleDeleteCourseAction());
 
+        viewCourseButton = new CustomButton(
+                "👁️  View Courses",
+                new Color(37, 99, 235), // Royal Blue 600
+                new Color(29, 78, 216), // Hover Blue 700
+                new Color(30, 58, 138), // Pressed Dark Navy
+                Color.WHITE,            // White text
+                null,
+                8                       // Corner radius
+        );
+        viewCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        viewCourseButton.setPreferredSize(new Dimension(165, 42));
+        viewCourseButton.setToolTipText("Browse and inspect comprehensive details of academic course modules");
+        viewCourseButton.addActionListener(e -> handleViewCoursesAction());
+
         actionToolbar.add(addCourseButton);
         actionToolbar.add(updateCourseButton);
         actionToolbar.add(deleteCourseButton);
+        actionToolbar.add(viewCourseButton);
 
         // Feature Card (Clean presentation of the Course Management options)
         JPanel featureCard = new JPanel(new BorderLayout(0, 15));
@@ -137,7 +153,8 @@ public class CourseManagementPanel extends JPanel {
                 "• <b>Update Courses Option:</b> Select an existing course module from the database and update its course code, module name, credit value, " +
                 "lecture/practical contact hours, academic department, semester, and syllabus description.<br><br>" +
                 "• <b>Delete Courses Option:</b> Select an existing course module from the database, review its curriculum details, and permanently delete it with validation and database integrity checks.<br><br>" +
-                "<i>(Note: This section strictly contains only the Add Course, Update Course, and Delete Course management options).</i>" +
+                "• <b>View Courses Option:</b> Browse and inspect complete academic course details including module codes, titles, credits, contact hours, department allocations, and syllabus descriptions from MySQL database.<br><br>" +
+                "<i>(Note: This section strictly contains only the Add Course, Update Course, Delete Course, and View Courses management options).</i>" +
                 "</html>");
         cardDescription.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cardDescription.setForeground(new Color(100, 116, 139));
@@ -146,7 +163,7 @@ public class CourseManagementPanel extends JPanel {
         cardHeader.add(cardTitle);
         cardHeader.add(cardDescription);
 
-        // Status banner indicating the result of the last course added, updated, or deleted
+        // Status banner indicating the result of the last course added, updated, deleted, or viewed
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 10));
         statusPanel.setBackground(new Color(241, 245, 249));
         statusPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -154,7 +171,7 @@ public class CourseManagementPanel extends JPanel {
                 new EmptyBorder(5, 12, 5, 12)
         ));
 
-        lastActionCourseLabel = new JLabel("Click 'Add Course', 'Update Course', or 'Delete Course' to manage academic modules in MySQL database.");
+        lastActionCourseLabel = new JLabel("Click 'Add Course', 'Update Course', 'Delete Course', or 'View Courses' to manage academic modules in MySQL database.");
         lastActionCourseLabel.setFont(new Font("Segoe UI", Font.ITALIC, 13));
         lastActionCourseLabel.setForeground(new Color(71, 85, 105));
 
@@ -260,6 +277,39 @@ public class CourseManagementPanel extends JPanel {
         }
     }
 
+    /**
+     * Handles opening the View Courses Dialog.
+     * Demonstrates Abstraction, Polymorphism, Database Handling, and Error & Exception Handling.
+     */
+    private void handleViewCoursesAction() {
+        try {
+            List<Course> courses = adminController.loadAllCourses();
+            if (courses == null || courses.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "No courses found in database to view. Please add a course first.",
+                        "No Courses Available",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.VIEW);
+            dialog.setVisible(true);
+
+            Course selected = dialog.getSelectedCourse();
+            if (selected != null) {
+                lastActionCourseLabel.setText("Currently viewing: " + selected.getCourseCode() + " — " +
+                        selected.getCourseName() + " (" + selected.getCreditValue() + " Credits)");
+                lastActionCourseLabel.setForeground(new Color(37, 99, 235)); // Primary blue
+            }
+        } catch (DatabaseException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to retrieve courses from database: " + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // Encapsulated Getters
     public AdminController getAdminController() {
         return adminController;
@@ -275,6 +325,10 @@ public class CourseManagementPanel extends JPanel {
 
     public CustomButton getDeleteCourseButton() {
         return deleteCourseButton;
+    }
+
+    public CustomButton getViewCourseButton() {
+        return viewCourseButton;
     }
 
     public JLabel getLastActionCourseLabel() {

@@ -460,4 +460,19 @@ public class AdminController {
         }
         return course;
     }
+
+    /**
+     * Polymorphic overload to retrieve course details using a Course entity.
+     *
+     * @param course Course entity
+     * @return Course entity with full details
+     * @throws ValidationException If course is null or invalid
+     * @throws DatabaseException   If database error occurs
+     */
+    public Course handleViewCourse(Course course) throws ValidationException, DatabaseException {
+        if (course == null) {
+            throw new ValidationException("Course entity cannot be null.");
+        }
+        return handleViewCourse(course.getCourseId());
+    }
 }
