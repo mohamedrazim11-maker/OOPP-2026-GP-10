@@ -87,7 +87,11 @@ public class LoginFrame extends JFrame {
         infoTitle.setForeground(new Color(147, 197, 253));
 
         boolean isDbConnected = DatabaseConnection.getInstance().isConnected();
-        JLabel infoDesc1 = new JLabel(isDbConnected ? "• MySQL Database: Connected" : "• MySQL Database: Offline (Start MySQL)");
+        String activeDb = DatabaseConnection.getInstance().getActiveDatabaseType();
+        String statusText = isDbConnected 
+                ? "• Database: Online (" + activeDb + ")"
+                : "• Database: Offline (Start XAMPP or SQL Server)";
+        JLabel infoDesc1 = new JLabel(statusText);
         infoDesc1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         infoDesc1.setForeground(isDbConnected ? new Color(134, 239, 172) : new Color(253, 224, 71));
 
