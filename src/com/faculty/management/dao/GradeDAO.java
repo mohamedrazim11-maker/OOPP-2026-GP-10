@@ -76,25 +76,41 @@ public class GradeDAO {
     }
 
     private void upsert(Grade grade) throws DatabaseException {
-        String sql = "INSERT INTO grades (student_id, course_id, semester_number, academic_year, ca_marks, " +
-                     "final_exam_marks, final_total_marks, ca_eligible, grade_letter, grade_point) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                     "ON DUPLICATE KEY UPDATE ca_marks = VALUES(ca_marks), final_exam_marks = VALUES(final_exam_marks), " +
-                     "final_total_marks = VALUES(final_total_marks), ca_eligible = VALUES(ca_eligible), " +
-                     "grade_letter = VALUES(grade_letter), grade_point = VALUES(grade_point)";
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, grade.getStudentId());
-            stmt.setInt(2, grade.getCourse().getCourseId());
-            stmt.setInt(3, grade.getSemesterNumber());
-            stmt.setString(4, grade.getAcademicYear());
-            stmt.setDouble(5, grade.getCaMarks());
-            stmt.setDouble(6, grade.getFinalExamMarks());
-            stmt.setDouble(7, grade.getFinalTotalMarks());
-            stmt.setBoolean(8, grade.isCaEligible());
-            stmt.setString(9, grade.getGradeLetter());
-            stmt.setDouble(10, grade.getGradePoint());
-            stmt.executeUpdate();
+        String updateSql = "UPDATE grades SET ca_marks = ?, final_exam_marks = ?, final_total_marks = ?, " +
+                           "ca_eligible = ?, grade_letter = ?, grade_point = ? " +
+                           "WHERE student_id = ? AND course_id = ? AND semester_number = ? AND academic_year = ?";
+        try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+            updateStmt.setDouble(1, grade.getCaMarks());
+            updateStmt.setDouble(2, grade.getFinalExamMarks());
+            updateStmt.setDouble(3, grade.getFinalTotalMarks());
+            updateStmt.setBoolean(4, grade.isCaEligible());
+            updateStmt.setString(5, grade.getGradeLetter());
+            updateStmt.setDouble(6, grade.getGradePoint());
+            updateStmt.setInt(7, grade.getStudentId());
+            updateStmt.setInt(8, grade.getCourse().getCourseId());
+            updateStmt.setInt(9, grade.getSemesterNumber());
+            updateStmt.setString(10, grade.getAcademicYear());
+
+            int affected = updateStmt.executeUpdate();
+            if (affected == 0) {
+                String insertSql = "INSERT INTO grades (student_id, course_id, semester_number, academic_year, " +
+                                   "ca_marks, final_exam_marks, final_total_marks, ca_eligible, grade_letter, grade_point) " +
+                                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    insertStmt.setInt(1, grade.getStudentId());
+                    insertStmt.setInt(2, grade.getCourse().getCourseId());
+                    insertStmt.setInt(3, grade.getSemesterNumber());
+                    insertStmt.setString(4, grade.getAcademicYear());
+                    insertStmt.setDouble(5, grade.getCaMarks());
+                    insertStmt.setDouble(6, grade.getFinalExamMarks());
+                    insertStmt.setDouble(7, grade.getFinalTotalMarks());
+                    insertStmt.setBoolean(8, grade.isCaEligible());
+                    insertStmt.setString(9, grade.getGradeLetter());
+                    insertStmt.setDouble(10, grade.getGradePoint());
+                    insertStmt.executeUpdate();
+                }
+            }
         } catch (SQLException e) {
             throw new DatabaseException("Failed to save computed grade: " + e.getMessage(), e);
         }
