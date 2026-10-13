@@ -72,6 +72,14 @@ public class DatabaseConnection {
      * @return Active SQL Connection
      * @throws DatabaseException If unable to connect to the database
      */
+    public synchronized boolean isConnected() {
+        try {
+            return connection != null && !connection.isClosed() && connection.isValid(2);
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
     public synchronized Connection getConnection() throws DatabaseException {
         try {
             if (connection != null && !connection.isClosed() && connection.isValid(2)) {

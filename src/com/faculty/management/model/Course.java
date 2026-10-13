@@ -21,6 +21,26 @@ public class Course {
     public Course() {
     }
 
+    public Course(String courseCode, String courseName, int credits,
+                  int theorySessions, int practicalSessions, String department,
+                  String academicYear, String description) {
+        this.courseCode = courseCode;
+        this.courseName = courseName;
+        this.credits = credits;
+        this.theorySessions = theorySessions;
+        this.practicalSessions = practicalSessions;
+        this.department = department;
+        this.academicYear = academicYear;
+    }
+
+    public Course(int courseId, String courseCode, String courseName, int credits,
+                  int theorySessions, int practicalSessions, String department,
+                  String academicYear, String description) {
+        this(courseCode, courseName, credits, theorySessions, practicalSessions,
+                department, academicYear, description);
+        this.courseId = courseId;
+    }
+
     public Course(int courseId, String courseCode, String courseName, int credits,
                   int theorySessions, int practicalSessions, int semesterNumber,
                   String academicYear, String department) {
