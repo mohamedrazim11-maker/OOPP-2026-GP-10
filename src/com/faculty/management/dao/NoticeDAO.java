@@ -317,6 +317,29 @@ public class NoticeDAO {
     }
 
     /**
+     * Deletes a notice by its unique title.
+     *
+     * @param title Notice title
+     * @return true if deleted
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean deleteByTitle(String title) throws DatabaseException {
+        if (title == null || title.trim().isEmpty()) {
+            throw new DatabaseException("Notice title cannot be empty for deletion.");
+        }
+        ensureTableAndSeed();
+        String sql = "DELETE FROM notices WHERE LOWER(title) = LOWER(?)";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, title.trim());
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Database error while deleting notice by title: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Returns total count of notices in the database.
      */
     public int getCount() throws DatabaseException {

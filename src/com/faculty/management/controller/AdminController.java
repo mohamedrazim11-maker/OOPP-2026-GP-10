@@ -676,6 +676,13 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to delete a notice by title string.
+     */
+    public boolean handleDeleteNotice(String title) throws ValidationException, DatabaseException {
+        return noticeService.deleteNotice(title);
+    }
+
+    /**
      * Retrieves a single notice by ID for viewing.
      *
      * @param noticeId Notice ID
