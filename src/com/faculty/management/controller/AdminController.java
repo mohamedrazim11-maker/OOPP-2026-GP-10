@@ -649,6 +649,14 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to update an existing Notice entity with new title and content.
+     */
+    public boolean handleUpdateNotice(Notice existingNotice, String newTitle, String newContent)
+            throws ValidationException, DatabaseException {
+        return noticeService.updateNotice(existingNotice, newTitle, newContent);
+    }
+
+    /**
      * Handles deleting a notice by its ID.
      *
      * @param noticeId Notice ID

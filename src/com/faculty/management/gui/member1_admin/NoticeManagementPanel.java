@@ -416,6 +416,32 @@ public class NoticeManagementPanel extends JPanel {
     }
 
     /**
+     * Programmatically updates an existing notice through the controller and refreshes table.
+     * Demonstrates Abstraction, Encapsulation, Error/Exception Handling, and Database Handling.
+     */
+    public boolean updateNotice(Notice notice) throws ValidationException, DatabaseException {
+        boolean updated = adminController.handleUpdateNotice(notice);
+        if (updated) {
+            loadNotices();
+            lastActionNoticeLabel.setText("Notice updated: " + notice.getTitle());
+        }
+        return updated;
+    }
+
+    /**
+     * Polymorphic overload to update a notice using parameter list.
+     */
+    public boolean updateNotice(int noticeId, String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        boolean updated = adminController.handleUpdateNotice(noticeId, title, content, category, priority, postedBy);
+        if (updated) {
+            loadNotices();
+            lastActionNoticeLabel.setText("Notice updated: " + title);
+        }
+        return updated;
+    }
+
+    /**
      * Handles "Delete Notice" action UI.
      */
     public void handleDeleteNoticeAction() {
