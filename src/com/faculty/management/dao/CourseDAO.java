@@ -282,6 +282,98 @@ public class CourseDAO {
         return deleteCourse(course.getCourseId());
     }
 
+    /**
+     * Assigns course information (department, semester, credit value, theory & practical contact hours,
+     * description) to an existing course in the database.
+     * Demonstrates Database Handling, Abstraction, and Exception Handling.
+     *
+     * @param course Course entity containing assigned information
+     * @return true if updated successfully in MySQL
+     * @throws DatabaseException If database operation fails
+     */
+    public boolean assignCourseInformation(Course course) throws DatabaseException {
+        if (course == null || course.getCourseId() <= 0) {
+            throw new DatabaseException("Invalid course specified for assigning information.");
+        }
+
+        String sql = "UPDATE courses SET department = ?, semester = ?, credit_value = ?, theory_hours = ?, " +
+                     "practical_hours = ?, description = ? WHERE course_id = ?";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, course.getDepartment());
+            stmt.setString(2, course.getSemester());
+            stmt.setInt(3, course.getCreditValue());
+            stmt.setInt(4, course.getTheoryHours());
+            stmt.setInt(5, course.getPracticalHours());
+            stmt.setString(6, course.getDescription());
+            stmt.setInt(7, course.getCourseId());
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No course found with ID " + course.getCourseId() + " to assign information.");
+            }
+            return true;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to assign course information in database: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Polymorphic overload to assign course information using course ID and specific parameters.
+     *
+     * @param courseId       Course ID
+     * @param department     Assigned Department
+     * @param semester       Assigned Semester
+     * @param creditValue    Assigned Credits
+     * @param theoryHours    Assigned Theory Hours
+     * @param practicalHours Assigned Practical Hours
+     * @param description    Assigned Description
+     * @return true if assigned
+     * @throws DatabaseException If database operation fails
+     */
+    public boolean assignCourseInformation(int courseId, String department, String semester, int creditValue,
+                                           int theoryHours, int practicalHours, String description) throws DatabaseException {
+        Course course = findById(courseId);
+        if (course == null) {
+            throw new DatabaseException("Course with ID " + courseId + " was not found to assign information.");
+        }
+        course.setDepartment(department);
+        course.setSemester(semester);
+        course.setCreditValue(creditValue);
+        course.setTheoryHours(theoryHours);
+        course.setPracticalHours(practicalHours);
+        course.setDescription(description);
+        return assignCourseInformation(course);
+    }
+
+    /**
+     * Polymorphic overload to assign course information using unique course code.
+     *
+     * @param courseCode     Course code (e.g. ICT2132)
+     * @param department     Assigned Department
+     * @param semester       Assigned Semester
+     * @param creditValue    Assigned Credits
+     * @param theoryHours    Assigned Theory Hours
+     * @param practicalHours Assigned Practical Hours
+     * @param description    Assigned Description
+     * @return true if assigned
+     * @throws DatabaseException If database operation fails
+     */
+    public boolean assignCourseInformation(String courseCode, String department, String semester, int creditValue,
+                                           int theoryHours, int practicalHours, String description) throws DatabaseException {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new DatabaseException("Course code cannot be empty for assigning information.");
+        }
+        Course course = findByCode(courseCode.trim());
+        if (course == null) {
+            throw new DatabaseException("Course with code '" + courseCode + "' was not found to assign information.");
+        }
+        return assignCourseInformation(course.getCourseId(), department, semester, creditValue, theoryHours, practicalHours, description);
+    }
+
     private Course mapResultSetToCourse(ResultSet rs) throws SQLException {
         Course c = new Course();
         c.setCourseId(rs.getInt("course_id"));

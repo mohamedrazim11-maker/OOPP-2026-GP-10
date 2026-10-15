@@ -213,4 +213,89 @@ public class CourseService {
         }
         return deleteCourse(course.getCourseId());
     }
+
+    /**
+     * Assigns course information (department, semester, credits, contact hours, syllabus) to a course.
+     * Validates input rules and persists updates directly to MySQL database via CourseDAO.
+     * Demonstrates Abstraction, Encapsulation, Error/Exception Handling, and Database Handling.
+     *
+     * @param course Course entity containing updated assignment information
+     * @return true if assigned and saved successfully
+     * @throws ValidationException If validation constraints fail
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean assignCourseInformation(Course course) throws ValidationException, DatabaseException {
+        if (course == null || course.getCourseId() <= 0) {
+            throw new ValidationException("Please select a valid course to assign information.");
+        }
+
+        ValidationUtil.validateCourseAssignment(course);
+
+        Course existing = getCourseById(course.getCourseId());
+        if (existing == null) {
+            throw new ValidationException("Course with ID " + course.getCourseId() + " does not exist in the database.");
+        }
+
+        return courseDAO.assignCourseInformation(course);
+    }
+
+    /**
+     * Polymorphic overload to assign course information using individual parameter values.
+     *
+     * @param courseId       Course ID
+     * @param department     Department to assign
+     * @param semester       Semester to assign
+     * @param creditValue    Credits to assign
+     * @param theoryHours    Theory hours to assign
+     * @param practicalHours Practical hours to assign
+     * @param description    Syllabus description
+     * @return true if assigned
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean assignCourseInformation(int courseId, String department, String semester, int creditValue,
+                                           int theoryHours, int practicalHours, String description)
+            throws ValidationException, DatabaseException {
+        ValidationUtil.validateCourseAssignment(courseId, department, semester, creditValue, theoryHours, practicalHours);
+
+        Course course = getCourseById(courseId);
+        if (course == null) {
+            throw new ValidationException("Course with ID " + courseId + " does not exist in the database.");
+        }
+        course.setDepartment(department);
+        course.setSemester(semester);
+        course.setCreditValue(creditValue);
+        course.setTheoryHours(theoryHours);
+        course.setPracticalHours(practicalHours);
+        course.setDescription(description);
+
+        return assignCourseInformation(course);
+    }
+
+    /**
+     * Polymorphic overload to assign course information using unique course code.
+     *
+     * @param courseCode     Course code (e.g. ICT2132)
+     * @param department     Department to assign
+     * @param semester       Semester to assign
+     * @param creditValue    Credits to assign
+     * @param theoryHours    Theory hours to assign
+     * @param practicalHours Practical hours to assign
+     * @param description    Syllabus description
+     * @return true if assigned
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean assignCourseInformation(String courseCode, String department, String semester, int creditValue,
+                                           int theoryHours, int practicalHours, String description)
+            throws ValidationException, DatabaseException {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new ValidationException("Course code cannot be empty for assigning information.");
+        }
+        Course course = getCourseByCode(courseCode.trim());
+        if (course == null) {
+            throw new ValidationException("Course with code '" + courseCode + "' does not exist in the database.");
+        }
+        return assignCourseInformation(course.getCourseId(), department, semester, creditValue, theoryHours, practicalHours, description);
+    }
 }

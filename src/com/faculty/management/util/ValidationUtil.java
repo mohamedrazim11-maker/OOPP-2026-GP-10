@@ -291,4 +291,60 @@ public class ValidationUtil {
             throw new ValidationException("Department selection is required.");
         }
     }
+
+    /**
+     * Validates course assignment information fields.
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     *
+     * @param course Course entity containing assigned information
+     * @throws ValidationException If validation fails
+     */
+    public static void validateCourseAssignment(Course course) throws ValidationException {
+        if (course == null) {
+            throw new ValidationException("Course information cannot be null.");
+        }
+        if (course.getCourseId() <= 0 && isEmpty(course.getCourseCode())) {
+            throw new ValidationException("Please select a valid course to assign information.");
+        }
+        if (isEmpty(course.getDepartment()) || "-- Select Department --".equals(course.getDepartment().trim())) {
+            throw new ValidationException("Please assign a valid academic Department.");
+        }
+        if (isEmpty(course.getSemester())) {
+            throw new ValidationException("Please assign a valid Semester.");
+        }
+        if (course.getCreditValue() <= 0 || course.getCreditValue() > 10) {
+            throw new ValidationException("Credit value must be between 1 and 10.");
+        }
+        if (course.getTheoryHours() < 0) {
+            throw new ValidationException("Theory hours cannot be negative.");
+        }
+        if (course.getPracticalHours() < 0) {
+            throw new ValidationException("Practical hours cannot be negative.");
+        }
+    }
+
+    /**
+     * Overloaded validation method for course assignment parameters.
+     */
+    public static void validateCourseAssignment(int courseId, String department, String semester,
+                                                int creditValue, int theoryHours, int practicalHours) throws ValidationException {
+        if (courseId <= 0) {
+            throw new ValidationException("Please select a valid course to assign information.");
+        }
+        if (isEmpty(department) || "-- Select Department --".equals(department.trim())) {
+            throw new ValidationException("Please assign a valid academic Department.");
+        }
+        if (isEmpty(semester)) {
+            throw new ValidationException("Please assign a valid Semester.");
+        }
+        if (creditValue <= 0 || creditValue > 10) {
+            throw new ValidationException("Assigned Credit Value must be between 1 and 10.");
+        }
+        if (theoryHours < 0) {
+            throw new ValidationException("Theory hours cannot be negative.");
+        }
+        if (practicalHours < 0) {
+            throw new ValidationException("Practical hours cannot be negative.");
+        }
+    }
 }
