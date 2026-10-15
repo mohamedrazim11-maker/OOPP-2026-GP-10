@@ -2,6 +2,7 @@ package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
+import com.faculty.management.exception.ValidationException;
 import com.faculty.management.gui.common.CustomButton;
 import com.faculty.management.gui.common.PrimaryButton;
 import com.faculty.management.model.Course;
@@ -222,6 +223,19 @@ public class CourseManagementPanel extends JPanel {
                 lastActionCourseLabel.setForeground(new Color(22, 101, 52)); // Success green
             }
         }
+    }
+
+    /**
+     * Programmatic backend method to add a new course via the panel's controller.
+     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
+     *
+     * @param course Course entity to register
+     * @return Registered Course entity with generated ID
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database insertion fails
+     */
+    public Course handleAddCourse(Course course) throws ValidationException, DatabaseException {
+        return adminController.handleAddCourse(course);
     }
 
     /**

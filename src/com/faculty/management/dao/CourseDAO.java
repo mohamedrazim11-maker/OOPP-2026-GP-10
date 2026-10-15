@@ -15,31 +15,70 @@ import java.util.List;
 public class CourseDAO {
 
     /**
-     * Inserts a new course record into the courses table.
+     * Inserts a new course record into the courses table using parameterized JDBC.
+     * Demonstrates Database Handling, Abstraction, and Exception Handling.
      *
      * @param course Course entity to insert
      * @return Saved Course entity with generated courseId
      * @throws DatabaseException If database operation fails
      */
     public Course createCourse(Course course) throws DatabaseException {
-        String sql = "INSERT INTO courses (course_code, course_name, credit_value, theory_hours, practical_hours, department, semester, description) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        if (course == null) {
+            throw new DatabaseException("Course entity cannot be null for database insertion.");
+        }
 
         Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        // Calculate helper values based on academic requirements (req.txt)
+        int creditVal = course.getCreditValue() > 0 ? course.getCreditValue() : 2;
+        int theoryHours = course.getTheoryHours();
+        int practicalHours = course.getPracticalHours();
+        int theorySessions = (theoryHours > 0) ? Math.max(1, (theoryHours + 1) / 2) : 15;
+        int practicalSessions = (practicalHours > 0) ? Math.max(1, (practicalHours + 1) / 2) : 0;
+        int semesterNum = course.getSemesterNumber() > 0 ? course.getSemesterNumber() :
+                (course.getSemester() != null && course.getSemester().contains("1") ? 1 : 2);
+        String academicYear = course.getAcademicYear() != null && !course.getAcademicYear().isEmpty() ?
+                course.getAcademicYear() : "2025/2026";
+
+        boolean hasExtendedCols = hasColumn(conn, "courses", "credits");
+
+        String sql;
+        if (hasExtendedCols) {
+            sql = "INSERT INTO courses (course_code, course_name, credit_value, credits, theory_hours, practical_hours, " +
+                  "theory_sessions, practical_sessions, department, semester, semester_number, academic_year, description) " +
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        } else {
+            sql = "INSERT INTO courses (course_code, course_name, credit_value, theory_hours, practical_hours, " +
+                  "department, semester, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        }
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, course.getCourseCode());
             stmt.setString(2, course.getCourseName());
-            stmt.setInt(3, course.getCreditValue());
-            stmt.setInt(4, course.getTheoryHours());
-            stmt.setInt(5, course.getPracticalHours());
-            stmt.setString(6, course.getDepartment());
-            stmt.setString(7, course.getSemester());
-            stmt.setString(8, course.getDescription());
+            stmt.setInt(3, creditVal);
+
+            if (hasExtendedCols) {
+                stmt.setInt(4, creditVal); // credits
+                stmt.setInt(5, theoryHours);
+                stmt.setInt(6, practicalHours);
+                stmt.setInt(7, theorySessions);
+                stmt.setInt(8, practicalSessions);
+                stmt.setString(9, course.getDepartment());
+                stmt.setString(10, course.getSemester());
+                stmt.setInt(11, semesterNum);
+                stmt.setString(12, academicYear);
+                stmt.setString(13, course.getDescription());
+            } else {
+                stmt.setInt(4, theoryHours);
+                stmt.setInt(5, practicalHours);
+                stmt.setString(6, course.getDepartment());
+                stmt.setString(7, course.getSemester());
+                stmt.setString(8, course.getDescription());
+            }
 
             int affected = stmt.executeUpdate();
             if (affected == 0) {
-                throw new DatabaseException("Creating course failed, no rows affected.");
+                throw new DatabaseException("Creating course failed, no rows affected in database.");
             }
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -53,6 +92,47 @@ public class CourseDAO {
         } catch (SQLException e) {
             throw new DatabaseException("Failed to insert course into database: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Polymorphic overload to insert a new course into the database using individual parameter fields.
+     * Demonstrates Polymorphism and Database Handling.
+     *
+     * @param courseCode     Course code (e.g. ICT2132)
+     * @param courseName     Course name
+     * @param creditValue    Credits (1-10)
+     * @param theoryHours    Theory hours
+     * @param practicalHours Practical hours
+     * @param department     Department name
+     * @param semester       Semester name
+     * @param description    Course description
+     * @return Saved Course entity
+     * @throws DatabaseException If database operation fails
+     */
+    public Course createCourse(String courseCode, String courseName, int creditValue, int theoryHours,
+                               int practicalHours, String department, String semester, String description) throws DatabaseException {
+        Course course = new Course(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+        return createCourse(course);
+    }
+
+    /**
+     * Checks if a column exists in the specified database table.
+     */
+    private boolean hasColumn(Connection conn, String tableName, String columnName) {
+        try {
+            DatabaseMetaData meta = conn.getMetaData();
+            try (ResultSet rs = meta.getColumns(null, null, tableName, columnName)) {
+                if (rs.next()) {
+                    return true;
+                }
+            }
+            try (ResultSet rs = meta.getColumns(null, null, tableName.toUpperCase(), columnName.toUpperCase())) {
+                return rs.next();
+            }
+        } catch (SQLException ignored) {
+            // Default to false if metadata lookup fails
+        }
+        return false;
     }
 
     /**

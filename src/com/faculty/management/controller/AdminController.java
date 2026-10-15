@@ -362,6 +362,27 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to add a course using basic course parameters.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public Course handleAddCourse(String courseCode, String courseName, int creditValue,
+                                  String department, String semester)
+            throws ValidationException, DatabaseException {
+        return courseService.addCourse(courseCode, courseName, creditValue, department, semester);
+    }
+
+    /**
+     * Polymorphic overload to add a course with explicit semester number and academic year.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public Course handleAddCourse(String courseCode, String courseName, int creditValue, int theoryHours,
+                                  int practicalHours, String department, String semester, int semesterNumber,
+                                  String academicYear, String description)
+            throws ValidationException, DatabaseException {
+        return courseService.addCourse(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, semesterNumber, academicYear, description);
+    }
+
+    /**
      * Handles updating an existing course record.
      *
      * @param course Course entity with updated values

@@ -50,9 +50,18 @@ public class CourseService {
         String trimmedCode = course.getCourseCode().trim().toUpperCase();
         course.setCourseCode(trimmedCode);
 
+        // Derive academic curriculum metadata if absent (req.txt)
+        if (course.getSemesterNumber() <= 0) {
+            int semNum = (course.getSemester() != null && course.getSemester().contains("1")) ? 1 : 2;
+            course.setSemesterNumber(semNum);
+        }
+        if (course.getAcademicYear() == null || course.getAcademicYear().trim().isEmpty()) {
+            course.setAcademicYear("2025/2026");
+        }
+
         // 2. Uniqueness check against MySQL database
         if (courseDAO.existsByCode(trimmedCode)) {
-            throw new ValidationException("Course Code '" + trimmedCode + "' already exists in the database.");
+            throw new ValidationException("Course Code '" + trimmedCode + "' already exists in the database. Please use a unique course code.");
         }
 
         // 3. Direct SQL INSERT via CourseDAO
@@ -61,11 +70,38 @@ public class CourseService {
 
     /**
      * Polymorphic overload to add a course using individual parameter values.
+     * Demonstrates Polymorphism and Abstraction.
      */
     public Course addCourse(String courseCode, String courseName, int creditValue, int theoryHours,
                             int practicalHours, String department, String semester, String description)
             throws ValidationException, DatabaseException {
         Course course = new Course(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+        return addCourse(course);
+    }
+
+    /**
+     * Polymorphic overload to add a standard course with default 30h theory and 30h practical contact hours.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public Course addCourse(String courseCode, String courseName, int creditValue,
+                            String department, String semester)
+            throws ValidationException, DatabaseException {
+        int defaultTheory = (creditValue >= 2) ? 30 : 15;
+        int defaultPractical = (creditValue >= 3) ? 30 : 0;
+        return addCourse(courseCode, courseName, creditValue, defaultTheory, defaultPractical, department, semester, "");
+    }
+
+    /**
+     * Polymorphic overload to add a full curriculum course with explicit semester number and academic year.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public Course addCourse(String courseCode, String courseName, int creditValue, int theoryHours,
+                            int practicalHours, String department, String semester, int semesterNumber,
+                            String academicYear, String description)
+            throws ValidationException, DatabaseException {
+        Course course = new Course(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+        course.setSemesterNumber(semesterNumber);
+        course.setAcademicYear(academicYear);
         return addCourse(course);
     }
 
