@@ -426,4 +426,75 @@ public class ValidationUtil {
             throw new ValidationException("Course Code cannot be empty for lookup.");
         }
     }
+
+    /**
+     * Validates notice fields for creation or updating.
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     *
+     * @param notice Notice entity to validate
+     * @throws ValidationException If validation constraints fail
+     */
+    public static void validateNotice(com.faculty.management.model.Notice notice) throws ValidationException {
+        if (notice == null) {
+            throw new ValidationException("Notice data cannot be null.");
+        }
+        if (isEmpty(notice.getTitle())) {
+            throw new ValidationException("Notice title is required.");
+        }
+        if (notice.getTitle().trim().length() < 3) {
+            throw new ValidationException("Notice title must be at least 3 characters long.");
+        }
+        if (isEmpty(notice.getContent())) {
+            throw new ValidationException("Notice content is required.");
+        }
+        if (notice.getContent().trim().length() < 5) {
+            throw new ValidationException("Notice content must be at least 5 characters long.");
+        }
+        if (isEmpty(notice.getCategory()) || "-- Select Category --".equalsIgnoreCase(notice.getCategory().trim())) {
+            throw new ValidationException("Please select a valid notice category.");
+        }
+        if (isEmpty(notice.getPriority())) {
+            throw new ValidationException("Please select a notice priority level.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate notice parameters directly.
+     */
+    public static void validateNotice(String title, String content, String category, String priority, String postedBy)
+            throws ValidationException {
+        com.faculty.management.model.Notice notice = new com.faculty.management.model.Notice(title, content, category, priority, postedBy);
+        validateNotice(notice);
+    }
+
+    /**
+     * Validates an existing notice for updating.
+     */
+    public static void validateNoticeUpdate(com.faculty.management.model.Notice notice) throws ValidationException {
+        if (notice == null) {
+            throw new ValidationException("Notice entity cannot be null for update.");
+        }
+        if (notice.getNoticeId() <= 0) {
+            throw new ValidationException("Invalid Notice ID specified for update.");
+        }
+        validateNotice(notice);
+    }
+
+    /**
+     * Validates notice deletion parameter.
+     */
+    public static void validateNoticeDeletion(int noticeId) throws ValidationException {
+        if (noticeId <= 0) {
+            throw new ValidationException("Invalid Notice ID specified for deletion.");
+        }
+    }
+
+    /**
+     * Validates notice lookup parameter.
+     */
+    public static void validateNoticeLookup(int noticeId) throws ValidationException {
+        if (noticeId <= 0) {
+            throw new ValidationException("Invalid Notice ID specified for lookup.");
+        }
+    }
 }

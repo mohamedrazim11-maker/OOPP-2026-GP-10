@@ -4,12 +4,13 @@ import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.*;
 import com.faculty.management.service.CourseService;
+import com.faculty.management.service.NoticeService;
 import com.faculty.management.service.UserService;
 
 import java.util.List;
 
 /**
- * Controller handling Administrator operations for User and Course Management.
+ * Controller handling Administrator operations for User, Course, and Notice Management.
  * Demonstrates Classes & Objects, Inheritance, Abstraction, Polymorphism, 
  * Encapsulation, and Error/Exception Handling.
  */
@@ -17,20 +18,30 @@ public class AdminController {
 
     private final UserService userService;
     private final CourseService courseService;
+    private final NoticeService noticeService;
 
     public AdminController() {
         this.userService = new UserService();
         this.courseService = new CourseService();
+        this.noticeService = new NoticeService();
     }
 
     public AdminController(UserService userService) {
         this.userService = userService;
         this.courseService = new CourseService();
+        this.noticeService = new NoticeService();
     }
 
     public AdminController(UserService userService, CourseService courseService) {
         this.userService = userService;
         this.courseService = courseService;
+        this.noticeService = new NoticeService();
+    }
+
+    public AdminController(UserService userService, CourseService courseService, NoticeService noticeService) {
+        this.userService = userService;
+        this.courseService = courseService;
+        this.noticeService = (noticeService != null) ? noticeService : new NoticeService();
     }
 
     /**
@@ -582,5 +593,112 @@ public class AdminController {
                                                  int creditValue, int theoryHours, int practicalHours,
                                                  String description) throws ValidationException, DatabaseException {
         return courseService.assignCourseInformation(courseCode, department, semester, creditValue, theoryHours, practicalHours, description);
+    }
+
+    // =========================================================================
+    // NOTICE MANAGEMENT BACKEND METHODS
+    // =========================================================================
+
+    /**
+     * Handles creation of a new notice.
+     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
+     *
+     * @param notice Notice entity
+     * @return Created Notice with database ID
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public Notice handleCreateNotice(Notice notice) throws ValidationException, DatabaseException {
+        return noticeService.createNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to create a notice using individual parameters.
+     */
+    public Notice handleCreateNotice(String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        return noticeService.createNotice(title, content, category, priority, postedBy);
+    }
+
+    /**
+     * Handles updating an existing notice.
+     *
+     * @param notice Notice entity with updated fields
+     * @return true if updated successfully
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleUpdateNotice(Notice notice) throws ValidationException, DatabaseException {
+        return noticeService.updateNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to update a notice with individual parameters.
+     */
+    public boolean handleUpdateNotice(int noticeId, String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        return noticeService.updateNotice(noticeId, title, content, category, priority, postedBy);
+    }
+
+    /**
+     * Handles deleting a notice by its ID.
+     *
+     * @param noticeId Notice ID
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleDeleteNotice(int noticeId) throws ValidationException, DatabaseException {
+        return noticeService.deleteNotice(noticeId);
+    }
+
+    /**
+     * Polymorphic overload to delete a notice using a Notice entity.
+     */
+    public boolean handleDeleteNotice(Notice notice) throws ValidationException, DatabaseException {
+        return noticeService.deleteNotice(notice);
+    }
+
+    /**
+     * Retrieves a single notice by ID for viewing.
+     *
+     * @param noticeId Notice ID
+     * @return Notice entity
+     * @throws ValidationException If ID invalid or notice not found
+     * @throws DatabaseException   If database error occurs
+     */
+    public Notice handleViewNotice(int noticeId) throws ValidationException, DatabaseException {
+        return noticeService.getNoticeById(noticeId);
+    }
+
+    /**
+     * Retrieves all notices in the system.
+     *
+     * @return List of Notice entities
+     * @throws DatabaseException If database error occurs
+     */
+    public List<Notice> loadAllNotices() throws DatabaseException {
+        return noticeService.getAllNotices();
+    }
+
+    /**
+     * Searches notices by keyword.
+     */
+    public List<Notice> handleSearchNotices(String keyword) throws DatabaseException {
+        return noticeService.searchNotices(keyword);
+    }
+
+    /**
+     * Retrieves notices filtered by category.
+     */
+    public List<Notice> handleViewNoticesByCategory(String category) throws DatabaseException {
+        return noticeService.getNoticesByCategory(category);
+    }
+
+    /**
+     * Returns total count of notices in the system.
+     */
+    public int handleGetNoticeCount() throws DatabaseException {
+        return noticeService.getNoticeCount();
     }
 }
