@@ -506,4 +506,13 @@ public class ValidationUtil {
             throw new ValidationException("Invalid Notice ID specified for lookup.");
         }
     }
+
+    /**
+     * Polymorphic overload to validate notice lookup by title string.
+     */
+    public static void validateNoticeLookup(String title) throws ValidationException {
+        if (isEmpty(title)) {
+            throw new ValidationException("Notice title cannot be empty for lookup.");
+        }
+    }
 }

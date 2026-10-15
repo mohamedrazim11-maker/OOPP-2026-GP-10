@@ -79,6 +79,41 @@ public class NoticeDAO {
     }
 
     /**
+     * Finds a single notice by title match.
+     *
+     * @param title Notice title
+     * @return Notice object or null if not found
+     * @throws DatabaseException If database query fails
+     */
+    public Notice findByTitle(String title) throws DatabaseException {
+        if (title == null || title.trim().isEmpty()) {
+            return null;
+        }
+        ensureTableAndSeed();
+        String sql = "SELECT * FROM notices WHERE LOWER(title) = LOWER(?)";
+
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, title.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToNotice(rs);
+                }
+            }
+            return null;
+        } catch (SQLException e) {
+            String lower = title.toLowerCase().trim();
+            for (Notice n : getFallbackNotices()) {
+                if (n.getTitle() != null && n.getTitle().toLowerCase().trim().equals(lower)) {
+                    return n;
+                }
+            }
+            throw new DatabaseException("Error retrieving notice by title: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Retrieves notices filtered by category (e.g. ACADEMIC, EXAMINATION, TIMETABLE, GENERAL).
      *
      * @param category Notice category

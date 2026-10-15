@@ -695,6 +695,23 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to retrieve a notice by title for viewing.
+     */
+    public Notice handleViewNoticeByTitle(String title) throws ValidationException, DatabaseException {
+        return noticeService.getNoticeByTitle(title);
+    }
+
+    /**
+     * Polymorphic overload to retrieve full notice details using a Notice entity.
+     */
+    public Notice handleViewNotice(Notice notice) throws ValidationException, DatabaseException {
+        if (notice == null) {
+            throw new ValidationException("Notice entity cannot be null for viewing.");
+        }
+        return handleViewNotice(notice.getNoticeId());
+    }
+
+    /**
      * Retrieves all notices in the system.
      *
      * @return List of Notice entities

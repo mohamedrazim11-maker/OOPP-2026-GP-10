@@ -503,6 +503,46 @@ public class NoticeManagementPanel extends JPanel {
         dialog.setVisible(true);
     }
 
+    /**
+     * Programmatically retrieves full notice details by ID.
+     * Demonstrates Abstraction, Encapsulation, Error/Exception Handling, and Database Handling.
+     */
+    public Notice viewNotice(int noticeId) throws ValidationException, DatabaseException {
+        return adminController.handleViewNotice(noticeId);
+    }
+
+    /**
+     * Polymorphic overload to retrieve notice details using a Notice entity.
+     */
+    public Notice viewNotice(Notice notice) throws ValidationException, DatabaseException {
+        return adminController.handleViewNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to retrieve notice details by title string.
+     */
+    public Notice viewNoticeByTitle(String title) throws ValidationException, DatabaseException {
+        return adminController.handleViewNoticeByTitle(title);
+    }
+
+    /**
+     * Programmatically searches notices by keyword and refreshes the view.
+     */
+    public List<Notice> searchNotices(String keyword) throws DatabaseException {
+        searchField.setText(keyword != null ? keyword : "");
+        applyFilter();
+        return currentNoticeList;
+    }
+
+    /**
+     * Programmatically filters notices by category and refreshes the view.
+     */
+    public List<Notice> filterByCategory(String category) throws DatabaseException {
+        categoryFilterBox.setSelectedItem(category != null ? category : "ALL");
+        applyFilter();
+        return currentNoticeList;
+    }
+
     // Encapsulated Getters for testing and programmatic automation
 
     public PrimaryButton getCreateNoticeButton() {
