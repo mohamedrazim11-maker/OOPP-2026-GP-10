@@ -378,6 +378,28 @@ public class NoticeManagementPanel extends JPanel {
     }
 
     /**
+     * Programmatically creates a new notice through the controller and refreshes table.
+     * Demonstrates Abstraction, Encapsulation, Error/Exception Handling, and Database Handling.
+     */
+    public Notice createNotice(Notice notice) throws ValidationException, DatabaseException {
+        Notice created = adminController.handleCreateNotice(notice);
+        loadNotices();
+        lastActionNoticeLabel.setText("Notice published: " + created.getTitle());
+        return created;
+    }
+
+    /**
+     * Polymorphic overload to create a notice using parameter list.
+     */
+    public Notice createNotice(String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        Notice created = adminController.handleCreateNotice(title, content, category, priority, postedBy);
+        loadNotices();
+        lastActionNoticeLabel.setText("Notice published: " + created.getTitle());
+        return created;
+    }
+
+    /**
      * Handles "Edit Notice" action UI.
      */
     public void handleEditNoticeAction() {

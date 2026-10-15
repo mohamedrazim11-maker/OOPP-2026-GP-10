@@ -621,6 +621,14 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to create a notice with default authority attribution.
+     */
+    public Notice handleCreateNotice(String title, String content, String category, String priority)
+            throws ValidationException, DatabaseException {
+        return noticeService.createNotice(title, content, category, priority);
+    }
+
+    /**
      * Handles updating an existing notice.
      *
      * @param notice Notice entity with updated fields
