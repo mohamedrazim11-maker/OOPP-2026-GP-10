@@ -18,6 +18,7 @@ public class AdminDashboard extends JFrame {
     private JTabbedPane tabbedPane;
     private UserManagementPanel userManagementPanel;
     private CourseManagementPanel courseManagementPanel;
+    private NoticeManagementPanel noticeManagementPanel;
 
     public AdminDashboard(User user) {
         this.currentUser = user;
@@ -78,9 +79,13 @@ public class AdminDashboard extends JFrame {
         // Tab 3: Course Management
         courseManagementPanel = new CourseManagementPanel();
 
+        // Tab 4: Notice Board Management
+        noticeManagementPanel = new NoticeManagementPanel();
+
         tabbedPane.addTab("  Overview  ", overviewPanel);
         tabbedPane.addTab("  User Profiles  ", userManagementPanel);
         tabbedPane.addTab("  Course Management  ", courseManagementPanel);
+        tabbedPane.addTab("  Notice Board  ", noticeManagementPanel);
 
         add(headerPanel, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
@@ -130,9 +135,18 @@ public class AdminDashboard extends JFrame {
             }
         });
 
+        JPanel noticeCard = createModuleCard("📢 Notice Board", "Create, edit, delete, and view official faculty notices and circulars. Click to manage.", new Color(245, 158, 11));
+        noticeCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        noticeCard.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                tabbedPane.setSelectedIndex(3); // Switch to Notice Board tab
+            }
+        });
+
         modulesGrid.add(userCard);
         modulesGrid.add(courseCard);
-        modulesGrid.add(createModuleCard("📢 Notice Board", "Publish and maintain official faculty notices and circulars.", new Color(245, 158, 11)));
+        modulesGrid.add(noticeCard);
         modulesGrid.add(createModuleCard("🗓️ Timetable Management", "Create and maintain lecture and lab timetables.", new Color(139, 92, 246)));
 
         welcomeCard.add(welcomeLabel);
@@ -165,4 +179,21 @@ public class AdminDashboard extends JFrame {
 
         return card;
     }
+
+    public UserManagementPanel getUserManagementPanel() {
+        return userManagementPanel;
+    }
+
+    public CourseManagementPanel getCourseManagementPanel() {
+        return courseManagementPanel;
+    }
+
+    public NoticeManagementPanel getNoticeManagementPanel() {
+        return noticeManagementPanel;
+    }
+
+    public JTabbedPane getTabbedPane() {
+        return tabbedPane;
+    }
 }
+

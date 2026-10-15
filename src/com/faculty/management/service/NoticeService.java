@@ -2,28 +2,143 @@ package com.faculty.management.service;
 
 import com.faculty.management.dao.NoticeDAO;
 import com.faculty.management.exception.DatabaseException;
+import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.Notice;
+import com.faculty.management.util.ValidationUtil;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Service layer for retrieving and filtering official faculty notices.
+ * Service layer for managing official faculty notices and circulars.
+ * Implements business logic, validation constraints, and database integration.
+ * 
+ * Demonstrates Core OOP Principles:
+ * - Classes and Objects: NoticeService manages notice lifecycle.
+ * - Abstraction: Separates presentation controller from direct DAO operations.
+ * - Polymorphism: Overloaded method signatures for notice creation, updating, and deletion.
+ * - Encapsulation: Encapsulated NoticeDAO dependency and private helper logic.
+ * - Error and Exception Handling: Throws ValidationException and DatabaseException with descriptive messages.
+ * - Database Handling: Coordinates transactional operations with NoticeDAO.
  */
 public class NoticeService {
 
-    private final NoticeDAO noticeDAO = new NoticeDAO();
+    private final NoticeDAO noticeDAO;
 
+    public NoticeService() {
+        this.noticeDAO = new NoticeDAO();
+    }
+
+    public NoticeService(NoticeDAO noticeDAO) {
+        this.noticeDAO = (noticeDAO != null) ? noticeDAO : new NoticeDAO();
+    }
+
+    /**
+     * Retrieves all notices from the database.
+     */
     public List<Notice> getAllNotices() throws DatabaseException {
         return noticeDAO.findAll();
     }
 
+    /**
+     * Retrieves a single notice by its primary key ID.
+     */
+    public Notice getNoticeById(int noticeId) throws ValidationException, DatabaseException {
+        ValidationUtil.validateNoticeLookup(noticeId);
+        Notice notice = noticeDAO.findById(noticeId);
+        if (notice == null) {
+            throw new ValidationException("Notice with ID " + noticeId + " was not found.");
+        }
+        return notice;
+    }
+
+    /**
+     * Retrieves notices filtered by category.
+     */
     public List<Notice> getNoticesByCategory(String category) throws DatabaseException {
-        if (category == null || category.equalsIgnoreCase("ALL") || category.trim().isEmpty()) {
+        if (category == null || "ALL".equalsIgnoreCase(category.trim()) || category.trim().isEmpty()) {
             return getAllNotices();
         }
-        return getAllNotices().stream()
-                .filter(n -> n.getCategory().equalsIgnoreCase(category.trim()))
-                .collect(Collectors.toList());
+        return noticeDAO.findByCategory(category);
+    }
+
+    /**
+     * Searches notices by keyword matching title, content, or category.
+     */
+    public List<Notice> searchNotices(String keyword) throws DatabaseException {
+        return noticeDAO.search(keyword);
+    }
+
+    /**
+     * Creates a new notice in the database.
+     *
+     * @param notice Notice entity to save
+     * @return Saved Notice entity with generated ID
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public Notice createNotice(Notice notice) throws ValidationException, DatabaseException {
+        ValidationUtil.validateNotice(notice);
+        return noticeDAO.insert(notice);
+    }
+
+    /**
+     * Polymorphic overload to create a notice using individual parameters.
+     */
+    public Notice createNotice(String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        Notice notice = new Notice(title, content, category, priority, postedBy);
+        return createNotice(notice);
+    }
+
+    /**
+     * Updates an existing notice in the database.
+     *
+     * @param notice Notice entity containing updated fields
+     * @return true if updated
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean updateNotice(Notice notice) throws ValidationException, DatabaseException {
+        ValidationUtil.validateNoticeUpdate(notice);
+        return noticeDAO.update(notice);
+    }
+
+    /**
+     * Polymorphic overload to update a notice using individual parameters.
+     */
+    public boolean updateNotice(int noticeId, String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        Notice notice = new Notice(noticeId, title, content, category, priority, postedBy, null);
+        return updateNotice(notice);
+    }
+
+    /**
+     * Deletes a notice by its ID.
+     *
+     * @param noticeId Notice ID
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean deleteNotice(int noticeId) throws ValidationException, DatabaseException {
+        ValidationUtil.validateNoticeDeletion(noticeId);
+        return noticeDAO.delete(noticeId);
+    }
+
+    /**
+     * Polymorphic overload to delete a notice using a Notice entity.
+     */
+    public boolean deleteNotice(Notice notice) throws ValidationException, DatabaseException {
+        if (notice == null) {
+            throw new ValidationException("Notice entity cannot be null for deletion.");
+        }
+        return deleteNotice(notice.getNoticeId());
+    }
+
+    /**
+     * Returns total count of notices in the system.
+     */
+    public int getNoticeCount() throws DatabaseException {
+        return noticeDAO.getCount();
     }
 }

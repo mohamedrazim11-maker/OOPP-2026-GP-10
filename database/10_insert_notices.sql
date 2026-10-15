@@ -1,0 +1,13 @@
+-- =======================================================
+-- Seed Script: Notices & Announcements
+-- Faculty Management System
+-- =======================================================
+
+USE faculty_management_db;
+
+INSERT INTO notices (title, content, category, priority, posted_by, posted_date) VALUES
+('Mandatory 80% Attendance Requirement for Semester 2 Examinations', 'All undergraduates of the Faculty of Technology are hereby reminded that an overall attendance of at least 80% in both theory lectures and laboratory sessions is mandatory to be deemed eligible to sit for the upcoming semester final examinations. Students falling below 80% must immediately verify that all medical certificates have been formally lodged with the Technical Officer.', 'ACADEMIC', 'URGENT', 'Department of Information and Communication Technology', CURDATE()),
+('Continuous Assessment (CA >= 40%) Eligibility Lists Published', 'The provisional Continuous Assessment (CA) scores and eligibility statuses for Level II Semester I modules (CS201, CS202, CS203, CS204, MA201) have been compiled. In accordance with university curriculum criteria, students must achieve a minimum CA score of 40% out of 100 to sit for the respective end-semester exam. Please check your individual grade transcript.', 'EXAMINATION', 'URGENT', 'Examination Division & Course Coordinators', CURDATE()),
+('Laboratory Session Venue Adjustment — Computer Lab 1 & 2', 'Commencing Monday next week, practical laboratory sessions for Object Oriented Programming (CS202) and Database Management Systems (CS203) will be conducted in Computer Lab 2 (Level 2, Technology Complex). Please refer to the updated class timetable on your student dashboard.', 'TIMETABLE', 'NORMAL', 'Technical Officer in Charge', CURDATE()),
+('Submission Deadline for Outstanding Medical Certificates', 'Undergraduates with excused absences between Week 1 and Week 10 must lodge certified medical certificates within 7 days of this announcement. Certificates must be issued by a registered Government Medical Officer (GMO) and uploaded as a PDF via the student portal Medical tab.', 'GENERAL', 'NORMAL', 'Senior Assistant Registrar / Academic', CURDATE()),
+('UGC Circular No. 12-2024 Grading System Implementation Guidelines', 'Official notification regarding the standard Sri Lankan University Grants Commission (UGC) Circular No. 12-2024 grading criteria. Letter grades (A+ to E) and corresponding Grade Point Values (4.00 to 0.00) are mapped based on 40% CA + 60% Final Examination weighting. Cumulative CGPA classifications are available on the CGPA breakdown tab.', 'ACADEMIC', 'INFO', 'Dean\'s Office, Faculty of Technology', CURDATE());
