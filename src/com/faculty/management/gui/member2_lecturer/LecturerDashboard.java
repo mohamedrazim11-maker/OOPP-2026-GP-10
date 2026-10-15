@@ -10,7 +10,7 @@ import java.awt.*;
 
 /**
  * Lecturer Dashboard GUI.
- * Redirect frame for Lecturer role supporting Profile & Material Management tabs.
+ * Redirect frame for Lecturer role supporting Profile, Material Management, and Marks Entry tabs.
  */
 public class LecturerDashboard extends JFrame {
 
@@ -94,6 +94,9 @@ public class LecturerDashboard extends JFrame {
 
         // Tab 3: Course Materials (Week 2 Requirement)
         tabbedPane.addTab("📄 Course Materials", new CourseMaterialsPanel());
+
+        // Tab 4: Marks Management Engine (Week 3 Requirement)
+        tabbedPane.addTab("📝 Marks Entry", new MarkManagementPanel());
 
         add(headerPanel, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
