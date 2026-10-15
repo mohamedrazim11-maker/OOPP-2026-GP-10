@@ -228,3 +228,17 @@ Encapsulation
 Error and exception handling 
 Database Handlin . and commit it to github
 ================================================================================
+
+[PROMPT 23] - Create, Edit, Delete, and View Notices UI & Backend Options One by One
+--------------------------------------------------------------------------------
+Create notices
+* Edit notices
+* Delete notices
+* View notices so implement ui and back end for each options and push them into github one by one   .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
+================================================================================

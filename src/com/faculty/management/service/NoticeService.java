@@ -78,6 +78,9 @@ public class NoticeService {
      */
     public Notice createNotice(Notice notice) throws ValidationException, DatabaseException {
         ValidationUtil.validateNotice(notice);
+        if (noticeDAO.hasNoticeWithTitle(notice.getTitle())) {
+            throw new ValidationException("A notice with title '" + notice.getTitle() + "' already exists. Please specify a unique title.");
+        }
         return noticeDAO.insert(notice);
     }
 
@@ -88,6 +91,14 @@ public class NoticeService {
             throws ValidationException, DatabaseException {
         Notice notice = new Notice(title, content, category, priority, postedBy);
         return createNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to create a notice with default authority attribution.
+     */
+    public Notice createNotice(String title, String content, String category, String priority)
+            throws ValidationException, DatabaseException {
+        return createNotice(title, content, category, priority, "Faculty Administration");
     }
 
     /**
