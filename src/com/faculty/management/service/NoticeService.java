@@ -52,6 +52,18 @@ public class NoticeService {
     }
 
     /**
+     * Retrieves a single notice by exact or keyword title.
+     */
+    public Notice getNoticeByTitle(String title) throws ValidationException, DatabaseException {
+        ValidationUtil.validateNoticeLookup(title);
+        Notice notice = noticeDAO.findByTitle(title);
+        if (notice == null) {
+            throw new ValidationException("Notice with title '" + title + "' was not found.");
+        }
+        return notice;
+    }
+
+    /**
      * Retrieves notices filtered by category.
      */
     public List<Notice> getNoticesByCategory(String category) throws DatabaseException {
