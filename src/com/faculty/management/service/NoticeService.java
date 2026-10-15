@@ -111,6 +111,9 @@ public class NoticeService {
      */
     public boolean updateNotice(Notice notice) throws ValidationException, DatabaseException {
         ValidationUtil.validateNoticeUpdate(notice);
+        if (noticeDAO.hasNoticeWithTitle(notice.getTitle(), notice.getNoticeId())) {
+            throw new ValidationException("Another notice with title '" + notice.getTitle() + "' already exists. Please specify a unique title.");
+        }
         return noticeDAO.update(notice);
     }
 
@@ -121,6 +124,19 @@ public class NoticeService {
             throws ValidationException, DatabaseException {
         Notice notice = new Notice(noticeId, title, content, category, priority, postedBy, null);
         return updateNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to update an existing Notice entity with new title and content.
+     */
+    public boolean updateNotice(Notice existingNotice, String newTitle, String newContent)
+            throws ValidationException, DatabaseException {
+        if (existingNotice == null) {
+            throw new ValidationException("Existing notice cannot be null.");
+        }
+        existingNotice.setTitle(newTitle);
+        existingNotice.setContent(newContent);
+        return updateNotice(existingNotice);
     }
 
     /**

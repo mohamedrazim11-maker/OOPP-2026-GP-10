@@ -231,6 +231,34 @@ public class NoticeDAO {
     }
 
     /**
+     * Checks if another notice with the specified title already exists, excluding a given notice ID.
+     * Used during edit operations to prevent duplicate notice titles.
+     *
+     * @param title           Notice title
+     * @param excludeNoticeId Notice ID to exclude
+     * @return true if another notice with title exists
+     */
+    public boolean hasNoticeWithTitle(String title, int excludeNoticeId) {
+        if (title == null || title.trim().isEmpty()) {
+            return false;
+        }
+        ensureTableAndSeed();
+        String sql = "SELECT COUNT(*) FROM notices WHERE LOWER(title) = LOWER(?) AND notice_id != ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, title.trim());
+            stmt.setInt(2, excludeNoticeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return false;
+    }
+
+    /**
      * Updates an existing notice in the database.
      *
      * @param notice Notice entity with updated values
