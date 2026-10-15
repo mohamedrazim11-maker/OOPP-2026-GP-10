@@ -458,6 +458,41 @@ public class NoticeManagementPanel extends JPanel {
     }
 
     /**
+     * Programmatically deletes a notice by ID through the controller and refreshes table.
+     * Demonstrates Abstraction, Encapsulation, Error/Exception Handling, and Database Handling.
+     */
+    public boolean deleteNotice(int noticeId) throws ValidationException, DatabaseException {
+        boolean deleted = adminController.handleDeleteNotice(noticeId);
+        if (deleted) {
+            loadNotices();
+            lastActionNoticeLabel.setText("Notice ID #" + noticeId + " deleted successfully.");
+        }
+        return deleted;
+    }
+
+    /**
+     * Polymorphic overload to delete a notice by Notice entity.
+     */
+    public boolean deleteNotice(Notice notice) throws ValidationException, DatabaseException {
+        if (notice == null) {
+            throw new ValidationException("Notice cannot be null for deletion.");
+        }
+        return deleteNotice(notice.getNoticeId());
+    }
+
+    /**
+     * Polymorphic overload to delete a notice by title string.
+     */
+    public boolean deleteNotice(String title) throws ValidationException, DatabaseException {
+        boolean deleted = adminController.handleDeleteNotice(title);
+        if (deleted) {
+            loadNotices();
+            lastActionNoticeLabel.setText("Notice '" + title + "' deleted successfully.");
+        }
+        return deleted;
+    }
+
+    /**
      * Handles "View Notice" action UI.
      */
     public void handleViewNoticeAction() {

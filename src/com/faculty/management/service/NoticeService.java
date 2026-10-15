@@ -163,6 +163,14 @@ public class NoticeService {
     }
 
     /**
+     * Polymorphic overload to delete a notice by title string.
+     */
+    public boolean deleteNotice(String title) throws ValidationException, DatabaseException {
+        ValidationUtil.validateNoticeDeletion(title);
+        return noticeDAO.deleteByTitle(title);
+    }
+
+    /**
      * Returns total count of notices in the system.
      */
     public int getNoticeCount() throws DatabaseException {

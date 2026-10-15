@@ -490,6 +490,15 @@ public class ValidationUtil {
     }
 
     /**
+     * Polymorphic overload to validate notice deletion by title string.
+     */
+    public static void validateNoticeDeletion(String title) throws ValidationException {
+        if (isEmpty(title)) {
+            throw new ValidationException("Notice title cannot be empty for deletion.");
+        }
+    }
+
+    /**
      * Validates notice lookup parameter.
      */
     public static void validateNoticeLookup(int noticeId) throws ValidationException {
