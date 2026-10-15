@@ -35,7 +35,8 @@ public class CourseFormDialog extends JDialog {
         ADD,
         UPDATE,
         DELETE,
-        VIEW
+        VIEW,
+        ASSIGN_INFO
     }
 
     // Encapsulated Fields
@@ -67,14 +68,14 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
-     * Constructor specifying the operational mode (ADD, UPDATE, DELETE, or VIEW).
+     * Constructor specifying the operational mode (ADD, UPDATE, DELETE, VIEW, or ASSIGN_INFO).
      */
     public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode) {
         this(parent, adminController, mode, null);
     }
 
     /**
-     * Overloaded constructor for Add, Update, Delete, or View with an initial course entity.
+     * Overloaded constructor for Add, Update, Delete, View, or Assign Info with an initial course entity.
      */
     public CourseFormDialog(JFrame parent, AdminController adminController, FormMode mode, Course initialCourse) {
         super(parent, getDialogTitle(mode), true);
@@ -87,7 +88,7 @@ public class CourseFormDialog extends JDialog {
 
         initComponents();
 
-        if (this.mode == FormMode.UPDATE || this.mode == FormMode.DELETE || this.mode == FormMode.VIEW) {
+        if (this.mode == FormMode.UPDATE || this.mode == FormMode.DELETE || this.mode == FormMode.VIEW || this.mode == FormMode.ASSIGN_INFO) {
             loadExistingCourses(initialCourse);
         }
     }
@@ -99,6 +100,8 @@ public class CourseFormDialog extends JDialog {
             return "Update Course — Faculty Management System";
         } else if (mode == FormMode.VIEW) {
             return "View Course Details — Faculty Management System";
+        } else if (mode == FormMode.ASSIGN_INFO) {
+            return "Assign Course Information — Faculty Management System";
         }
         return "Add New Course — Faculty Management System";
     }
@@ -122,6 +125,8 @@ public class CourseFormDialog extends JDialog {
             headerBg = new Color(15, 118, 110); // Teal for Update
         } else if (mode == FormMode.VIEW) {
             headerBg = new Color(37, 99, 235); // Royal Blue for View
+        } else if (mode == FormMode.ASSIGN_INFO) {
+            headerBg = new Color(109, 40, 217); // Purple for Assign Info
         } else {
             headerBg = new Color(30, 58, 138); // Navy for Add
         }
@@ -135,6 +140,8 @@ public class CourseFormDialog extends JDialog {
             titleText = "Update Academic Course";
         } else if (mode == FormMode.VIEW) {
             titleText = "View Academic Course Details";
+        } else if (mode == FormMode.ASSIGN_INFO) {
+            titleText = "Assign Course Information";
         } else {
             titleText = "Add New Course";
         }
@@ -149,6 +156,8 @@ public class CourseFormDialog extends JDialog {
             subTitleText = "Select an existing course module and modify its academic details in MySQL database";
         } else if (mode == FormMode.VIEW) {
             subTitleText = "Select an existing course module to inspect comprehensive curriculum details from MySQL database";
+        } else if (mode == FormMode.ASSIGN_INFO) {
+            subTitleText = "Select a course module and assign its academic department, semester, credits, and contact hours";
         } else {
             subTitleText = "Enter academic course details to register a new module in the curriculum";
         }
@@ -169,8 +178,8 @@ public class CourseFormDialog extends JDialog {
         gbc.insets = new Insets(6, 4, 6, 4);
         int gridY = 0;
 
-        // Course Selector (Displayed in UPDATE, DELETE, and VIEW modes)
-        if (mode == FormMode.UPDATE || mode == FormMode.DELETE || mode == FormMode.VIEW) {
+        // Course Selector (Displayed in UPDATE, DELETE, VIEW, and ASSIGN_INFO modes)
+        if (mode == FormMode.UPDATE || mode == FormMode.DELETE || mode == FormMode.VIEW || mode == FormMode.ASSIGN_INFO) {
             gbc.gridx = 0;
             gbc.gridy = gridY;
             gbc.weightx = 0.35;
@@ -179,6 +188,8 @@ public class CourseFormDialog extends JDialog {
                 selectorLabel = "Select Course to Delete *";
             } else if (mode == FormMode.VIEW) {
                 selectorLabel = "Select Course to View *";
+            } else if (mode == FormMode.ASSIGN_INFO) {
+                selectorLabel = "Select Course to Assign Info *";
             } else {
                 selectorLabel = "Select Course *";
             }
@@ -302,7 +313,7 @@ public class CourseFormDialog extends JDialog {
         JScrollPane descScroll = new JScrollPane(descriptionArea);
         formPanel.add(descScroll, gbc);
 
-        // Set fields read-only in DELETE and VIEW modes
+        // Set fields read-only in DELETE and VIEW modes, or Course Code & Name in ASSIGN_INFO mode
         if (mode == FormMode.DELETE || mode == FormMode.VIEW) {
             courseCodeField.setEditable(false);
             courseCodeField.setBackground(new Color(241, 245, 249));
@@ -315,6 +326,11 @@ public class CourseFormDialog extends JDialog {
             semesterComboBox.setEnabled(false);
             descriptionArea.setEditable(false);
             descriptionArea.setBackground(new Color(241, 245, 249));
+        } else if (mode == FormMode.ASSIGN_INFO) {
+            courseCodeField.setEditable(false);
+            courseCodeField.setBackground(new Color(241, 245, 249));
+            courseNameField.setEditable(false);
+            courseNameField.setBackground(new Color(241, 245, 249));
         }
 
         // Error message banner
@@ -360,6 +376,18 @@ public class CourseFormDialog extends JDialog {
             } else if (mode == FormMode.UPDATE) {
                 saveButton = new PrimaryButton("Update Course");
                 saveButton.setPreferredSize(new Dimension(135, 38));
+            } else if (mode == FormMode.ASSIGN_INFO) {
+                saveButton = new CustomButton(
+                        "📋  Assign Course Info",
+                        new Color(109, 40, 217), // Purple 700
+                        new Color(124, 58, 237), // Hover Purple 600
+                        new Color(91, 33, 182),  // Pressed Purple 800
+                        Color.WHITE,
+                        null,
+                        8
+                );
+                saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                saveButton.setPreferredSize(new Dimension(185, 38));
             } else {
                 saveButton = new PrimaryButton("Add Course");
                 saveButton.setPreferredSize(new Dimension(135, 38));
@@ -396,6 +424,8 @@ public class CourseFormDialog extends JDialog {
                     emptyMsg = "No courses found in database to delete.";
                 } else if (mode == FormMode.VIEW) {
                     emptyMsg = "No courses found in database to view.";
+                } else if (mode == FormMode.ASSIGN_INFO) {
+                    emptyMsg = "No courses found in database to assign information.";
                 } else {
                     emptyMsg = "No courses found in database to update.";
                 }
@@ -541,7 +571,29 @@ public class CourseFormDialog extends JDialog {
             targetCourse.setSemester(selectedSem);
             targetCourse.setDescription(description);
 
-            if (mode == FormMode.UPDATE) {
+            if (mode == FormMode.ASSIGN_INFO) {
+                if (courseIdToUpdate <= 0) {
+                    throw new ValidationException("Please select a valid course to assign information.");
+                }
+                targetCourse.setCourseId(courseIdToUpdate);
+
+                // Perform assignment in database via controller
+                boolean success = adminController.handleAssignCourseInformation(
+                        courseIdToUpdate, selectedDept, selectedSem, creditValue, theoryHours, practicalHours, description);
+                if (success) {
+                    this.course = targetCourse;
+                    this.saved = true;
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Course information for '" + targetCourse.getCourseCode() + " - " + targetCourse.getCourseName() +
+                            "' was successfully assigned and updated in the system!",
+                            "Course Information Assigned",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    dispose();
+                }
+            } else if (mode == FormMode.UPDATE) {
                 if (courseIdToUpdate <= 0) {
                     throw new ValidationException("Please select a course to update.");
                 }

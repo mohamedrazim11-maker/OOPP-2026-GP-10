@@ -475,4 +475,58 @@ public class AdminController {
         }
         return handleViewCourse(course.getCourseId());
     }
+
+    /**
+     * Handles assigning course information to an existing course.
+     * Demonstrates Abstraction, Encapsulation, Error/Exception Handling, and Database Handling.
+     *
+     * @param courseId       Unique ID of course
+     * @param department     Department to assign
+     * @param semester       Semester to assign
+     * @param creditValue    Credits to assign
+     * @param theoryHours    Theory hours to assign
+     * @param practicalHours Practical hours to assign
+     * @param description    Description / syllabus info
+     * @return true if successfully assigned in database
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database operation fails
+     */
+    public boolean handleAssignCourseInformation(int courseId, String department, String semester,
+                                                 int creditValue, int theoryHours, int practicalHours,
+                                                 String description) throws ValidationException, DatabaseException {
+        return courseService.assignCourseInformation(courseId, department, semester, creditValue, theoryHours, practicalHours, description);
+    }
+
+    /**
+     * Polymorphic overload to handle assigning course information using a Course model entity.
+     * Demonstrates Polymorphism and Object-Oriented design.
+     *
+     * @param course Course entity containing assigned details
+     * @return true if successfully assigned
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleAssignCourseInformation(Course course) throws ValidationException, DatabaseException {
+        return courseService.assignCourseInformation(course);
+    }
+
+    /**
+     * Polymorphic overload to handle assigning course information using unique course code.
+     *
+     * @param courseCode     Unique course code
+     * @param department     Department to assign
+     * @param semester       Semester to assign
+     * @param creditValue    Credits to assign
+     * @param theoryHours    Theory hours to assign
+     * @param practicalHours Practical hours to assign
+     * @param description    Description / syllabus info
+     * @return true if successfully assigned
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleAssignCourseInformation(String courseCode, String department, String semester,
+                                                 int creditValue, int theoryHours, int practicalHours,
+                                                 String description) throws ValidationException, DatabaseException {
+        return courseService.assignCourseInformation(courseCode, department, semester, creditValue, theoryHours, practicalHours, description);
+    }
 }
