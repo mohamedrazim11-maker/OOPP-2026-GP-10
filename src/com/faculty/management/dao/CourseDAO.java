@@ -269,32 +269,71 @@ public class CourseDAO {
     }
 
     /**
-     * Updates an existing course record in the database.
+     * Updates an existing course record in the database using parameterized JDBC.
+     * Demonstrates Database Handling, Abstraction, and Exception Handling.
      *
      * @param course Course entity with updated values
      * @return true if updated successfully
      * @throws DatabaseException If database operation fails
      */
     public boolean updateCourse(Course course) throws DatabaseException {
-        String sql = "UPDATE courses SET course_code = ?, course_name = ?, credit_value = ?, theory_hours = ?, " +
-                     "practical_hours = ?, department = ?, semester = ?, description = ? WHERE course_id = ?";
+        if (course == null || course.getCourseId() <= 0) {
+            throw new DatabaseException("Invalid course specified for update.");
+        }
 
         Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        int creditVal = course.getCreditValue() > 0 ? course.getCreditValue() : 2;
+        int theoryHours = course.getTheoryHours();
+        int practicalHours = course.getPracticalHours();
+        int theorySessions = (theoryHours > 0) ? Math.max(1, (theoryHours + 1) / 2) : 15;
+        int practicalSessions = (practicalHours > 0) ? Math.max(1, (practicalHours + 1) / 2) : 0;
+        int semesterNum = course.getSemesterNumber() > 0 ? course.getSemesterNumber() :
+                (course.getSemester() != null && course.getSemester().contains("1") ? 1 : 2);
+        String academicYear = course.getAcademicYear() != null && !course.getAcademicYear().isEmpty() ?
+                course.getAcademicYear() : "2025/2026";
+
+        boolean hasExtendedCols = hasColumn(conn, "courses", "credits");
+
+        String sql;
+        if (hasExtendedCols) {
+            sql = "UPDATE courses SET course_code = ?, course_name = ?, credit_value = ?, credits = ?, theory_hours = ?, " +
+                  "practical_hours = ?, theory_sessions = ?, practical_sessions = ?, department = ?, semester = ?, " +
+                  "semester_number = ?, academic_year = ?, description = ? WHERE course_id = ?";
+        } else {
+            sql = "UPDATE courses SET course_code = ?, course_name = ?, credit_value = ?, theory_hours = ?, " +
+                  "practical_hours = ?, department = ?, semester = ?, description = ? WHERE course_id = ?";
+        }
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, course.getCourseCode());
             stmt.setString(2, course.getCourseName());
-            stmt.setInt(3, course.getCreditValue());
-            stmt.setInt(4, course.getTheoryHours());
-            stmt.setInt(5, course.getPracticalHours());
-            stmt.setString(6, course.getDepartment());
-            stmt.setString(7, course.getSemester());
-            stmt.setString(8, course.getDescription());
-            stmt.setInt(9, course.getCourseId());
+            stmt.setInt(3, creditVal);
+
+            if (hasExtendedCols) {
+                stmt.setInt(4, creditVal); // credits
+                stmt.setInt(5, theoryHours);
+                stmt.setInt(6, practicalHours);
+                stmt.setInt(7, theorySessions);
+                stmt.setInt(8, practicalSessions);
+                stmt.setString(9, course.getDepartment());
+                stmt.setString(10, course.getSemester());
+                stmt.setInt(11, semesterNum);
+                stmt.setString(12, academicYear);
+                stmt.setString(13, course.getDescription());
+                stmt.setInt(14, course.getCourseId());
+            } else {
+                stmt.setInt(4, theoryHours);
+                stmt.setInt(5, practicalHours);
+                stmt.setString(6, course.getDepartment());
+                stmt.setString(7, course.getSemester());
+                stmt.setString(8, course.getDescription());
+                stmt.setInt(9, course.getCourseId());
+            }
 
             int affected = stmt.executeUpdate();
             if (affected == 0) {
-                throw new DatabaseException("No course found with ID " + course.getCourseId() + " to update.");
+                throw new DatabaseException("No course found with ID " + course.getCourseId() + " to update in database.");
             }
             return true;
 
@@ -304,7 +343,36 @@ public class CourseDAO {
     }
 
     /**
-     * Deletes a course by unique course ID.
+     * Polymorphic overload to update an existing course using individual field parameters.
+     * Demonstrates Polymorphism and Database Handling.
+     */
+    public boolean updateCourse(int courseId, String courseCode, String courseName, int creditValue,
+                                int theoryHours, int practicalHours, String department, String semester, String description)
+            throws DatabaseException {
+        Course course = new Course(courseId, courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+        return updateCourse(course);
+    }
+
+    /**
+     * Polymorphic overload to update a course using course code as identifier.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public boolean updateCourse(String courseCode, String courseName, int creditValue, int theoryHours,
+                                int practicalHours, String department, String semester, String description)
+            throws DatabaseException {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new DatabaseException("Course code cannot be empty for updating.");
+        }
+        Course existing = findByCode(courseCode.trim());
+        if (existing == null) {
+            throw new DatabaseException("No course found with code '" + courseCode + "' to update.");
+        }
+        return updateCourse(existing.getCourseId(), courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+    }
+
+    /**
+     * Deletes a course by unique course ID with foreign key validation.
+     * Demonstrates Database Handling and Error/Exception Handling.
      *
      * @param courseId ID of the course to delete
      * @return true if deleted
@@ -323,8 +391,9 @@ public class CourseDAO {
             return true;
 
         } catch (SQLException e) {
-            if (e.getErrorCode() == 1451 || (e.getMessage() != null && e.getMessage().contains("foreign key constraint"))) {
-                throw new DatabaseException("Cannot delete course because student marks, attendance, or materials exist for it.", e);
+            if (e.getErrorCode() == 1451 || e.getErrorCode() == 547 ||
+                (e.getMessage() != null && (e.getMessage().contains("foreign key constraint") || e.getMessage().contains("REFERENCE constraint")))) {
+                throw new DatabaseException("Cannot delete course (ID: " + courseId + ") because student marks, attendance, timetables, or materials exist for it.", e);
             }
             throw new DatabaseException("Failed to delete course: " + e.getMessage(), e);
         }
@@ -360,6 +429,90 @@ public class CourseDAO {
             throw new DatabaseException("Course entity cannot be null.");
         }
         return deleteCourse(course.getCourseId());
+    }
+
+    /**
+     * Searches courses by course code or course name substring directly from the database.
+     * Demonstrates Database Handling and Abstraction for View Courses option.
+     *
+     * @param query Search keyword
+     * @return List of matching Course entities
+     * @throws DatabaseException If database query fails
+     */
+    public List<Course> searchCourses(String query) throws DatabaseException {
+        List<Course> results = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return getAllCourses();
+        }
+
+        String sql = "SELECT course_id, course_code, course_name, credit_value, theory_hours, practical_hours, " +
+                     "department, semester, description FROM courses " +
+                     "WHERE LOWER(course_code) LIKE ? OR LOWER(course_name) LIKE ? ORDER BY course_code ASC";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        String pattern = "%" + query.trim().toLowerCase() + "%";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, pattern);
+            stmt.setString(2, pattern);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    results.add(mapResultSetToCourse(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to search courses in database: " + e.getMessage(), e);
+        }
+
+        return results;
+    }
+
+    /**
+     * Retrieves courses filtered by academic department for View Courses option.
+     * Demonstrates Database Handling and Abstraction.
+     */
+    public List<Course> getCoursesByDepartment(String department) throws DatabaseException {
+        List<Course> results = new ArrayList<>();
+        if (department == null || department.trim().isEmpty() || "-- Select Department --".equals(department.trim())) {
+            return getAllCourses();
+        }
+
+        String sql = "SELECT course_id, course_code, course_name, credit_value, theory_hours, practical_hours, " +
+                     "department, semester, description FROM courses WHERE department = ? ORDER BY course_code ASC";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, department.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    results.add(mapResultSetToCourse(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to fetch courses by department: " + e.getMessage(), e);
+        }
+
+        return results;
+    }
+
+    /**
+     * Retrieves total count of courses registered in the database.
+     * Demonstrates Database Handling.
+     */
+    public int getCourseCount() throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM courses";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to get course count: " + e.getMessage(), e);
+        }
+        return 0;
     }
 
     /**
@@ -465,6 +618,25 @@ public class CourseDAO {
         c.setDepartment(rs.getString("department"));
         c.setSemester(rs.getString("semester"));
         c.setDescription(rs.getString("description"));
+
+        try {
+            int semNum = rs.getInt("semester_number");
+            if (semNum > 0) {
+                c.setSemesterNumber(semNum);
+            }
+        } catch (SQLException ignored) {
+            // Column may not exist in pure MySQL table
+        }
+
+        try {
+            String year = rs.getString("academic_year");
+            if (year != null && !year.trim().isEmpty()) {
+                c.setAcademicYear(year.trim());
+            }
+        } catch (SQLException ignored) {
+            // Column may not exist in pure MySQL table
+        }
+
         return c;
     }
 
