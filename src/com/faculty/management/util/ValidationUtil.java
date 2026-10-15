@@ -375,4 +375,55 @@ public class ValidationUtil {
             throw new ValidationException("Practical hours cannot be negative.");
         }
     }
+
+    /**
+     * Validates an existing course object for update operations.
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     */
+    public static void validateCourseUpdate(Course course) throws ValidationException {
+        if (course == null) {
+            throw new ValidationException("Course entity cannot be null for update.");
+        }
+        if (course.getCourseId() <= 0) {
+            throw new ValidationException("Invalid Course ID specified for update.");
+        }
+        validateCourse(course);
+    }
+
+    /**
+     * Validates course deletion parameters.
+     * Demonstrates Error and Exception Handling.
+     */
+    public static void validateCourseDeletion(int courseId) throws ValidationException {
+        if (courseId <= 0) {
+            throw new ValidationException("Invalid Course ID specified for deletion.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate course deletion by course code string.
+     */
+    public static void validateCourseDeletion(String courseCode) throws ValidationException {
+        if (isEmpty(courseCode)) {
+            throw new ValidationException("Course Code cannot be empty for deletion.");
+        }
+    }
+
+    /**
+     * Validates course lookup parameters for View Courses.
+     */
+    public static void validateCourseLookup(int courseId) throws ValidationException {
+        if (courseId <= 0) {
+            throw new ValidationException("Invalid Course ID specified for lookup.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate course lookup by course code.
+     */
+    public static void validateCourseLookup(String courseCode) throws ValidationException {
+        if (isEmpty(courseCode)) {
+            throw new ValidationException("Course Code cannot be empty for lookup.");
+        }
+    }
 }

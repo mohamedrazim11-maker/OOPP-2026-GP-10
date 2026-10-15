@@ -239,6 +239,57 @@ public class CourseManagementPanel extends JPanel {
     }
 
     /**
+     * Programmatic backend method to update an existing course via the panel's controller.
+     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
+     */
+    public boolean handleUpdateCourse(Course course) throws ValidationException, DatabaseException {
+        return adminController.handleUpdateCourse(course);
+    }
+
+    /**
+     * Programmatic backend method to delete a course by ID via the panel's controller.
+     * Demonstrates Abstraction, Encapsulation, and Database Handling.
+     */
+    public boolean handleDeleteCourse(int courseId) throws ValidationException, DatabaseException {
+        return adminController.handleDeleteCourse(courseId);
+    }
+
+    /**
+     * Polymorphic overload to delete a course using a Course entity.
+     */
+    public boolean handleDeleteCourse(Course course) throws ValidationException, DatabaseException {
+        return adminController.handleDeleteCourse(course);
+    }
+
+    /**
+     * Programmatic backend method to load all courses from the database.
+     */
+    public List<Course> handleLoadAllCourses() throws DatabaseException {
+        return adminController.loadAllCourses();
+    }
+
+    /**
+     * Programmatic backend method to view a specific course by ID.
+     */
+    public Course handleViewCourse(int courseId) throws ValidationException, DatabaseException {
+        return adminController.handleViewCourse(courseId);
+    }
+
+    /**
+     * Programmatic backend method to view a specific course by Code.
+     */
+    public Course handleViewCourseByCode(String courseCode) throws ValidationException, DatabaseException {
+        return adminController.handleViewCourseByCode(courseCode);
+    }
+
+    /**
+     * Programmatic backend method to search courses by query.
+     */
+    public List<Course> handleSearchCourses(String query) throws DatabaseException {
+        return adminController.handleSearchCourses(query);
+    }
+
+    /**
      * Handles opening the Update Course Dialog.
      * Demonstrates Abstraction, Polymorphism, Database Handling, and Error & Exception Handling.
      */

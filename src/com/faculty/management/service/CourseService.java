@@ -196,6 +196,51 @@ public class CourseService {
     }
 
     /**
+     * Polymorphic overload to update a course using course code identifier.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public boolean updateCourse(String courseCode, String courseName, int creditValue, int theoryHours,
+                                int practicalHours, String department, String semester, String description)
+            throws ValidationException, DatabaseException {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new ValidationException("Course Code cannot be empty for update.");
+        }
+        Course existing = getCourseByCode(courseCode.trim());
+        if (existing == null) {
+            throw new ValidationException("Course with code '" + courseCode + "' does not exist in the database.");
+        }
+        return updateCourse(existing.getCourseId(), courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+    }
+
+    /**
+     * Searches courses by course code or course name substring directly from MySQL database.
+     * Demonstrates Abstraction and Database Handling for View Courses option.
+     *
+     * @param keyword Search term
+     * @return List of matching courses
+     * @throws DatabaseException If query fails
+     */
+    public List<Course> searchCourses(String keyword) throws DatabaseException {
+        return courseDAO.searchCourses(keyword);
+    }
+
+    /**
+     * Retrieves courses filtered by academic department for View Courses option.
+     * Demonstrates Abstraction and Database Handling.
+     */
+    public List<Course> getCoursesByDepartment(String department) throws DatabaseException {
+        return courseDAO.getCoursesByDepartment(department);
+    }
+
+    /**
+     * Retrieves the total count of registered courses in the database.
+     * Demonstrates Database Handling.
+     */
+    public int getCourseCount() throws DatabaseException {
+        return courseDAO.getCourseCount();
+    }
+
+    /**
      * Deletes a course by its ID directly from MySQL database.
      *
      * @param courseId ID of the course to delete

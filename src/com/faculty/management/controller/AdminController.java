@@ -395,6 +395,39 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to update a course using course code identifier.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public boolean handleUpdateCourse(String courseCode, String courseName, int creditValue,
+                                      int theoryHours, int practicalHours, String department, String semester, String description)
+            throws ValidationException, DatabaseException {
+        return courseService.updateCourse(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+    }
+
+    /**
+     * Searches courses by course code or title keyword directly from database for View Courses option.
+     * Demonstrates Abstraction and Database Handling.
+     */
+    public List<Course> handleSearchCourses(String query) throws DatabaseException {
+        return courseService.searchCourses(query);
+    }
+
+    /**
+     * Retrieves courses filtered by department for View Courses option.
+     * Demonstrates Abstraction and Database Handling.
+     */
+    public List<Course> handleViewCoursesByDepartment(String department) throws DatabaseException {
+        return courseService.getCoursesByDepartment(department);
+    }
+
+    /**
+     * Retrieves total course count from database.
+     */
+    public int handleGetCourseCount() throws DatabaseException {
+        return courseService.getCourseCount();
+    }
+
+    /**
      * Polymorphic overload to update a course using individual field parameters.
      */
     public boolean handleUpdateCourse(int courseId, String courseCode, String courseName, int creditValue,
