@@ -52,7 +52,7 @@ public class Week1TestRunner {
         System.out.println("CA Eligibility (>= 40%): " + (eligible ? "ELIGIBLE" : "NOT ELIGIBLE"));
 
         // 4. Test DB Connection
-        try (Connection conn = DatabaseConnection.getConnection()) {
+        try (Connection conn = DatabaseConnection.getInstance().getConnection()) {
             if (conn != null && !conn.isClosed()) {
                 System.out.println("\nDatabase Connection Successful!");
             }
