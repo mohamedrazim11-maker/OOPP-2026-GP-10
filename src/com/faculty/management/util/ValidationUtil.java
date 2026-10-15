@@ -269,8 +269,12 @@ public class ValidationUtil {
         if (isEmpty(course.getCourseCode())) {
             throw new ValidationException("Course Code is required (e.g. ICT2132).");
         }
-        if (course.getCourseCode().trim().length() < 4) {
+        String trimmedCode = course.getCourseCode().trim();
+        if (trimmedCode.length() < 4) {
             throw new ValidationException("Course Code must be at least 4 characters long.");
+        }
+        if (!trimmedCode.matches("^[a-zA-Z]{2,5}[0-9]{3,4}$")) {
+            throw new ValidationException("Invalid Course Code format. Example valid formats: ICT2132, BST2113, ENG2113.");
         }
         if (isEmpty(course.getCourseName())) {
             throw new ValidationException("Course Name is required.");
@@ -287,9 +291,33 @@ public class ValidationUtil {
         if (course.getPracticalHours() < 0) {
             throw new ValidationException("Practical hours cannot be negative.");
         }
-        if (isEmpty(course.getDepartment())) {
-            throw new ValidationException("Department selection is required.");
+        if (course.getTheoryHours() == 0 && course.getPracticalHours() == 0) {
+            throw new ValidationException("A course module must have at least one of theory hours or practical hours greater than 0.");
         }
+        if (isEmpty(course.getDepartment()) || "-- Select Department --".equals(course.getDepartment().trim())) {
+            throw new ValidationException("Please select an academic Department.");
+        }
+        if (isEmpty(course.getSemester())) {
+            throw new ValidationException("Please select an academic Semester.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate course fields directly from parameters.
+     * Demonstrates Polymorphism, Encapsulation, and Error/Exception Handling.
+     */
+    public static void validateCourse(String courseCode, String courseName, int creditValue,
+                                      int theoryHours, int practicalHours, String department, String semester)
+            throws ValidationException {
+        Course c = new Course();
+        c.setCourseCode(courseCode);
+        c.setCourseName(courseName);
+        c.setCreditValue(creditValue);
+        c.setTheoryHours(theoryHours);
+        c.setPracticalHours(practicalHours);
+        c.setDepartment(department);
+        c.setSemester(semester);
+        validateCourse(c);
     }
 
     /**

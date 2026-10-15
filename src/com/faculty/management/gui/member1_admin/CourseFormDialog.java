@@ -571,6 +571,10 @@ public class CourseFormDialog extends JDialog {
             targetCourse.setSemester(selectedSem);
             targetCourse.setDescription(description);
 
+            int semNumber = (selectedSem != null && selectedSem.contains("1")) ? 1 : 2;
+            targetCourse.setSemesterNumber(semNumber);
+            targetCourse.setAcademicYear("2025/2026");
+
             if (mode == FormMode.ASSIGN_INFO) {
                 if (courseIdToUpdate <= 0) {
                     throw new ValidationException("Please select a valid course to assign information.");
