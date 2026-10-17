@@ -1,9 +1,6 @@
 package com.faculty.management.model;
 
-/**
- * Represents a Technical Officer user.
- * Demonstrates Inheritance from User.
- */
+
 public class TechnicalOfficer extends User {
 
     private String department;
