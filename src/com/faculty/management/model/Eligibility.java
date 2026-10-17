@@ -1,37 +1,55 @@
 package com.faculty.management.model;
 
-/**
- * Model class representing Student CA Eligibility.
- */
+import java.sql.Timestamp;
+
 public class Eligibility {
-    private String studentId;
-    private String courseId;
+    private int eligibilityId;
+    private int studentId;
+    private int courseId;
     private double caPercentage;
-    private String status;
+    private boolean isEligible;
+    private Timestamp updatedAt;
 
     public Eligibility() {
     }
 
-    public Eligibility(String studentId, String courseId, double caPercentage, String status) {
+    public Eligibility(int studentId, int courseId, double caPercentage, boolean isEligible) {
         this.studentId = studentId;
         this.courseId = courseId;
         this.caPercentage = caPercentage;
-        this.status = status;
+        this.isEligible = isEligible;
     }
 
-    public String getStudentId() {
+    public Eligibility(int eligibilityId, int studentId, int courseId, double caPercentage, boolean isEligible, Timestamp updatedAt) {
+        this.eligibilityId = eligibilityId;
+        this.studentId = studentId;
+        this.courseId = courseId;
+        this.caPercentage = caPercentage;
+        this.isEligible = isEligible;
+        this.updatedAt = updatedAt;
+    }
+
+    public int getEligibilityId() {
+        return eligibilityId;
+    }
+
+    public void setEligibilityId(int eligibilityId) {
+        this.eligibilityId = eligibilityId;
+    }
+
+    public int getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(String studentId) {
+    public void setStudentId(int studentId) {
         this.studentId = studentId;
     }
 
-    public String getCourseId() {
+    public int getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(String courseId) {
+    public void setCourseId(int courseId) {
         this.courseId = courseId;
     }
 
@@ -43,11 +61,23 @@ public class Eligibility {
         this.caPercentage = caPercentage;
     }
 
-    public String getStatus() {
-        return status;
+    public boolean isEligible() {
+        return isEligible;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setEligible(boolean eligible) {
+        isEligible = eligible;
+    }
+
+    public String getStatusString() {
+        return isEligible ? "Eligible" : "Not Eligible";
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
