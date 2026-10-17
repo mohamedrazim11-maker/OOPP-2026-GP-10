@@ -97,11 +97,15 @@ public class TechnicalOfficerDashboard extends JFrame {
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 20, 20));
         modulesGrid.setOpaque(false);
 
-        modulesGrid.add(createModuleCard("📋 Attendance Entry", "Record and update undergraduate attendance for theory and practical sessions.", new Color(217, 119, 6), null));
+        modulesGrid.add(createModuleCard("📋 Attendance Entry", "Record and update undergraduate attendance for theory and practical sessions.", new Color(217, 119, 6), () -> {
+            new AttendanceEntryDialog(this, currentUser).setVisible(true);
+        }));
         modulesGrid.add(createModuleCard("🏥 Medical Certificates", "Log medical certificates and manage verification/approval status.", new Color(225, 29, 72), () -> {
             new MedicalManagementDialog(this).setVisible(true);
         }));
-        modulesGrid.add(createModuleCard("📊 Batch Attendance Summary", "View semester attendance percentages by course and batch.", new Color(79, 70, 229), null));
+        modulesGrid.add(createModuleCard("📊 Batch Attendance Summary", "View semester attendance percentages by course and batch.", new Color(79, 70, 229), () -> {
+            new ViewAttendanceDialog(this).setVisible(true);
+        }));
         modulesGrid.add(createModuleCard("🗓️ Department Timetables", "View departmental lab and lecture timetable schedules.", new Color(5, 150, 105), null));
 
         welcomeCard.add(welcomeLabel);
