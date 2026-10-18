@@ -242,3 +242,8 @@ Encapsulation
 Error and exception handling 
 Database Handlin . and commit it to github
 ================================================================================
+
+[PROMPT 24] - Align Admin Dashboard with OOP Lecture Notes & Push without OOP folder
+--------------------------------------------------------------------------------
+Review Member 1 implementation against OOP theory lecture notes. Simplify and align Admin Dashboard to match theory from lecture notes (super() constructor call, constructor chaining, dynamic binding/polymorphism, encapsulation, exception handling) without changing GUI appearance. Push code to GitHub without OOP folder.
+================================================================================
