@@ -49,3 +49,7 @@ Thumbs.db
 impl.txt
 my.txt
 
+# OOP Lecture notes & materials
+OOP/
+*.pdf
+
