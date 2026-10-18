@@ -80,4 +80,6 @@ public class Eligibility {
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+
 }
