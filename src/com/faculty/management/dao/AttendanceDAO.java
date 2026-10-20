@@ -436,4 +436,54 @@ public class AttendanceDAO {
         }
         return list;
     }
+
+    /**
+     * Deletes all attendance records and the session itself for the given session ID.
+     */
+    public boolean deleteSessionAttendance(int sessionId) throws SQLException, DatabaseException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null) return true; // offline mock
+
+        String deleteRecordsSql = "DELETE FROM attendance_records WHERE session_id = ?";
+        String deleteSessionSql = "DELETE FROM attendance_sessions WHERE session_id = ?";
+
+        boolean oldAutoCommit = conn.getAutoCommit();
+        try {
+            conn.setAutoCommit(false);
+            try (PreparedStatement stmtRecords = conn.prepareStatement(deleteRecordsSql)) {
+                stmtRecords.setInt(1, sessionId);
+                stmtRecords.executeUpdate();
+            }
+            try (PreparedStatement stmtSession = conn.prepareStatement(deleteSessionSql)) {
+                stmtSession.setInt(1, sessionId);
+                stmtSession.executeUpdate();
+            }
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            conn.rollback();
+            throw new DatabaseException("Failed to delete session attendance: " + e.getMessage(), e);
+        } finally {
+            conn.setAutoCommit(oldAutoCommit);
+        }
+    }
+
+    /**
+     * Checks if attendance has already been recorded for a specific session ID.
+     */
+    public boolean hasAttendanceRecords(int sessionId) {
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            if (conn == null) return false;
+            String sql = "SELECT COUNT(*) FROM attendance_records WHERE session_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, sessionId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    return rs.next() && rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
