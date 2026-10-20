@@ -79,10 +79,10 @@ public class EligibilityPanel extends JPanel {
 
             for (Eligibility e : batchList) {
                 tableModel.addRow(new Object[]{
-                    e.getStudentId(),
-                    e.getCourseId(),
-                    String.format("%.2f%%", e.getCaPercentage()),
-                    e.getStatusString()
+                        e.getStudentId(),
+                        e.getCourseId(),
+                        String.format("%.2f%%", e.getCaPercentage()),
+                        e.getStatusString()
                 });
             }
         } catch (Exception ex) {
