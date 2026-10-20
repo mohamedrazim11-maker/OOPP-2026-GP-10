@@ -59,7 +59,7 @@ public class UserService {
             String roleName = user.getRole().getRoleName();
             int resolvedRoleId = mapRoleNameToId(roleName);
             user.getRole().setRoleId(resolvedRoleId);
-        }f
+        }
 
         // 3. Database persistence when connected
         if (DatabaseConnection.getInstance().isConnected()) {
