@@ -16,6 +16,7 @@ import java.util.Properties;
  */
 public class DatabaseConnection {
 
+    private static final String DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
     private static final Properties LOCAL_SETTINGS = loadLocalSettings();
     private static final String URL = setting("fms.db.url", "FMS_DB_URL",
             "jdbc:mysql://localhost:3306/faculty_management_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&connectTimeout=5000");
@@ -24,6 +25,15 @@ public class DatabaseConnection {
 
     private static DatabaseConnection instance;
     private Connection connection;
+
+    static {
+        try {
+            Class.forName(DRIVER_CLASS);
+        } catch (ClassNotFoundException e) {
+            throw new ExceptionInInitializerError(
+                    "MySQL JDBC driver not found on the classpath. Add mysql-connector-j to the project classpath.");
+        }
+    }
 
     private DatabaseConnection() {
     }
@@ -40,9 +50,9 @@ public class DatabaseConnection {
     }
 
     private static Properties loadLocalSettings() {
-        Path settingsFile = Path.of("database", "local.properties");
         Properties settings = new Properties();
-        if (!Files.exists(settingsFile)) {
+        Path settingsFile = findSettingsFile();
+        if (settingsFile == null || !Files.exists(settingsFile)) {
             return settings;
         }
 
@@ -53,6 +63,22 @@ public class DatabaseConnection {
             throw new ExceptionInInitializerError(
                     "Could not read " + settingsFile + ": " + e.getMessage());
         }
+    }
+
+    private static Path findSettingsFile() {
+        Path[] candidates = {
+                Path.of("database", "local.properties"),
+                Path.of("src", "database", "local.properties"),
+                Path.of(System.getProperty("user.dir"), "database", "local.properties"),
+                Path.of(System.getProperty("user.dir"), "src", "database", "local.properties")
+        };
+
+        for (Path candidate : candidates) {
+            if (Files.exists(candidate)) {
+                return candidate;
+            }
+        }
+        return candidates[0];
     }
 
     /**
@@ -90,11 +116,14 @@ public class DatabaseConnection {
                 connection.close();
             }
 
+            Class.forName(DRIVER_CLASS);
             Properties properties = new Properties();
             properties.setProperty("user", USERNAME);
             properties.setProperty("password", PASSWORD);
             connection = DriverManager.getConnection(URL, properties);
             return connection;
+        } catch (ClassNotFoundException e) {
+            throw new DatabaseException("MySQL JDBC driver not found on the classpath. Add mysql-connector-j to the project classpath.", e);
         } catch (SQLException e) {
             String guidance = switch (e.getErrorCode()) {
                 case 1045 -> "MySQL rejected the configured username or password. Configure "
