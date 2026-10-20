@@ -9,6 +9,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 
 /**
  * University-themed login screen for the Faculty Management System.
@@ -32,88 +34,147 @@ public class LoginFrame extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Portal Authentication");
+        setUndecorated(true);
         setSize(1000, 650);
         setMinimumSize(new Dimension(900, 590));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(new Color(37, 8, 11));
+        root.setBorder(BorderFactory.createLineBorder(new Color(202, 154, 74), 2));
+
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setBackground(new Color(70, 11, 20));
+        titleBar.setPreferredSize(new Dimension(0, 36));
+        titleBar.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(202, 154, 74)));
+
+        JPanel leftTitle = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
+        leftTitle.setOpaque(false);
+        JLabel icon = new JLabel("◫");
+        icon.setFont(new Font("Segoe UI Symbol", Font.BOLD, 17));
+        icon.setForeground(new Color(245, 219, 168));
+        JLabel appTitle = new JLabel("Faculty Management System — Login");
+        appTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        appTitle.setForeground(new Color(247, 235, 218));
+        leftTitle.add(icon);
+        leftTitle.add(appTitle);
+
+        JPanel rightButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 7));
+        rightButtons.setOpaque(false);
+        JButton minimize = new JButton("—");
+        JButton close = new JButton("✕");
+        styleWindowButton(minimize);
+        styleWindowButton(close);
+        minimize.setPreferredSize(new Dimension(24, 18));
+        close.setPreferredSize(new Dimension(24, 18));
+        minimize.addActionListener(e -> setState(JFrame.ICONIFIED));
+        close.addActionListener(e -> System.exit(0));
+        rightButtons.add(minimize);
+        rightButtons.add(close);
+
+        titleBar.add(leftTitle, BorderLayout.WEST);
+        titleBar.add(rightButtons, BorderLayout.EAST);
+
         JPanel page = new JPanel(new BorderLayout());
-        page.setBackground(new Color(239, 240, 255));
+        page.setBackground(new Color(243, 236, 228));
         page.setBorder(new EmptyBorder(12, 12, 12, 12));
 
         JPanel shell = new JPanel(new GridLayout(1, 2));
-        shell.setBackground(Color.WHITE);
+        shell.setBackground(new Color(252, 247, 241));
         shell.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(221, 220, 255), 1),
+                BorderFactory.createLineBorder(new Color(214, 186, 140), 1),
                 new EmptyBorder(4, 4, 4, 4)));
 
         shell.add(buildBrandPanel());
         shell.add(buildLoginPanel());
         page.add(shell, BorderLayout.CENTER);
-        setContentPane(page);
+
+        root.add(titleBar, BorderLayout.NORTH);
+        root.add(page, BorderLayout.CENTER);
+        setContentPane(root);
+    }
+
+    private void styleWindowButton(JButton button) {
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setOpaque(false);
+        button.setForeground(new Color(242, 231, 210));
+        button.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     private JPanel buildBrandPanel() {
         JPanel brandPanel = new BrandPanel();
         brandPanel.setLayout(new BoxLayout(brandPanel, BoxLayout.Y_AXIS));
-        brandPanel.setBorder(new EmptyBorder(36, 38, 30, 38));
+        brandPanel.setBorder(new EmptyBorder(30, 38, 28, 38));
 
-        JPanel logoRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        JPanel logoRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         logoRow.setOpaque(false);
-        JLabel capMark = new JLabel("◆");
-        capMark.setFont(new Font("Segoe UI Symbol", Font.BOLD, 29));
-        capMark.setForeground(Color.WHITE);
+        JLabel capMark = new JLabel("◈");
+        capMark.setFont(new Font("Segoe UI Symbol", Font.BOLD, 28));
+        capMark.setForeground(new Color(240, 205, 125));
         JLabel logoLabel = new JLabel("FMS");
-        logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 34));
+        logoLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         logoLabel.setForeground(Color.WHITE);
         logoRow.add(capMark);
         logoRow.add(logoLabel);
 
         JLabel facultyLabel = new JLabel("FACULTY OF TECHNOLOGY");
-        facultyLabel.setFont(UITheme.FONT_BODY_BOLD);
-        facultyLabel.setForeground(new Color(211, 207, 255));
+        facultyLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        facultyLabel.setForeground(new Color(244, 230, 194));
+        facultyLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel titleLabel = new JLabel("<html>Faculty Management<br>System (FMS)</html>");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 27));
-        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        titleLabel.setForeground(new Color(255, 248, 243));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel universityLabel = new JLabel("University of Ruhuna | Sri Lanka");
-        universityLabel.setFont(UITheme.FONT_BODY);
-        universityLabel.setForeground(new Color(222, 222, 255));
+        JLabel universityLabel = new JLabel("University of Ruhuna");
+        universityLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        universityLabel.setForeground(new Color(255, 241, 221));
+        universityLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel facultySubLabel = new JLabel("Faculty of Technology");
+        facultySubLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        facultySubLabel.setForeground(new Color(247, 229, 199));
+        facultySubLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JPanel accentLine = new JPanel();
-        accentLine.setBackground(new Color(177, 151, 255));
-        accentLine.setMaximumSize(new Dimension(54, 4));
-        accentLine.setPreferredSize(new Dimension(54, 4));
+        accentLine.setBackground(new Color(215, 177, 94));
+        accentLine.setMaximumSize(new Dimension(160, 4));
+        accentLine.setPreferredSize(new Dimension(160, 4));
         accentLine.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JPanel features = new JPanel(new GridLayout(1, 4, 8, 0));
         features.setOpaque(false);
-        features.setMaximumSize(new Dimension(Integer.MAX_VALUE, 104));
+        features.setMaximumSize(new Dimension(Integer.MAX_VALUE, 94));
         features.add(createFeature("S", "Student\nRecords"));
         features.add(createFeature("C", "Courses &\nTimetable"));
         features.add(createFeature("A", "Attendance\n& Grades"));
         features.add(createFeature("N", "Notices &\nUpdates"));
 
-        JLabel quote = new JLabel("<html><i>“ Empowering Education<br>&nbsp;&nbsp; Through Technology ”</i></html>");
+        JLabel quote = new JLabel("<html><i>Learn • Innovate • Build the Future</i></html>");
         quote.setFont(new Font("Segoe UI", Font.ITALIC, 14));
-        quote.setForeground(new Color(226, 222, 255));
-        quote.setBorder(new EmptyBorder(14, 0, 0, 0));
+        quote.setForeground(new Color(245, 230, 205));
+        quote.setBorder(new EmptyBorder(18, 0, 0, 0));
+        quote.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         brandPanel.add(logoRow);
-        brandPanel.add(Box.createVerticalStrut(12));
-        brandPanel.add(leftAligned(facultyLabel));
-        brandPanel.add(Box.createVerticalStrut(9));
-        brandPanel.add(leftAligned(titleLabel));
-        brandPanel.add(Box.createVerticalStrut(7));
-        brandPanel.add(leftAligned(universityLabel));
-        brandPanel.add(Box.createVerticalStrut(16));
-        brandPanel.add(accentLine);
-        brandPanel.add(Box.createVerticalStrut(24));
-        brandPanel.add(features);
         brandPanel.add(Box.createVerticalStrut(18));
-        brandPanel.add(leftAligned(quote));
+        brandPanel.add(facultyLabel);
+        brandPanel.add(Box.createVerticalStrut(10));
+        brandPanel.add(titleLabel);
+        brandPanel.add(Box.createVerticalStrut(12));
+        brandPanel.add(universityLabel);
+        brandPanel.add(facultySubLabel);
+        brandPanel.add(Box.createVerticalStrut(14));
+        brandPanel.add(accentLine);
+        brandPanel.add(Box.createVerticalStrut(20));
+        brandPanel.add(features);
         brandPanel.add(Box.createVerticalGlue());
+        brandPanel.add(quote);
         return brandPanel;
     }
 
@@ -135,7 +196,7 @@ public class LoginFrame extends JFrame {
         JLabel text = new JLabel("<html><div style='text-align:center;'>"
                 + label.replace("\n", "<br>") + "</div></html>", SwingConstants.CENTER);
         text.setFont(UITheme.FONT_SMALL_BOLD);
-        text.setForeground(new Color(239, 237, 255));
+        text.setForeground(new Color(246, 230, 197));
         text.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         feature.add(icon);
@@ -151,27 +212,28 @@ public class LoginFrame extends JFrame {
 
     private JPanel buildLoginPanel() {
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
+        formPanel.setBackground(UITheme.BG_CARD);
         formPanel.setBorder(new EmptyBorder(34, 42, 28, 42));
-
         JPanel form = new JPanel();
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
         form.setOpaque(false);
         form.setMaximumSize(new Dimension(440, 520));
 
-        UITheme.PillBadge secureBadge = new UITheme.PillBadge(
-                "SECURE LOGIN", UITheme.PRIMARY_LIGHT, UITheme.PRIMARY, UITheme.PRIMARY_TINT);
-        secureBadge.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         JLabel signInLabel = new JLabel("Welcome Back");
-        signInLabel.setFont(new Font("Segoe UI", Font.BOLD, 27));
-        signInLabel.setForeground(UITheme.PRIMARY_DARK);
+        signInLabel.setFont(new Font("Segoe UI", Font.BOLD, 40));
+        signInLabel.setForeground(new Color(79, 17, 24));
         signInLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel signInSub = new JLabel("Enter your credentials to access your dashboard");
-        signInSub.setFont(UITheme.FONT_BODY);
-        signInSub.setForeground(UITheme.TEXT_MUTED);
+        JLabel signInSub = new JLabel("Please sign in to access your faculty portal");
+        signInSub.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        signInSub.setForeground(new Color(94, 70, 62));
         signInSub.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel subtitleLine = new JPanel();
+        subtitleLine.setBackground(new Color(185, 142, 66));
+        subtitleLine.setPreferredSize(new Dimension(120, 3));
+        subtitleLine.setMaximumSize(new Dimension(120, 3));
+        subtitleLine.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         errorBanner = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
         errorBanner.setBackground(UITheme.DANGER_LIGHT);
@@ -186,87 +248,86 @@ public class LoginFrame extends JFrame {
         errorLabel.setForeground(UITheme.DANGER_DARK);
         errorBanner.add(errorLabel);
 
+        JLabel roleLabel = new JLabel("Select Role");
+        roleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        roleLabel.setForeground(new Color(77, 36, 40));
+        roleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JComboBox<String> roleCombo = new JComboBox<>(new String[]{"-- Select Role --"});
+        roleCombo.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        roleCombo.setForeground(new Color(89, 72, 64));
+        roleCombo.setBackground(new Color(247, 240, 232));
+        roleCombo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(188, 154, 121), 1),
+                new EmptyBorder(6, 10, 6, 10)));
+        roleCombo.setPreferredSize(new Dimension(240, 48));
+        roleCombo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
+
         usernameField = new UITheme.ModernTextField("Enter your username", 20);
-        usernameField.setPreferredSize(new Dimension(240, 42));
-        usernameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        usernameField.setPreferredSize(new Dimension(240, 46));
+        usernameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
 
         passwordField = new UITheme.ModernPasswordField("Enter your password", 20);
-        passwordField.setPreferredSize(new Dimension(240, 42));
-        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        passwordField.setPreferredSize(new Dimension(240, 46));
+        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
 
         JPanel showPasswordRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         showPasswordRow.setOpaque(false);
         showPasswordRow.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         showPasswordCheckBox = new JCheckBox("Show Password");
-        showPasswordCheckBox.setFont(UITheme.FONT_SMALL);
-        showPasswordCheckBox.setForeground(UITheme.TEXT_BODY);
+        showPasswordCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        showPasswordCheckBox.setForeground(new Color(79, 52, 43));
         showPasswordCheckBox.setOpaque(false);
         showPasswordCheckBox.setFocusPainted(false);
         showPasswordCheckBox.addActionListener(e ->
                 passwordField.setEchoChar(showPasswordCheckBox.isSelected() ? (char) 0 : '•'));
         showPasswordRow.add(showPasswordCheckBox);
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 12, 0));
         buttonPanel.setOpaque(false);
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        loginButton = new UITheme.ModernButton("Sign in", UITheme.ButtonStyle.PRIMARY, 10);
-        loginButton.setPreferredSize(new Dimension(120, 44));
+        loginButton = new UITheme.ModernButton("Sign In", UITheme.ButtonStyle.PRIMARY, 10);
+        loginButton.setPreferredSize(new Dimension(150, 48));
         loginButton.addActionListener(e -> performLogin());
 
-        resetButton = new UITheme.ModernButton("Clear", UITheme.ButtonStyle.SECONDARY, 10);
-        resetButton.setPreferredSize(new Dimension(100, 44));
+        resetButton = new UITheme.ModernButton("Reset", UITheme.ButtonStyle.SECONDARY, 10);
+        resetButton.setPreferredSize(new Dimension(120, 48));
         resetButton.addActionListener(e -> resetFields());
         buttonPanel.add(loginButton);
         buttonPanel.add(resetButton);
 
-        JPanel divider = new JPanel(new BorderLayout(10, 0));
-        divider.setOpaque(false);
-        divider.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel dividerText = new JLabel("Or continue with", SwingConstants.CENTER);
-        dividerText.setFont(UITheme.FONT_SMALL);
-        dividerText.setForeground(UITheme.TEXT_MUTED);
-        divider.add(createDividerLine(), BorderLayout.WEST);
-        divider.add(dividerText, BorderLayout.CENTER);
-        divider.add(createDividerLine(), BorderLayout.EAST);
-
-        UITheme.ModernButton demoButton = new UITheme.ModernButton(
-                "Student Demo Account", UITheme.ButtonStyle.OUTLINE, 9);
-        demoButton.setPreferredSize(new Dimension(200, 42));
-        demoButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
-        demoButton.setAlignmentX(Component.LEFT_ALIGNMENT);
-        demoButton.addActionListener(e -> fillDemoCredentials());
-
-        JLabel footerNote = new JLabel("University account access", SwingConstants.CENTER);
-        footerNote.setFont(UITheme.FONT_SMALL);
-        footerNote.setForeground(UITheme.TEXT_LIGHT);
+        JLabel footerNote = new JLabel("Secure access for authorized users");
+        footerNote.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        footerNote.setForeground(new Color(85, 63, 56));
         footerNote.setAlignmentX(Component.CENTER_ALIGNMENT);
+        footerNote.setIcon(new ImageIcon(createLockIcon()));
 
-        form.add(secureBadge);
-        form.add(Box.createVerticalStrut(16));
         form.add(signInLabel);
-        form.add(Box.createVerticalStrut(5));
-        form.add(signInSub);
-        form.add(Box.createVerticalStrut(18));
-        form.add(errorBanner);
         form.add(Box.createVerticalStrut(8));
+        form.add(signInSub);
+        form.add(Box.createVerticalStrut(10));
+        form.add(subtitleLine);
+        form.add(Box.createVerticalStrut(22));
+        form.add(errorBanner);
+        form.add(Box.createVerticalStrut(12));
+        form.add(roleLabel);
+        form.add(Box.createVerticalStrut(8));
+        form.add(roleCombo);
+        form.add(Box.createVerticalStrut(16));
         form.add(createInputLabel("Username"));
-        form.add(Box.createVerticalStrut(7));
+        form.add(Box.createVerticalStrut(8));
         form.add(usernameField);
         form.add(Box.createVerticalStrut(16));
         form.add(createInputLabel("Password"));
-        form.add(Box.createVerticalStrut(7));
+        form.add(Box.createVerticalStrut(8));
         form.add(passwordField);
-        form.add(Box.createVerticalStrut(5));
+        form.add(Box.createVerticalStrut(8));
         form.add(showPasswordRow);
-        form.add(Box.createVerticalStrut(14));
+        form.add(Box.createVerticalStrut(18));
         form.add(buttonPanel);
-        form.add(Box.createVerticalStrut(20));
-        form.add(divider);
-        form.add(Box.createVerticalStrut(14));
-        form.add(demoButton);
-        form.add(Box.createVerticalStrut(22));
+        form.add(Box.createVerticalStrut(28));
         form.add(footerNote);
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -293,10 +354,22 @@ public class LoginFrame extends JFrame {
 
     private JLabel createInputLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(UITheme.FONT_BODY_BOLD);
-        label.setForeground(UITheme.TEXT_BODY);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        label.setForeground(new Color(78, 34, 38));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         return label;
+    }
+
+    private BufferedImage createLockIcon() {
+        BufferedImage img = new BufferedImage(18, 18, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setStroke(new BasicStroke(1.8f));
+        g2.setColor(new Color(98, 63, 47));
+        g2.drawRoundRect(5, 9, 8, 7, 2, 2);
+        g2.drawArc(4, 4, 10, 7, 180, 180);
+        g2.dispose();
+        return img;
     }
 
     private JComponent createDividerLine() {
@@ -347,26 +420,30 @@ public class LoginFrame extends JFrame {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setPaint(new GradientPaint(0, 0, new Color(60, 47, 194),
-                    getWidth(), getHeight(), new Color(89, 61, 222)));
+            g2.setPaint(new GradientPaint(0, 0, new Color(80, 12, 26),
+                    getWidth(), getHeight(), new Color(120, 21, 39)));
             g2.fillRect(0, 0, getWidth(), getHeight());
 
-            g2.setColor(new Color(255, 255, 255, 22));
-            g2.fill(new Ellipse2D.Double(getWidth() - 150, -110, 260, 260));
-            g2.fill(new Ellipse2D.Double(-120, getHeight() - 185, 320, 250));
+            g2.setColor(new Color(255, 255, 255, 18));
+            g2.fill(new Ellipse2D.Double(getWidth() - 160, -110, 260, 260));
+            g2.fill(new Ellipse2D.Double(-125, getHeight() - 185, 320, 250));
 
             Path2D wave = new Path2D.Double();
             wave.moveTo(0, getHeight() * 0.68);
-            wave.curveTo(getWidth() * 0.27, getHeight() * 0.58,
-                    getWidth() * 0.61, getHeight() * 0.84,
+            wave.curveTo(getWidth() * 0.24, getHeight() * 0.58,
+                    getWidth() * 0.62, getHeight() * 0.82,
                     getWidth(), getHeight() * 0.64);
             wave.lineTo(getWidth(), getHeight());
             wave.lineTo(0, getHeight());
             wave.closePath();
-            g2.setColor(new Color(255, 255, 255, 20));
+            g2.setColor(new Color(245, 214, 168, 40));
             g2.fill(wave);
 
-            g2.setColor(new Color(233, 227, 255, 100));
+            g2.setStroke(new BasicStroke(2.0f));
+            g2.setColor(new Color(211, 168, 87));
+            g2.draw(new RoundRectangle2D.Double(18, 18, getWidth() - 36, getHeight() - 36, 26, 26));
+
+            g2.setColor(new Color(245, 228, 197, 90));
             for (int row = 0; row < 4; row++) {
                 for (int col = 0; col < 5; col++) {
                     g2.fill(new Ellipse2D.Double(getWidth() - 70 + col * 10,

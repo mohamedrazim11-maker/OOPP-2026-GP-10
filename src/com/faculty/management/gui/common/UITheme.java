@@ -25,54 +25,54 @@ import java.io.File;
 public class UITheme {
 
     // =========================================================================
-    // COLOR PALETTE (Modern Slate & Indigo Enterprise Palette)
+    // COLOR PALETTE (University maroon, cream, and gold theme)
     // =========================================================================
-    public static final Color PRIMARY = new Color(82, 60, 229);
-    public static final Color PRIMARY_HOVER = new Color(104, 78, 240);
-    public static final Color PRIMARY_DARK = new Color(57, 43, 177);
-    public static final Color PRIMARY_LIGHT = new Color(241, 238, 255);
-    public static final Color PRIMARY_TINT = new Color(224, 218, 255);
-    public static final Color PURPLE_BRIGHT = new Color(112, 55, 238);
-    public static final Color PURPLE_GRADIENT_END = new Color(73, 82, 222);
-    public static final Color LAVENDER_SURFACE = new Color(244, 243, 255);
-    public static final Color LAVENDER_BORDER = new Color(224, 222, 255);
+    public static final Color PRIMARY = new Color(110, 18, 38);
+    public static final Color PRIMARY_HOVER = new Color(134, 27, 46);
+    public static final Color PRIMARY_DARK = new Color(80, 14, 28);
+    public static final Color PRIMARY_LIGHT = new Color(245, 237, 230);
+    public static final Color PRIMARY_TINT = new Color(217, 179, 114);
+    public static final Color PURPLE_BRIGHT = new Color(135, 39, 52);
+    public static final Color PURPLE_GRADIENT_END = new Color(189, 126, 63);
+    public static final Color LAVENDER_SURFACE = new Color(247, 240, 232);
+    public static final Color LAVENDER_BORDER = new Color(224, 202, 170);
 
-    public static final Color ACCENT_BLUE = new Color(37, 99, 235);
-    public static final Color ACCENT_BLUE_LIGHT = new Color(239, 246, 255);
+    public static final Color ACCENT_BLUE = new Color(123, 56, 40);
+    public static final Color ACCENT_BLUE_LIGHT = new Color(248, 240, 234);
 
-    public static final Color SUCCESS = new Color(16, 185, 129);
-    public static final Color SUCCESS_DARK = new Color(5, 150, 105);
-    public static final Color SUCCESS_LIGHT = new Color(236, 253, 245);
-    public static final Color SUCCESS_BORDER = new Color(167, 243, 208);
+    public static final Color SUCCESS = new Color(24, 116, 88);
+    public static final Color SUCCESS_DARK = new Color(11, 88, 66);
+    public static final Color SUCCESS_LIGHT = new Color(235, 247, 240);
+    public static final Color SUCCESS_BORDER = new Color(171, 216, 190);
 
-    public static final Color WARNING = new Color(245, 158, 11);
-    public static final Color WARNING_DARK = new Color(217, 119, 6);
-    public static final Color WARNING_LIGHT = new Color(254, 243, 199);
-    public static final Color WARNING_BORDER = new Color(253, 230, 138);
+    public static final Color WARNING = new Color(191, 146, 75);
+    public static final Color WARNING_DARK = new Color(154, 115, 53);
+    public static final Color WARNING_LIGHT = new Color(249, 239, 210);
+    public static final Color WARNING_BORDER = new Color(215, 191, 128);
 
-    public static final Color DANGER = new Color(239, 68, 68);
-    public static final Color DANGER_DARK = new Color(220, 38, 38);
-    public static final Color DANGER_LIGHT = new Color(254, 242, 242);
-    public static final Color DANGER_BORDER = new Color(254, 202, 202);
+    public static final Color DANGER = new Color(148, 32, 52);
+    public static final Color DANGER_DARK = new Color(101, 15, 29);
+    public static final Color DANGER_LIGHT = new Color(249, 238, 240);
+    public static final Color DANGER_BORDER = new Color(214, 173, 184);
 
-    public static final Color PURPLE = new Color(139, 92, 246);
-    public static final Color PURPLE_LIGHT = new Color(245, 243, 255);
+    public static final Color PURPLE = new Color(110, 18, 38);
+    public static final Color PURPLE_LIGHT = new Color(246, 240, 236);
 
-    public static final Color TEAL = new Color(13, 148, 136);
-    public static final Color TEAL_LIGHT = new Color(240, 253, 250);
+    public static final Color TEAL = new Color(108, 74, 53);
+    public static final Color TEAL_LIGHT = new Color(247, 239, 232);
 
-    public static final Color BG_PAGE = new Color(246, 247, 255);
-    public static final Color BG_CARD = Color.WHITE;
-    public static final Color BG_ALT_ROW = new Color(249, 249, 255);
-    public static final Color BG_HEADER = new Color(241, 240, 250);
+    public static final Color BG_PAGE = new Color(244, 236, 224);
+    public static final Color BG_CARD = new Color(250, 246, 240);
+    public static final Color BG_ALT_ROW = new Color(246, 239, 232);
+    public static final Color BG_HEADER = new Color(238, 226, 211);
 
-    public static final Color BORDER_LIGHT = new Color(226, 226, 245);
-    public static final Color BORDER_FOCUS = new Color(119, 91, 244);
+    public static final Color BORDER_LIGHT = new Color(221, 205, 180);
+    public static final Color BORDER_FOCUS = new Color(188, 137, 77);
 
-    public static final Color TEXT_MAIN = new Color(15, 23, 42);
-    public static final Color TEXT_BODY = new Color(51, 65, 85);
-    public static final Color TEXT_MUTED = new Color(100, 116, 139);
-    public static final Color TEXT_LIGHT = new Color(148, 163, 184);
+    public static final Color TEXT_MAIN = new Color(75, 18, 20);
+    public static final Color TEXT_BODY = new Color(93, 62, 55);
+    public static final Color TEXT_MUTED = new Color(123, 92, 76);
+    public static final Color TEXT_LIGHT = new Color(162, 128, 98);
 
     // =========================================================================
     // TYPOGRAPHY (Segoe UI on Windows, with robust fallbacks)
