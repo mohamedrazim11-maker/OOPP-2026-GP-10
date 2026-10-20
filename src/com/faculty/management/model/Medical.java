@@ -10,12 +10,18 @@ public class Medical {
     private LocalDate medicalDate;
     private String reason;
     private String status; // "PENDING", "APPROVED", "REJECTED"
+    private String studentName;
+    private String documentPath;
 
     public Medical() {
         this.status = "PENDING";
     }
 
     public Medical(int medicalId, int studentId, String courseId, Integer sessionId, LocalDate medicalDate, String reason, String status) {
+        this(medicalId, studentId, courseId, sessionId, medicalDate, reason, status, null, null);
+    }
+
+    public Medical(int medicalId, int studentId, String courseId, Integer sessionId, LocalDate medicalDate, String reason, String status, String studentName, String documentPath) {
         this.medicalId = medicalId;
         this.studentId = studentId;
         this.courseId = courseId;
@@ -23,6 +29,8 @@ public class Medical {
         this.medicalDate = medicalDate;
         this.reason = reason;
         this.status = status;
+        this.studentName = studentName;
+        this.documentPath = documentPath;
     }
 
     public int getMedicalId() { return medicalId; }
@@ -45,4 +53,10 @@ public class Medical {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getStudentName() { return studentName; }
+    public void setStudentName(String studentName) { this.studentName = studentName; }
+
+    public String getDocumentPath() { return documentPath; }
+    public void setDocumentPath(String documentPath) { this.documentPath = documentPath; }
 }
