@@ -10,7 +10,11 @@ import java.awt.*;
 
 /**
  * Modern Technical Officer Dashboard GUI.
+<<<<<<< HEAD
  * Target redirect frame for Technical Officer role.
+=======
+ * Integrates unified UI theme with Attendance Entry, Medical Management, and Batch Summary dialogs.
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
  */
 public class TechnicalOfficerDashboard extends JFrame {
 
@@ -36,7 +40,11 @@ public class TechnicalOfficerDashboard extends JFrame {
             LoginController.showLogin();
         }), BorderLayout.NORTH);
 
+<<<<<<< HEAD
         // Main Content
+=======
+        // Main Content Container
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
         JPanel mainContent = new JPanel();
         mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
         mainContent.setOpaque(false);
@@ -64,10 +72,25 @@ public class TechnicalOfficerDashboard extends JFrame {
         bannerText.add(welcomeLabel);
         bannerText.add(roleDescLabel);
 
+<<<<<<< HEAD
         JPanel badgeBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         badgeBox.setOpaque(false);
         UITheme.PillBadge toBadge = new UITheme.PillBadge("OPERATIONS STAFF", UITheme.WARNING_LIGHT, UITheme.WARNING_DARK, UITheme.WARNING_BORDER);
         UITheme.PillBadge labBadge = new UITheme.PillBadge("LABS & SESSIONS", UITheme.SUCCESS_LIGHT, UITheme.SUCCESS_DARK, UITheme.SUCCESS_BORDER);
+=======
+        // Hero Badges & Profile Button
+        JPanel badgeBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        badgeBox.setOpaque(false);
+
+        UITheme.ModernButton profileBtn = new UITheme.ModernButton("👤 My Profile", UITheme.ButtonStyle.SECONDARY, 6);
+        profileBtn.setFont(UITheme.FONT_SMALL_BOLD);
+        profileBtn.addActionListener(e -> new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true));
+
+        UITheme.PillBadge toBadge = new UITheme.PillBadge("OPERATIONS STAFF", UITheme.WARNING_LIGHT, UITheme.WARNING_DARK, UITheme.WARNING_BORDER);
+        UITheme.PillBadge labBadge = new UITheme.PillBadge("LABS & SESSIONS", UITheme.SUCCESS_LIGHT, UITheme.SUCCESS_DARK, UITheme.SUCCESS_BORDER);
+
+        badgeBox.add(profileBtn);
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
         badgeBox.add(toBadge);
         badgeBox.add(labBadge);
 
@@ -79,10 +102,17 @@ public class TechnicalOfficerDashboard extends JFrame {
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
 
+<<<<<<< HEAD
         statsGrid.add(UITheme.createStatCard("", "Today's Sessions", "4 Active Labs", UITheme.WARNING_DARK));
         statsGrid.add(UITheme.createStatCard("", "Medical Requests", "3 Pending Review", UITheme.DANGER));
         statsGrid.add(UITheme.createStatCard("", "Batch Attendance", "Overall 84.5%", UITheme.PRIMARY));
         statsGrid.add(UITheme.createStatCard("", "Lab Venues", "5 Department Labs", UITheme.SUCCESS));
+=======
+        statsGrid.add(UITheme.createStatCard("🗓️", "Today's Sessions", "4 Active Labs", UITheme.WARNING_DARK));
+        statsGrid.add(UITheme.createStatCard("🏥", "Medical Requests", "3 Pending Review", UITheme.DANGER));
+        statsGrid.add(UITheme.createStatCard("📊", "Batch Attendance", "Overall 84.5%", UITheme.PRIMARY));
+        statsGrid.add(UITheme.createStatCard("🔬", "Lab Venues", "5 Department Labs", UITheme.SUCCESS));
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
 
         // 3. Section Title
         JLabel sectionTitle = new JLabel("Technical & Attendance Operations");
@@ -94,6 +124,7 @@ public class TechnicalOfficerDashboard extends JFrame {
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
         modulesGrid.setOpaque(false);
 
+<<<<<<< HEAD
         modulesGrid.add(createModuleCard("Attendance Entry",
                 "Record and update daily undergraduate attendance for theory lectures and laboratory practical sessions.",
                 UITheme.WARNING_DARK, "Log Attendance"));
@@ -109,6 +140,37 @@ public class TechnicalOfficerDashboard extends JFrame {
         modulesGrid.add(createModuleCard("Department Timetables",
                 "View departmental lab time slots, equipment allocation, and lecture timetable schedules.",
                 UITheme.SUCCESS_DARK, "Check Schedules"));
+=======
+        // Module 1: Attendance Entry
+        modulesGrid.add(createModuleCard("Attendance Entry",
+                "Record and update daily undergraduate attendance for theory lectures and laboratory practical sessions.",
+                UITheme.WARNING_DARK, "Log Attendance", () -> {
+                    new AttendanceEntryDialog(this, currentUser).setVisible(true);
+                }));
+
+        // Module 2: Medical Certificates
+        modulesGrid.add(createModuleCard("Medical Certificates",
+                "Log medical submissions, inspect doctor certs, and update verification/approval status for excused absences.",
+                UITheme.DANGER, "Review Medicals", () -> {
+                    new MedicalManagementDialog(this).setVisible(true);
+                }));
+
+        // Module 3: Batch Attendance Summary
+        modulesGrid.add(createModuleCard("Batch Attendance Summary",
+                "View and compute aggregate semester attendance percentages by course, batch, and academic specialization.",
+                UITheme.PRIMARY, "View Summaries", () -> {
+                    new ViewAttendanceDialog(this).setVisible(true);
+                }));
+
+        // Module 4: Department Timetables
+        modulesGrid.add(createModuleCard("Department Timetables",
+                "View departmental lab time slots, equipment allocation, and lecture timetable schedules.",
+                UITheme.SUCCESS_DARK, "Check Schedules", () -> {
+                    JOptionPane.showMessageDialog(this,
+                            "Departmental timetable viewer will be updated with the timetable schedules.",
+                            "Department Timetables", JOptionPane.INFORMATION_MESSAGE);
+                }));
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
 
         mainContent.add(bannerCard);
         mainContent.add(statsGrid);
@@ -118,13 +180,27 @@ public class TechnicalOfficerDashboard extends JFrame {
         add(UITheme.createModernScrollPane(mainContent), BorderLayout.CENTER);
     }
 
+<<<<<<< HEAD
     private JPanel createModuleCard(String title, String desc, Color accentColor, String actionText) {
+=======
+    private JPanel createModuleCard(String title, String desc, Color accentColor, String actionText, Runnable onClick) {
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
         UITheme.ModernCard card = new UITheme.ModernCard(12);
         card.setLayout(new BorderLayout(12, 12));
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor),
                 new EmptyBorder(16, 18, 16, 18)
         ));
+<<<<<<< HEAD
+=======
+        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        card.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (onClick != null) onClick.run();
+            }
+        });
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
 
         JLabel titleLbl = new JLabel(title);
         titleLbl.setFont(UITheme.FONT_CARD_TITLE);
@@ -138,10 +214,14 @@ public class TechnicalOfficerDashboard extends JFrame {
         UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText, UITheme.ButtonStyle.OUTLINE, 4);
         actionBtn.setFont(UITheme.FONT_SMALL_BOLD);
         actionBtn.addActionListener(e -> {
+<<<<<<< HEAD
             JOptionPane.showMessageDialog(this,
                     "Technical Officer module [" + title + "] is configured and ready.",
                     title,
                     JOptionPane.INFORMATION_MESSAGE);
+=======
+            if (onClick != null) onClick.run();
+>>>>>>> 04c52c5c20502c56700fec34eb9c5f785dd3f875
         });
         bottomRow.add(actionBtn);
 
