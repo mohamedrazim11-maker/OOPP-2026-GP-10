@@ -26,17 +26,6 @@ public class LoginController {
     }
 
     /**
-<<<<<<< HEAD
-     * Handles the login action submitted from the Login GUI.
-     *
-     * @param loginFrame The active LoginFrame instance
-     * @param username   Entered username
-     * @param password   Entered password
-     */
-    public void handleLogin(LoginFrame loginFrame, String username, String password) {
-        try {
-            User user = authService.authenticate(username, password);
-=======
      * Handles the login action submitted from the Login GUI with role verification.
      *
      * @param loginFrame   The active LoginFrame instance
@@ -50,17 +39,12 @@ public class LoginController {
             User user = authService.authenticate(username, password, selectedRole);
 
             // 2. Redirect based on role identification (Polymorphism & Abstraction)
->>>>>>> test
             redirectToRoleDashboard(user);
+
+            // 3. Close the login window
             loginFrame.dispose();
-<<<<<<< HEAD
-        } catch (ValidationException e) {
-            loginFrame.showErrorMessage(e.getMessage());
-        } catch (AuthenticationException e) {
-=======
 
         } catch (ValidationException | AuthenticationException e) {
->>>>>>> test
             loginFrame.showErrorMessage(e.getMessage());
         } catch (DatabaseException e) {
             loginFrame.showErrorMessage("Database error: " + e.getMessage());
@@ -70,9 +54,6 @@ public class LoginController {
     }
 
     /**
-<<<<<<< HEAD
-     * Redirects the authenticated user to the correct dashboard based on their role.
-=======
      * Overloaded login handler for backward compatibility.
      */
     public void handleLogin(LoginFrame loginFrame, String username, String password) {
@@ -81,7 +62,6 @@ public class LoginController {
 
     /**
      * Identifies the role and redirects the user to the corresponding dashboard.
->>>>>>> test
      *
      * @param user Authenticated user
      */
@@ -89,21 +69,6 @@ public class LoginController {
         String roleName = (user.getRole() != null) ? user.getRole().getRoleName() : "";
 
         SwingUtilities.invokeLater(() -> {
-<<<<<<< HEAD
-            if (Role.ADMIN.equalsIgnoreCase(roleName)) {
-                new AdminDashboard(user).setVisible(true);
-            } else if (Role.LECTURER.equalsIgnoreCase(roleName)) {
-                new LecturerDashboard(user).setVisible(true);
-            } else if (Role.TECHNICAL_OFFICER.equalsIgnoreCase(roleName)) {
-                new TechnicalOfficerDashboard(user).setVisible(true);
-            } else if (Role.UNDERGRADUATE.equalsIgnoreCase(roleName) || "STUDENT".equalsIgnoreCase(roleName)) {
-                new UndergraduateDashboard(user).setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(null,
-                        "Unknown role for this account. Please contact the administrator.",
-                        "Access denied", JOptionPane.WARNING_MESSAGE);
-                showLogin();
-=======
             switch (roleName.toUpperCase()) {
                 case Role.ADMIN:
                     new AdminDashboard(user).setVisible(true);
@@ -125,7 +90,6 @@ public class LoginController {
                             JOptionPane.ERROR_MESSAGE);
                     showLogin();
                     break;
->>>>>>> test
             }
         });
     }
