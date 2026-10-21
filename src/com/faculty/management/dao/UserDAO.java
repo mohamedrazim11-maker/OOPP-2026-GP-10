@@ -2,32 +2,14 @@ package com.faculty.management.dao;
 
 import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.exception.DatabaseException;
-import com.faculty.management.model.Admin;
-import com.faculty.management.model.Lecturer;
-import com.faculty.management.model.Role;
-import com.faculty.management.model.TechnicalOfficer;
-import com.faculty.management.model.Undergraduate;
-import com.faculty.management.model.User;
+import com.faculty.management.model.*;
 
-<<<<<<< HEAD
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-=======
 import java.sql.*;
->>>>>>> test
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Data Access Object for User operations using pure JDBC.
-<<<<<<< HEAD
- */
-public class UserDAO {
-
-=======
  * Demonstrates Database Handling, Abstraction, Polymorphism, and Exception Handling.
  */
 public class UserDAO {
@@ -39,7 +21,6 @@ public class UserDAO {
      * @return The saved User object with generated userId
      * @throws DatabaseException If a database error occurs during insert
      */
->>>>>>> test
     public User createUser(User user) throws DatabaseException {
         String sql = "INSERT INTO users (username, password, email, first_name, last_name, role_id, contact_no, profile_pic, status) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -75,49 +56,6 @@ public class UserDAO {
         }
     }
 
-<<<<<<< HEAD
-    public List<User> getAllUsers() throws DatabaseException {
-        String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
-                     "u.role_id, u.contact_no, u.profile_pic, u.status, r.role_name, r.description AS role_description " +
-                     "FROM users u JOIN roles r ON u.role_id = r.role_id ORDER BY u.user_id ASC";
-
-        List<User> users = new ArrayList<>();
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                users.add(mapResultSetToUser(rs));
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to fetch users: " + e.getMessage(), e);
-        }
-
-        return users;
-    }
-
-    public User findById(int userId) throws DatabaseException {
-        String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
-                     "u.role_id, u.contact_no, u.profile_pic, u.status, r.role_name, r.description AS role_description " +
-                     "FROM users u JOIN roles r ON u.role_id = r.role_id WHERE u.user_id = ?";
-
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, userId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToUser(rs);
-                }
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to fetch user by ID: " + e.getMessage(), e);
-        }
-
-        return null;
-    }
-
-=======
     /**
      * Finds a user by username, joining the role information.
      *
@@ -125,7 +63,6 @@ public class UserDAO {
      * @return Concrete User instance (Admin, Lecturer, TechnicalOfficer, Undergraduate) or null if not found
      * @throws DatabaseException If a database error occurs
      */
->>>>>>> test
     public User findByUsername(String username) throws DatabaseException {
         String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
                      "u.role_id, u.contact_no, u.profile_pic, u.status, " +
@@ -150,8 +87,6 @@ public class UserDAO {
         return null;
     }
 
-<<<<<<< HEAD
-=======
     /**
      * Finds a user by unique user ID.
      *
@@ -190,88 +125,271 @@ public class UserDAO {
      * @return true if exists, false otherwise
      * @throws DatabaseException If database error occurs
      */
->>>>>>> test
     public boolean existsByUsername(String username) throws DatabaseException {
-        String sql = "SELECT 1 FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1";
-        return hasSingleMatch(sql, username);
-    }
-
-    public boolean existsByEmail(String email) throws DatabaseException {
-        String sql = "SELECT 1 FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1";
-        return hasSingleMatch(sql, email);
-    }
-
-    public boolean existsByEmailExcludingUser(String email, int userId) throws DatabaseException {
-        String sql = "SELECT 1 FROM users WHERE LOWER(email) = LOWER(?) AND user_id <> ? LIMIT 1";
-        return hasSingleMatch(sql, email, userId);
-    }
-
-    public boolean existsByUsernameExcludingUser(String username, int userId) throws DatabaseException {
-        String sql = "SELECT 1 FROM users WHERE LOWER(username) = LOWER(?) AND user_id <> ? LIMIT 1";
-        return hasSingleMatch(sql, username, userId);
-    }
-
-    public boolean updateUser(User user) throws DatabaseException {
-        String sql = "UPDATE users SET username = ?, email = ?, first_name = ?, last_name = ?, " +
-                     "role_id = ?, contact_no = ?, profile_pic = ?, status = ? WHERE user_id = ?";
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, user.getUsername());
-            stmt.setString(2, user.getEmail());
-            stmt.setString(3, user.getFirstName());
-            stmt.setString(4, user.getLastName());
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check username existence: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a user already exists with the given username, excluding a specific user ID.
+     */
+    public boolean existsByUsernameExcludingUser(String username, int userId) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ? AND user_id != ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setInt(2, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check username uniqueness: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a user already exists with the given email.
+     *
+     * @param email Email to check
+     * @return true if exists, false otherwise
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean existsByEmail(String email) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM users WHERE email = ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check email existence: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a user already exists with the given email, excluding a specific user ID.
+     */
+    public boolean existsByEmailExcludingUser(String email, int userId) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM users WHERE email = ? AND user_id != ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.setInt(2, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check email uniqueness: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    /**
+     * Retrieves all users from the database.
+     *
+     * @return List of polymorphic User objects
+     * @throws DatabaseException If database error occurs
+     */
+    public List<User> getAllUsers() throws DatabaseException {
+        List<User> userList = new ArrayList<>();
+        String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
+                     "u.role_id, u.contact_no, u.profile_pic, u.status, " +
+                     "r.role_name, r.description AS role_description " +
+                     "FROM users u " +
+                     "JOIN roles r ON u.role_id = r.role_id " +
+                     "ORDER BY u.user_id ASC";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                userList.add(mapResultSetToUser(rs));
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to fetch all users: " + e.getMessage(), e);
+        }
+
+        return userList;
+    }
+
+    /**
+     * Updates an existing user's information.
+     *
+     * @param user The user object with updated fields
+     * @return true if updated successfully, false otherwise
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateUser(User user) throws DatabaseException {
+        String sql = "UPDATE users SET first_name = ?, last_name = ?, email = ?, contact_no = ?, role_id = ?, status = ? " +
+                     "WHERE user_id = ?";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, user.getFirstName());
+            stmt.setString(2, user.getLastName());
+            stmt.setString(3, user.getEmail());
+            stmt.setString(4, user.getContactNo());
             stmt.setInt(5, user.getRole() != null ? user.getRole().getRoleId() : 4);
-            stmt.setString(6, user.getContactNo());
-            stmt.setString(7, user.getProfilePic());
-            stmt.setString(8, user.getStatus() != null ? user.getStatus() : "ACTIVE");
-            stmt.setInt(9, user.getUserId());
+            stmt.setString(6, user.getStatus());
+            stmt.setInt(7, user.getUserId());
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to update user: " + e.getMessage(), e);
         }
     }
 
-    public boolean updateCredentials(int userId, String username, String password) throws DatabaseException {
+    /**
+     * Updates a user's credentials (username and password).
+     * Demonstrates Database Handling with parameterized PreparedStatements.
+     *
+     * @param userId      ID of the user
+     * @param username    New username
+     * @param newPassword New password
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateCredentials(int userId, String username, String newPassword) throws DatabaseException {
         String sql = "UPDATE users SET username = ?, password = ? WHERE user_id = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);
-            stmt.setString(2, password);
+            stmt.setString(2, newPassword);
             stmt.setInt(3, userId);
-            return stmt.executeUpdate() > 0;
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update credentials.");
+            }
+            return true;
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to update credentials: " + e.getMessage(), e);
+            throw new DatabaseException("Failed to update user credentials: " + e.getMessage(), e);
         }
     }
 
-    public boolean updateUsername(int userId, String username) throws DatabaseException {
+    /**
+     * Updates only the username of a user in the database.
+     * Demonstrates Database Handling.
+     *
+     * @param userId      ID of the user
+     * @param newUsername New username
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateUsername(int userId, String newUsername) throws DatabaseException {
         String sql = "UPDATE users SET username = ? WHERE user_id = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, username);
+            stmt.setString(1, newUsername);
             stmt.setInt(2, userId);
-            return stmt.executeUpdate() > 0;
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update username.");
+            }
+            return true;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to update username: " + e.getMessage(), e);
         }
     }
 
-    public boolean updatePassword(int userId, String password) throws DatabaseException {
+    /**
+     * Updates only the password of a user in the database.
+     * Demonstrates Database Handling.
+     *
+     * @param userId      ID of the user
+     * @param newPassword New password
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updatePassword(int userId, String newPassword) throws DatabaseException {
         String sql = "UPDATE users SET password = ? WHERE user_id = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, password);
+            stmt.setString(1, newPassword);
             stmt.setInt(2, userId);
-            return stmt.executeUpdate() > 0;
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update password.");
+            }
+            return true;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to update password: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * Polymorphic overload to update credentials using a User entity.
+     * Demonstrates Polymorphism and Object-Oriented design.
+     *
+     * @param user        Target User entity
+     * @param newPassword New password
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateCredentials(User user, String newPassword) throws DatabaseException {
+        if (user == null) {
+            throw new DatabaseException("User object cannot be null.");
+        }
+        return updateCredentials(user.getUserId(), user.getUsername(), newPassword);
+    }
+
+    /**
+     * Polymorphic overload to update username and password using a User entity.
+     * Demonstrates Polymorphism.
+     *
+     * @param user        Target User entity
+     * @param newUsername New username
+     * @param newPassword New password
+     * @return true if updated
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean updateCredentials(User user, String newUsername, String newPassword) throws DatabaseException {
+        if (user == null) {
+            throw new DatabaseException("User object cannot be null.");
+        }
+        return updateCredentials(user.getUserId(), newUsername, newPassword);
+    }
+
+    /**
+     * Updates a user's status (ACTIVE, INACTIVE, SUSPENDED).
+     *
+     * @param userId The ID of the user
+     * @param status New status
+     * @return true if successful
+     * @throws DatabaseException If database error occurs
+     */
     public boolean updateStatus(int userId, String status) throws DatabaseException {
         String sql = "UPDATE users SET status = ? WHERE user_id = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -279,12 +397,21 @@ public class UserDAO {
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
             stmt.setInt(2, userId);
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new DatabaseException("Failed to update user status: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * Updates the role of a user in the database.
+     *
+     * @param userId The ID of the user
+     * @param roleId The new Role ID
+     * @return true if updated successfully
+     * @throws DatabaseException If database error occurs
+     */
     public boolean updateUserRole(int userId, int roleId) throws DatabaseException {
         String sql = "UPDATE users SET role_id = ? WHERE user_id = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -292,57 +419,60 @@ public class UserDAO {
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, roleId);
             stmt.setInt(2, userId);
-            return stmt.executeUpdate() > 0;
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to update role.");
+            }
+            return true;
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to update user role: " + e.getMessage(), e);
+            throw new DatabaseException("Failed to update user role in database: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * Deletes a user by ID.
+     *
+     * @param userId The ID of the user to delete
+     * @return true if deleted
+     * @throws DatabaseException If database error occurs
+     */
     public boolean deleteUser(int userId) throws DatabaseException {
         String sql = "DELETE FROM users WHERE user_id = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
-            return stmt.executeUpdate() > 0;
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DatabaseException("No user found with ID " + userId + " to delete.");
+            }
+            return true;
         } catch (SQLException e) {
+            if (e.getErrorCode() == 1451 || (e.getMessage() != null && e.getMessage().contains("foreign key constraint"))) {
+                throw new DatabaseException("Cannot delete user because related academic records (attendance, marks, medicals, or course materials) exist for this user. You can set the user status to INACTIVE instead.", e);
+            }
             throw new DatabaseException("Failed to delete user: " + e.getMessage(), e);
         }
     }
 
-    private boolean hasSingleMatch(String sql, String value) throws DatabaseException {
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, value);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to validate unique user data: " + e.getMessage(), e);
+    /**
+     * Polymorphic overload to delete a user directly using a User model instance.
+     *
+     * @param user User object to delete
+     * @return true if deleted
+     * @throws DatabaseException If database error occurs
+     */
+    public boolean deleteUser(User user) throws DatabaseException {
+        if (user == null) {
+            throw new DatabaseException("Cannot delete null user.");
         }
+        return deleteUser(user.getUserId());
     }
 
-    private boolean hasSingleMatch(String sql, String value, int userId) throws DatabaseException {
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, value);
-            stmt.setInt(2, userId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to validate unique user data: " + e.getMessage(), e);
-        }
-    }
-
-<<<<<<< HEAD
-=======
     /**
      * Helper method to map a database ResultSet row to the appropriate User subclass (Polymorphism).
      */
->>>>>>> test
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         int userId = rs.getInt("user_id");
         String username = rs.getString("username");
@@ -369,10 +499,7 @@ public class UserDAO {
         } else if (Role.UNDERGRADUATE.equalsIgnoreCase(roleName) || "STUDENT".equalsIgnoreCase(roleName)) {
             user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         } else {
-<<<<<<< HEAD
-=======
             // Default to Undergraduate / Student
->>>>>>> test
             user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         }
 

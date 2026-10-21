@@ -2,23 +2,17 @@ package com.faculty.management.gui.member2_lecturer;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.gui.common.UITheme;
-<<<<<<< HEAD
-=======
 import com.faculty.management.model.Lecturer;
->>>>>>> test
 import com.faculty.management.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-<<<<<<< HEAD
-=======
 /**
  * Modern Lecturer Dashboard GUI.
  * Redirect frame for Lecturer role supporting Overview, Profile, Material Management, Marks Entry, and CA Eligibility.
  */
->>>>>>> test
 public class LecturerDashboard extends JFrame {
 
     private final User currentUser;
@@ -47,25 +41,19 @@ public class LecturerDashboard extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Lecturer Portal");
-<<<<<<< HEAD
-        setSize(1020, 680);
-        setMinimumSize(new Dimension(880, 560));
-=======
         setSize(1040, 720);
         setMinimumSize(new Dimension(880, 580));
->>>>>>> test
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         getContentPane().setBackground(UITheme.BG_PAGE);
 
+        // Standardized Modern Header
         add(UITheme.buildHeader(this, "Academic Staff Portal", currentUser.getFullName(), "Lecturer", () -> {
             dispose();
             LoginController.showLogin();
         }), BorderLayout.NORTH);
 
-<<<<<<< HEAD
-=======
         // --- Tabbed Content Area ---
         tabbedPane = new JTabbedPane();
         UITheme.styleTabbedPane(tabbedPane);
@@ -90,12 +78,12 @@ public class LecturerDashboard extends JFrame {
 
     private JComponent createHomeOverviewPanel() {
         // Main Content Container
->>>>>>> test
         JPanel mainContent = new JPanel();
         mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
         mainContent.setOpaque(false);
         mainContent.setBorder(new EmptyBorder(24, 28, 24, 28));
 
+        // 1. Welcome Hero Banner
         UITheme.ModernCard bannerCard = new UITheme.ModernCard(14);
         bannerCard.setLayout(new BorderLayout(16, 10));
         bannerCard.setCardBackground(Color.WHITE);
@@ -127,6 +115,7 @@ public class LecturerDashboard extends JFrame {
         bannerCard.add(bannerText, BorderLayout.WEST);
         bannerCard.add(badgeBox, BorderLayout.EAST);
 
+        // 2. Stat Cards
         JPanel statsGrid = new JPanel(new GridLayout(1, 4, 16, 0));
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
@@ -136,11 +125,13 @@ public class LecturerDashboard extends JFrame {
         statsGrid.add(UITheme.createStatCard("", "Eligibility Status", "40% CA Threshold", UITheme.PURPLE));
         statsGrid.add(UITheme.createStatCard("", "Attendance Ratio", "80% Required", UITheme.WARNING_DARK));
 
+        // 3. Section Title
         JLabel sectionTitle = new JLabel("Academic & Teaching Operations");
         sectionTitle.setFont(UITheme.FONT_SECTION_TITLE);
         sectionTitle.setForeground(UITheme.TEXT_MAIN);
         sectionTitle.setBorder(new EmptyBorder(4, 4, 12, 4));
 
+        // 4. Modules Grid (2x2)
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
         modulesGrid.setOpaque(false);
 

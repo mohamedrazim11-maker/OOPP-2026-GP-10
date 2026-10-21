@@ -8,13 +8,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-<<<<<<< HEAD
-=======
 /**
  * Modern Technical Officer Dashboard GUI.
  * Integrates unified UI theme with Attendance Entry, Medical Management, and Batch Summary dialogs.
  */
->>>>>>> test
 public class TechnicalOfficerDashboard extends JFrame {
 
     private final User currentUser;
@@ -33,20 +30,19 @@ public class TechnicalOfficerDashboard extends JFrame {
         setLayout(new BorderLayout());
         getContentPane().setBackground(UITheme.BG_PAGE);
 
+        // Standardized Modern Header
         add(UITheme.buildHeader(this, "Technical Operations Portal", currentUser.getFullName(), "Tech Officer", () -> {
             dispose();
             LoginController.showLogin();
         }), BorderLayout.NORTH);
 
-<<<<<<< HEAD
-=======
         // Main Content Container
->>>>>>> test
         JPanel mainContent = new JPanel();
         mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
         mainContent.setOpaque(false);
         mainContent.setBorder(new EmptyBorder(24, 28, 24, 28));
 
+        // 1. Welcome Hero Banner
         UITheme.ModernCard bannerCard = new UITheme.ModernCard(14);
         bannerCard.setLayout(new BorderLayout(16, 10));
         bannerCard.setCardBackground(Color.WHITE);
@@ -86,6 +82,7 @@ public class TechnicalOfficerDashboard extends JFrame {
         bannerCard.add(bannerText, BorderLayout.WEST);
         bannerCard.add(badgeBox, BorderLayout.EAST);
 
+        // 2. Stat Cards
         JPanel statsGrid = new JPanel(new GridLayout(1, 4, 16, 0));
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
@@ -95,11 +92,13 @@ public class TechnicalOfficerDashboard extends JFrame {
         statsGrid.add(UITheme.createStatCard("📊", "Batch Attendance", "Overall 84.5%", UITheme.PRIMARY));
         statsGrid.add(UITheme.createStatCard("🔬", "Lab Venues", "5 Department Labs", UITheme.SUCCESS));
 
+        // 3. Section Title
         JLabel sectionTitle = new JLabel("Technical & Attendance Operations");
         sectionTitle.setFont(UITheme.FONT_SECTION_TITLE);
         sectionTitle.setForeground(UITheme.TEXT_MAIN);
         sectionTitle.setBorder(new EmptyBorder(4, 4, 12, 4));
 
+        // 4. Modules Grid (2x2)
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
         modulesGrid.setOpaque(false);
 
