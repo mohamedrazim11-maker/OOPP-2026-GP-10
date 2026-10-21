@@ -402,6 +402,18 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to delete course using a course code string.
+     *
+     * @param courseCode Course code (e.g. "ICT2132")
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleDeleteCourse(String courseCode) throws ValidationException, DatabaseException {
+        return courseService.deleteCourse(courseCode);
+    }
+
+    /**
      * Retrieves all courses in the system.
      *
      * @return List of Course entities
@@ -447,5 +459,20 @@ public class AdminController {
             throw new ValidationException("Course with code '" + courseCode + "' was not found.");
         }
         return course;
+    }
+
+    /**
+     * Polymorphic overload to retrieve course details using a Course entity.
+     *
+     * @param course Course entity
+     * @return Course entity with full details
+     * @throws ValidationException If course is null or invalid
+     * @throws DatabaseException   If database error occurs
+     */
+    public Course handleViewCourse(Course course) throws ValidationException, DatabaseException {
+        if (course == null) {
+            throw new ValidationException("Course entity cannot be null.");
+        }
+        return handleViewCourse(course.getCourseId());
     }
 }

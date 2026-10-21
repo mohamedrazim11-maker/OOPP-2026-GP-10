@@ -54,23 +54,44 @@ public class NoticeDAO {
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              Statement stmt = conn.createStatement()) {
 
-            String createSql = "CREATE TABLE IF NOT EXISTS notices (" +
-                    "notice_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                    "title VARCHAR(200) NOT NULL, " +
-                    "content TEXT NOT NULL, " +
-                    "category VARCHAR(50) NOT NULL DEFAULT 'GENERAL', " +
-                    "priority VARCHAR(20) NOT NULL DEFAULT 'NORMAL', " +
-                    "posted_by VARCHAR(100) NOT NULL DEFAULT 'Faculty Administration', " +
-                    "posted_date DATE NOT NULL, " +
-                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                    ") ENGINE=InnoDB;";
-            stmt.executeUpdate(createSql);
-
-            // Check if rows exist
+            boolean tableExists = false;
             try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM notices")) {
+                tableExists = true;
                 if (rs.next() && rs.getInt(1) == 0) {
                     insertSeedNotices(conn);
                 }
+            } catch (SQLException e) {
+                tableExists = false;
+            }
+
+            if (!tableExists) {
+                boolean isSqlServer = DatabaseConnection.getInstance().isSqlServer();
+                String createSql;
+                if (isSqlServer) {
+                    createSql = "CREATE TABLE notices (" +
+                            "notice_id INT IDENTITY(1,1) PRIMARY KEY, " +
+                            "title NVARCHAR(200) NOT NULL, " +
+                            "content NVARCHAR(MAX) NOT NULL, " +
+                            "category NVARCHAR(50) NOT NULL DEFAULT 'GENERAL', " +
+                            "priority NVARCHAR(20) NOT NULL DEFAULT 'NORMAL', " +
+                            "posted_by NVARCHAR(100) NOT NULL DEFAULT 'Faculty Administration', " +
+                            "posted_date DATE NOT NULL, " +
+                            "created_at DATETIME2 DEFAULT CURRENT_TIMESTAMP" +
+                            ");";
+                } else {
+                    createSql = "CREATE TABLE IF NOT EXISTS notices (" +
+                            "notice_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                            "title VARCHAR(200) NOT NULL, " +
+                            "content TEXT NOT NULL, " +
+                            "category VARCHAR(50) NOT NULL DEFAULT 'GENERAL', " +
+                            "priority VARCHAR(20) NOT NULL DEFAULT 'NORMAL', " +
+                            "posted_by VARCHAR(100) NOT NULL DEFAULT 'Faculty Administration', " +
+                            "posted_date DATE NOT NULL, " +
+                            "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                            ") ENGINE=InnoDB;";
+                }
+                stmt.executeUpdate(createSql);
+                insertSeedNotices(conn);
             }
         } catch (Exception ignored) {
         }

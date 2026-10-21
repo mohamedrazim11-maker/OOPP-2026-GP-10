@@ -6,7 +6,12 @@ import com.faculty.management.model.Role;
 import com.faculty.management.model.User;
 
 /**
+<<<<<<< HEAD
  * Utility class providing validation methods for user inputs.
+=======
+ * Utility class providing validation methods for user inputs, user creation, and updates.
+ * Demonstrates Encapsulation and Error/Exception Handling.
+>>>>>>> test
  */
 public class ValidationUtil {
 
@@ -66,8 +71,6 @@ public class ValidationUtil {
     /**
      * Validates a Sri Lankan contact number: 9-10 digits, optionally
      * prefixed with '+', e.g. "0771234567" or "+94771234567".
-     * Used by Member 4's profile self-update (contact number is one of
-     * the few fields an Undergraduate/Lecturer/Technical Officer may edit).
      */
     public static boolean isValidPhoneNumber(String phone) {
         if (isEmpty(phone)) {
@@ -76,6 +79,17 @@ public class ValidationUtil {
         return phone.trim().matches("^\\+?[0-9]{9,12}$");
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * Validates all required fields for creating a new user.
+     *
+     * @param user            User object containing user information
+     * @param rawPassword     The plain password entered by the user
+     * @param confirmPassword Confirmation password entered by the user
+     * @throws ValidationException If any validation constraint fails
+     */
+>>>>>>> test
     public static void validateNewUser(User user, String rawPassword, String confirmPassword) throws ValidationException {
         if (user == null) {
             throw new ValidationException("User details cannot be null.");

@@ -9,19 +9,37 @@ import com.faculty.management.model.TechnicalOfficer;
 import com.faculty.management.model.Undergraduate;
 import com.faculty.management.model.User;
 
+<<<<<<< HEAD
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+=======
+import java.sql.*;
+>>>>>>> test
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Data Access Object for User operations using pure JDBC.
+<<<<<<< HEAD
  */
 public class UserDAO {
 
+=======
+ * Demonstrates Database Handling, Abstraction, Polymorphism, and Exception Handling.
+ */
+public class UserDAO {
+
+    /**
+     * Inserts a new user record into the users table.
+     *
+     * @param user The User subclass object (Admin, Lecturer, TechnicalOfficer, Undergraduate)
+     * @return The saved User object with generated userId
+     * @throws DatabaseException If a database error occurs during insert
+     */
+>>>>>>> test
     public User createUser(User user) throws DatabaseException {
         String sql = "INSERT INTO users (username, password, email, first_name, last_name, role_id, contact_no, profile_pic, status) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -57,6 +75,7 @@ public class UserDAO {
         }
     }
 
+<<<<<<< HEAD
     public List<User> getAllUsers() throws DatabaseException {
         String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
                      "u.role_id, u.contact_no, u.profile_pic, u.status, r.role_name, r.description AS role_description " +
@@ -98,6 +117,15 @@ public class UserDAO {
         return null;
     }
 
+=======
+    /**
+     * Finds a user by username, joining the role information.
+     *
+     * @param username The username to look up
+     * @return Concrete User instance (Admin, Lecturer, TechnicalOfficer, Undergraduate) or null if not found
+     * @throws DatabaseException If a database error occurs
+     */
+>>>>>>> test
     public User findByUsername(String username) throws DatabaseException {
         String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
                      "u.role_id, u.contact_no, u.profile_pic, u.status, " +
@@ -122,6 +150,47 @@ public class UserDAO {
         return null;
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * Finds a user by unique user ID.
+     *
+     * @param userId The ID of the user
+     * @return User subclass instance or null
+     * @throws DatabaseException If database error occurs
+     */
+    public User findById(int userId) throws DatabaseException {
+        String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
+                     "u.role_id, u.contact_no, u.profile_pic, u.status, " +
+                     "r.role_name, r.description AS role_description " +
+                     "FROM users u " +
+                     "JOIN roles r ON u.role_id = r.role_id " +
+                     "WHERE u.user_id = ?";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToUser(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to fetch user by ID: " + e.getMessage(), e);
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks if a user already exists with the given username.
+     *
+     * @param username Username to check
+     * @return true if exists, false otherwise
+     * @throws DatabaseException If database error occurs
+     */
+>>>>>>> test
     public boolean existsByUsername(String username) throws DatabaseException {
         String sql = "SELECT 1 FROM users WHERE LOWER(username) = LOWER(?) LIMIT 1";
         return hasSingleMatch(sql, username);
@@ -268,6 +337,12 @@ public class UserDAO {
         }
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * Helper method to map a database ResultSet row to the appropriate User subclass (Polymorphism).
+     */
+>>>>>>> test
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         int userId = rs.getInt("user_id");
         String username = rs.getString("username");
@@ -294,6 +369,10 @@ public class UserDAO {
         } else if (Role.UNDERGRADUATE.equalsIgnoreCase(roleName) || "STUDENT".equalsIgnoreCase(roleName)) {
             user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         } else {
+<<<<<<< HEAD
+=======
+            // Default to Undergraduate / Student
+>>>>>>> test
             user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         }
 
