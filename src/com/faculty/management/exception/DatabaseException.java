@@ -12,4 +12,7 @@ public class DatabaseException extends Exception {
         super(message, cause);
     }
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> test

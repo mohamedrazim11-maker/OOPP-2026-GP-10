@@ -1,5 +1,6 @@
 package com.faculty.management.gui.common;
 
+import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.controller.LoginController;
 
 import javax.swing.*;
@@ -7,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+<<<<<<< HEAD
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
@@ -24,6 +26,23 @@ public class LoginFrame extends JFrame {
     private JLabel errorLabel;
     private UITheme.ModernButton loginButton;
     private UITheme.ModernButton resetButton;
+=======
+
+/**
+ * Login GUI for Faculty Management System.
+ * Pure Java Swing - No third-party frameworks.
+ * Connects directly to MySQL database using role-based authentication.
+ */
+public class LoginFrame extends JFrame {
+
+    private JComboBox<String> roleComboBox;
+    private JTextField usernameField;
+    private JPasswordField passwordField;
+    private JCheckBox showPasswordCheckBox;
+    private JLabel errorLabel;
+    private JButton loginButton;
+    private JButton resetButton;
+>>>>>>> test
 
     private final LoginController loginController;
 
@@ -33,6 +52,7 @@ public class LoginFrame extends JFrame {
     }
 
     private void initComponents() {
+<<<<<<< HEAD
         setTitle("Faculty Management System — Portal Authentication");
         setUndecorated(true);
         setSize(1000, 650);
@@ -339,6 +359,192 @@ public class LoginFrame extends JFrame {
         constraints.anchor = GridBagConstraints.CENTER;
         formPanel.add(form, constraints);
 
+=======
+        setTitle("Faculty Management System — Login");
+        setSize(780, 560);
+        setMinimumSize(new Dimension(720, 520));
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Main Container Split into Left (Branding) and Right (Login Form)
+        JPanel mainPanel = new JPanel(new GridLayout(1, 2));
+
+        // 1. Left Branding Panel
+        JPanel brandPanel = new JPanel();
+        brandPanel.setBackground(new Color(30, 58, 138)); // Deep Navy
+        brandPanel.setLayout(new BoxLayout(brandPanel, BoxLayout.Y_AXIS));
+        brandPanel.setBorder(new EmptyBorder(40, 30, 40, 30));
+
+        JLabel logoIconLabel = new JLabel("🏛️");
+        logoIconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 56));
+        logoIconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel appTitleLabel = new JLabel("Faculty Management");
+        appTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        appTitleLabel.setForeground(Color.WHITE);
+        appTitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel appSubTitleLabel = new JLabel("System (FMS)");
+        appSubTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        appSubTitleLabel.setForeground(new Color(191, 219, 254));
+        appSubTitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel uniLabel = new JLabel("University of Ruhuna");
+        uniLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        uniLabel.setForeground(new Color(226, 232, 240));
+        uniLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel facLabel = new JLabel("Faculty of Technology");
+        facLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        facLabel.setForeground(new Color(148, 163, 184));
+        facLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // System Info Box (Dynamically checks MySQL connection status)
+        JPanel infoBox = new JPanel();
+        infoBox.setLayout(new BoxLayout(infoBox, BoxLayout.Y_AXIS));
+        infoBox.setBackground(new Color(23, 37, 84));
+        infoBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(59, 130, 246), 1),
+                new EmptyBorder(12, 14, 12, 14)
+        ));
+        infoBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel infoTitle = new JLabel("Database Authentication");
+        infoTitle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        infoTitle.setForeground(new Color(147, 197, 253));
+
+        boolean isDbConnected = DatabaseConnection.getInstance().isConnected();
+        String activeDb = DatabaseConnection.getInstance().getActiveDatabaseType();
+        String statusText = isDbConnected 
+                ? "• Database: Online (" + activeDb + ")"
+                : "• Database: Offline (Start XAMPP or SQL Server)";
+        JLabel infoDesc1 = new JLabel(statusText);
+        infoDesc1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        infoDesc1.setForeground(isDbConnected ? new Color(134, 239, 172) : new Color(253, 224, 71));
+
+        JLabel infoDesc2 = new JLabel("• Role-Based Access Control");
+        infoDesc2.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        infoDesc2.setForeground(new Color(203, 213, 225));
+
+        JLabel infoDesc3 = new JLabel("• Enter your faculty credentials");
+        infoDesc3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        infoDesc3.setForeground(new Color(203, 213, 225));
+
+        infoBox.add(infoTitle);
+        infoBox.add(Box.createVerticalStrut(4));
+        infoBox.add(infoDesc1);
+        infoBox.add(infoDesc2);
+        infoBox.add(infoDesc3);
+
+        brandPanel.add(Box.createVerticalGlue());
+        brandPanel.add(logoIconLabel);
+        brandPanel.add(Box.createVerticalStrut(15));
+        brandPanel.add(appTitleLabel);
+        brandPanel.add(appSubTitleLabel);
+        brandPanel.add(Box.createVerticalStrut(10));
+        brandPanel.add(uniLabel);
+        brandPanel.add(facLabel);
+        brandPanel.add(Box.createVerticalStrut(20));
+        brandPanel.add(infoBox);
+        brandPanel.add(Box.createVerticalGlue());
+
+        // 2. Right Login Form Panel
+        JPanel formPanel = new JPanel();
+        formPanel.setBackground(Color.WHITE);
+        formPanel.setLayout(new GridBagLayout());
+        formPanel.setBorder(new EmptyBorder(25, 35, 25, 35));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 5, 0);
+        gbc.weightx = 1.0;
+
+        // Form Title
+        JLabel signInLabel = new JLabel("Welcome Back");
+        signInLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        signInLabel.setForeground(new Color(15, 23, 42));
+
+        JLabel signInSub = new JLabel("Please select your role and enter credentials");
+        signInSub.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        signInSub.setForeground(new Color(100, 116, 139));
+
+        // Error message label with word wrapping
+        errorLabel = new JLabel(" ");
+        errorLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        errorLabel.setForeground(new Color(220, 38, 38));
+
+        // Role Selection Dropdown
+        JLabel roleLabel = new JLabel("Select Role");
+        roleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        roleLabel.setForeground(new Color(51, 65, 85));
+
+        String[] roles = {"-- Select Role --", "Admin", "Lecturer", "Technical Officer", "Undergraduate"};
+        roleComboBox = new JComboBox<>(roles);
+        roleComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        roleComboBox.setBackground(Color.WHITE);
+        roleComboBox.setPreferredSize(new Dimension(200, 36));
+        roleComboBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                new EmptyBorder(3, 5, 3, 5)
+        ));
+
+        // Username
+        JLabel usernameLabel = new JLabel("Username");
+        usernameLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        usernameLabel.setForeground(new Color(51, 65, 85));
+
+        usernameField = new JTextField();
+        usernameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        usernameField.setPreferredSize(new Dimension(200, 36));
+        usernameField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                new EmptyBorder(5, 10, 5, 10)
+        ));
+
+        // Password
+        JLabel passwordLabel = new JLabel("Password");
+        passwordLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        passwordLabel.setForeground(new Color(51, 65, 85));
+
+        passwordField = new JPasswordField();
+        passwordField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        passwordField.setPreferredSize(new Dimension(200, 36));
+        passwordField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                new EmptyBorder(5, 10, 5, 10)
+        ));
+
+        // Show Password Checkbox
+        showPasswordCheckBox = new JCheckBox("Show Password");
+        showPasswordCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        showPasswordCheckBox.setBackground(Color.WHITE);
+        showPasswordCheckBox.setFocusPainted(false);
+        showPasswordCheckBox.addActionListener(e -> {
+            if (showPasswordCheckBox.isSelected()) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
+        });
+
+        // Buttons Panel (Using OOP CustomButton components: PrimaryButton & SecondaryButton)
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        buttonPanel.setOpaque(false);
+
+        loginButton = new PrimaryButton("Sign In");
+        loginButton.setPreferredSize(new Dimension(100, 38));
+        loginButton.addActionListener(e -> performLogin());
+
+        resetButton = new SecondaryButton("Reset");
+        resetButton.setPreferredSize(new Dimension(100, 38));
+        resetButton.addActionListener(e -> resetFields());
+
+        buttonPanel.add(loginButton);
+        buttonPanel.add(resetButton);
+
+        // Enter key listeners
+>>>>>>> test
         KeyAdapter enterKeyListener = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -347,6 +553,7 @@ public class LoginFrame extends JFrame {
                 }
             }
         };
+<<<<<<< HEAD
         usernameField.addKeyListener(enterKeyListener);
         passwordField.addKeyListener(enterKeyListener);
         return formPanel;
@@ -384,10 +591,56 @@ public class LoginFrame extends JFrame {
         passwordField.setText("std123");
         clearErrorMessage();
         usernameField.requestFocus();
+=======
+        roleComboBox.addKeyListener(enterKeyListener);
+        usernameField.addKeyListener(enterKeyListener);
+        passwordField.addKeyListener(enterKeyListener);
+
+        // Adding components to Form Panel
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(signInLabel, gbc);
+
+        gbc.gridy = 1;
+        formPanel.add(signInSub, gbc);
+
+        gbc.gridy = 2;
+        formPanel.add(errorLabel, gbc);
+
+        gbc.gridy = 3;
+        formPanel.add(roleLabel, gbc);
+
+        gbc.gridy = 4;
+        formPanel.add(roleComboBox, gbc);
+
+        gbc.gridy = 5;
+        formPanel.add(usernameLabel, gbc);
+
+        gbc.gridy = 6;
+        formPanel.add(usernameField, gbc);
+
+        gbc.gridy = 7;
+        formPanel.add(passwordLabel, gbc);
+
+        gbc.gridy = 8;
+        formPanel.add(passwordField, gbc);
+
+        gbc.gridy = 9;
+        formPanel.add(showPasswordCheckBox, gbc);
+
+        gbc.gridy = 10;
+        gbc.insets = new Insets(12, 0, 0, 0);
+        formPanel.add(buttonPanel, gbc);
+
+        mainPanel.add(brandPanel);
+        mainPanel.add(formPanel);
+
+        add(mainPanel, BorderLayout.CENTER);
+>>>>>>> test
     }
 
     private void performLogin() {
         clearErrorMessage();
+<<<<<<< HEAD
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
         loginController.handleLogin(this, username, password);
@@ -398,10 +651,21 @@ public class LoginFrame extends JFrame {
         errorBanner.setVisible(true);
         errorBanner.revalidate();
         errorBanner.repaint();
+=======
+        String selectedRole = (String) roleComboBox.getSelectedItem();
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+        loginController.handleLogin(this, username, password, selectedRole);
+    }
+
+    public void showErrorMessage(String message) {
+        errorLabel.setText("<html><body style='width: 290px; color: #DC2626;'>⚠️ " + message + "</body></html>");
+>>>>>>> test
     }
 
     public void clearErrorMessage() {
         errorLabel.setText(" ");
+<<<<<<< HEAD
         errorBanner.setVisible(false);
         errorBanner.revalidate();
         errorBanner.repaint();
@@ -475,5 +739,36 @@ public class LoginFrame extends JFrame {
             g2.setColor(new Color(236, 231, 255, 90));
             g2.fillRect(left - 18, baseY, buildingWidth + 36, 2);
         }
+=======
+    }
+
+    public void resetFields() {
+        roleComboBox.setSelectedIndex(0);
+        usernameField.setText("");
+        passwordField.setText("");
+        clearErrorMessage();
+        roleComboBox.requestFocus();
+    }
+
+    // Encapsulation: Getters and Setters for GUI components
+    public String getSelectedRole() {
+        return (String) roleComboBox.getSelectedItem();
+    }
+
+    public void setSelectedRole(String role) {
+        roleComboBox.setSelectedItem(role);
+    }
+
+    public String getUsername() {
+        return usernameField.getText();
+    }
+
+    public void setUsername(String username) {
+        usernameField.setText(username);
+    }
+
+    public void setPassword(String password) {
+        passwordField.setText(password);
+>>>>>>> test
     }
 }

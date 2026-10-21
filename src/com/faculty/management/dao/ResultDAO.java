@@ -19,19 +19,31 @@ import java.util.List;
 public class ResultDAO {
 
     public void saveOrUpdateResult(Result result) throws DatabaseException {
-        String sql = "INSERT INTO results (student_id, semester_number, academic_year, sgpa, " +
-                     "credits_attempted, credits_completed) VALUES (?, ?, ?, ?, ?, ?) " +
-                     "ON DUPLICATE KEY UPDATE sgpa = VALUES(sgpa), credits_attempted = VALUES(credits_attempted), " +
-                     "credits_completed = VALUES(credits_completed)";
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, result.getStudentId());
-            stmt.setInt(2, result.getSemesterNumber());
-            stmt.setString(3, result.getAcademicYear());
-            stmt.setDouble(4, result.getSgpa());
-            stmt.setInt(5, result.getCreditsAttempted());
-            stmt.setInt(6, result.getCreditsCompleted());
-            stmt.executeUpdate();
+        String updateSql = "UPDATE results SET sgpa = ?, credits_attempted = ?, credits_completed = ? " +
+                           "WHERE student_id = ? AND semester_number = ? AND academic_year = ?";
+        try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+            updateStmt.setDouble(1, result.getSgpa());
+            updateStmt.setInt(2, result.getCreditsAttempted());
+            updateStmt.setInt(3, result.getCreditsCompleted());
+            updateStmt.setInt(4, result.getStudentId());
+            updateStmt.setInt(5, result.getSemesterNumber());
+            updateStmt.setString(6, result.getAcademicYear());
+
+            int affected = updateStmt.executeUpdate();
+            if (affected == 0) {
+                String insertSql = "INSERT INTO results (student_id, semester_number, academic_year, sgpa, " +
+                                   "credits_attempted, credits_completed) VALUES (?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    insertStmt.setInt(1, result.getStudentId());
+                    insertStmt.setInt(2, result.getSemesterNumber());
+                    insertStmt.setString(3, result.getAcademicYear());
+                    insertStmt.setDouble(4, result.getSgpa());
+                    insertStmt.setInt(5, result.getCreditsAttempted());
+                    insertStmt.setInt(6, result.getCreditsCompleted());
+                    insertStmt.executeUpdate();
+                }
+            }
         } catch (SQLException e) {
             throw new DatabaseException("Failed to publish result: " + e.getMessage(), e);
         }

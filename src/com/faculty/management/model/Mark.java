@@ -1,20 +1,20 @@
 package com.faculty.management.model;
 
+import com.faculty.management.exception.InvalidMarkException;
+
 /**
- * Represents raw component marks entered for a Student in a Course.
- * Shared reference entity — primarily owned/uploaded by Member 2
- * (Lecturer & Academic Management). Member 4 reads this data to
- * compute the CA percentage, final total, grade, and GPA.
- *
- * All component marks are out of 100. CA% is the average of the
- * components that were actually entered (quiz, assignment, mid-semester,
- * practical). The final total mark uses a documented 40:60 weighting
- * of CA vs. the final examination (see GradeCalculator).
+ * Represents student evaluation marks and component scores.
+ * Unifies Member 2 evaluation-based mark entries and Continuous Assessment
+ * component marks used across grading and calculation modules.
  */
 public class Mark {
 
     private int markId;
-    private int studentId;
+    private String studentId;
+    private int evaluationId;
+    private double marksObtained; // Out of 100
+
+    // Component marks for course CA & Final calculations
     private int courseId;
     private Double quizMarks;
     private Double assignmentMarks;
@@ -25,10 +25,21 @@ public class Mark {
     public Mark() {
     }
 
+    public Mark(int markId, String studentId, int evaluationId, double marksObtained) throws InvalidMarkException {
+        this.markId = markId;
+        this.studentId = studentId;
+        this.evaluationId = evaluationId;
+        setMarksObtained(marksObtained);
+    }
+
+    public Mark(String studentId, int evaluationId, double marksObtained) throws InvalidMarkException {
+        this(0, studentId, evaluationId, marksObtained);
+    }
+
     public Mark(int markId, int studentId, int courseId, Double quizMarks, Double assignmentMarks,
                 Double midSemMarks, Double practicalMarks, Double finalExamMarks) {
         this.markId = markId;
-        this.studentId = studentId;
+        this.studentId = String.valueOf(studentId);
         this.courseId = courseId;
         this.quizMarks = quizMarks;
         this.assignmentMarks = assignmentMarks;
@@ -40,7 +51,7 @@ public class Mark {
     /**
      * Computes the Continuous Assessment percentage as the average of
      * whichever CA components (quiz / assignment / mid-semester / practical)
-     * were actually recorded for this student-course pair.
+     * were recorded for this student-course pair.
      */
     public double computeCaMarks() {
         double sum = 0;
@@ -76,12 +87,44 @@ public class Mark {
         this.markId = markId;
     }
 
-    public int getStudentId() {
+    public String getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(int studentId) {
+    public void setStudentId(String studentId) {
         this.studentId = studentId;
+    }
+
+    public void setStudentId(int studentId) {
+        this.studentId = String.valueOf(studentId);
+    }
+
+    public int getStudentIdAsInt() {
+        try {
+            return studentId == null ? 0 : Integer.parseInt(studentId);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    public int getEvaluationId() {
+        return evaluationId;
+    }
+
+    public void setEvaluationId(int evaluationId) {
+        this.evaluationId = evaluationId;
+    }
+
+    public double getMarksObtained() {
+        return marksObtained;
+    }
+
+    // Encapsulation with domain rule validation
+    public void setMarksObtained(double marksObtained) throws InvalidMarkException {
+        if (marksObtained < 0 || marksObtained > 100) {
+            throw new InvalidMarkException("Invalid Mark: " + marksObtained + ". Marks must be between 0 and 100.");
+        }
+        this.marksObtained = marksObtained;
     }
 
     public int getCourseId() {

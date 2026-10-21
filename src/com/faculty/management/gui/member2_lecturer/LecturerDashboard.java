@@ -2,25 +2,58 @@ package com.faculty.management.gui.member2_lecturer;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.gui.common.UITheme;
+<<<<<<< HEAD
+=======
+import com.faculty.management.model.Lecturer;
+>>>>>>> test
 import com.faculty.management.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
+<<<<<<< HEAD
+=======
+/**
+ * Modern Lecturer Dashboard GUI.
+ * Redirect frame for Lecturer role supporting Overview, Profile, Material Management, Marks Entry, and CA Eligibility.
+ */
+>>>>>>> test
 public class LecturerDashboard extends JFrame {
 
     private final User currentUser;
+    private Lecturer currentLecturer;
+    private JTabbedPane tabbedPane;
 
     public LecturerDashboard(User user) {
         this.currentUser = user;
+
+        // Safely map User to Lecturer model
+        if (user instanceof Lecturer) {
+            this.currentLecturer = (Lecturer) user;
+        } else {
+            this.currentLecturer = new Lecturer();
+            this.currentLecturer.setUserId(user.getUserId());
+            this.currentLecturer.setUsername(user.getUsername());
+            this.currentLecturer.setFirstName(user.getFirstName());
+            this.currentLecturer.setLastName(user.getLastName());
+            this.currentLecturer.setEmail(user.getEmail());
+            this.currentLecturer.setContactNo(user.getContactNo());
+            this.currentLecturer.setProfilePic(user.getProfilePic());
+        }
+
         initComponents();
     }
 
     private void initComponents() {
         setTitle("Faculty Management System — Lecturer Portal");
+<<<<<<< HEAD
         setSize(1020, 680);
         setMinimumSize(new Dimension(880, 560));
+=======
+        setSize(1040, 720);
+        setMinimumSize(new Dimension(880, 580));
+>>>>>>> test
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -31,6 +64,33 @@ public class LecturerDashboard extends JFrame {
             LoginController.showLogin();
         }), BorderLayout.NORTH);
 
+<<<<<<< HEAD
+=======
+        // --- Tabbed Content Area ---
+        tabbedPane = new JTabbedPane();
+        UITheme.styleTabbedPane(tabbedPane);
+
+        // Tab 0: Welcome Overview
+        tabbedPane.addTab("🏠 Home Overview", createHomeOverviewPanel());
+
+        // Tab 1: Profile Management (Week 2 Requirement)
+        tabbedPane.addTab("👤 My Profile", new LecturerProfilePanel(currentLecturer));
+
+        // Tab 2: Course Materials (Week 2 Requirement)
+        tabbedPane.addTab("📄 Course Materials", new CourseMaterialsPanel());
+
+        // Tab 3: Marks Management Engine (Week 3 Requirement)
+        tabbedPane.addTab("📝 Marks Entry", new MarkManagementPanel());
+
+        // Tab 4: CA Summary & Eligibility
+        tabbedPane.addTab("📊 CA Eligibility", new CASummaryPanel());
+
+        add(tabbedPane, BorderLayout.CENTER);
+    }
+
+    private JComponent createHomeOverviewPanel() {
+        // Main Content Container
+>>>>>>> test
         JPanel mainContent = new JPanel();
         mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
         mainContent.setOpaque(false);
@@ -86,29 +146,34 @@ public class LecturerDashboard extends JFrame {
 
         modulesGrid.add(createModuleCard("Course Materials",
                 "Upload lecture slides, tutorial sheets, assignment specifications, and syllabus guidelines for assigned courses.",
-                UITheme.TEAL, "Upload Materials"));
+                UITheme.TEAL, "Upload Materials", () -> tabbedPane.setSelectedIndex(2)));
 
         modulesGrid.add(createModuleCard("Assessment & Exam Marks",
                 "Enter, edit, and calculate Continuous Assessment (CA) components, quizzes, midterms, and End-Semester final marks.",
-                UITheme.ACCENT_BLUE, "Enter Marks"));
+                UITheme.ACCENT_BLUE, "Enter Marks", () -> tabbedPane.setSelectedIndex(3)));
 
         modulesGrid.add(createModuleCard("Student Eligibility & GPA",
                 "Verify exam eligibility based on CA >= 40% and 80% attendance. Review automated UGC circular grade points and SGPA.",
-                UITheme.PURPLE, "Review Eligibility"));
+                UITheme.PURPLE, "Review Eligibility", () -> tabbedPane.setSelectedIndex(4)));
 
         modulesGrid.add(createModuleCard("Attendance & Medical Records",
                 "Audit undergraduate student attendance percentages and inspect approved medical certificates for missed sessions.",
-                UITheme.WARNING_DARK, "View Attendance"));
+                UITheme.WARNING_DARK, "View Attendance", () -> {
+                    JOptionPane.showMessageDialog(this,
+                            "Lecturer module [Attendance & Medical Records] is configured and ready.",
+                            "Attendance & Medical Records",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }));
 
         mainContent.add(bannerCard);
         mainContent.add(statsGrid);
         mainContent.add(sectionTitle);
         mainContent.add(modulesGrid);
 
-        add(UITheme.createModernScrollPane(mainContent), BorderLayout.CENTER);
+        return UITheme.createModernScrollPane(mainContent);
     }
 
-    private JPanel createModuleCard(String title, String desc, Color accentColor, String actionText) {
+    private JPanel createModuleCard(String title, String desc, Color accentColor, String actionText, Runnable onAction) {
         UITheme.ModernCard card = new UITheme.ModernCard(12);
         card.setLayout(new BorderLayout(12, 12));
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -128,10 +193,9 @@ public class LecturerDashboard extends JFrame {
         UITheme.ModernButton actionBtn = new UITheme.ModernButton(actionText, UITheme.ButtonStyle.OUTLINE, 4);
         actionBtn.setFont(UITheme.FONT_SMALL_BOLD);
         actionBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this,
-                    "Lecturer module [" + title + "] is configured and ready.",
-                    title,
-                    JOptionPane.INFORMATION_MESSAGE);
+            if (onAction != null) {
+                onAction.run();
+            }
         });
         bottomRow.add(actionBtn);
 
