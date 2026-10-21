@@ -31,30 +31,6 @@ public class AuthenticationService {
         this.userDAO = new UserDAO();
     }
 
-<<<<<<< HEAD
-    /**
-     * Authenticates a user with given credentials.
-     *
-     * @param username User-entered username
-     * @param password User-entered password
-     * @return Authenticated User object (Admin, Lecturer, TechnicalOfficer, or Undergraduate)
-     * @throws ValidationException If inputs are invalid or empty
-     * @throws AuthenticationException If username/password do not match or account is inactive
-     * @throws DatabaseException If database communication fails
-     */
-    public User authenticate(String username, String password)
-            throws ValidationException, AuthenticationException, DatabaseException {
-
-        ValidationUtil.validateLoginInput(username, password);
-
-        String trimmedUsername = username.trim();
-
-        User user = userDAO.findByUsername(trimmedUsername);
-        if (user == null || !PasswordUtil.verifyPassword(password, user.getPassword())) {
-            throw new AuthenticationException("Invalid username or password.");
-        }
-
-=======
     public AuthenticationService(UserDAO userDAO) {
         this.userDAO = (userDAO != null) ? userDAO : new UserDAO();
     }
@@ -90,15 +66,10 @@ public class AuthenticationService {
         }
 
         // 4. Verify account active status
->>>>>>> test
         if (!user.isActive()) {
             throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
         }
 
-<<<<<<< HEAD
-        return user;
-    }
-=======
         // 5. Verify user's assigned role matches the selected role
         verifyUserRole(user, selectedRole);
 
@@ -145,5 +116,4 @@ public class AuthenticationService {
             throw new AuthenticationException("Role mismatch: You cannot log in as '" + selectedRole + "' with this account.");
         }
     }
->>>>>>> test
 }

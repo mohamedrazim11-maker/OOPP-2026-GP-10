@@ -2,13 +2,14 @@ package com.faculty.management;
 
 import com.faculty.management.controller.LoginController;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
+/**
+ * Entry point for the Faculty Management System application.
+ */
 public class Main {
+
     public static void main(String[] args) {
-<<<<<<< HEAD
-        SwingUtilities.invokeLater(LoginController::showLogin);
-=======
         // Set native system look and feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -20,6 +21,5 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             LoginController.showLogin();
         });
->>>>>>> test
     }
 }

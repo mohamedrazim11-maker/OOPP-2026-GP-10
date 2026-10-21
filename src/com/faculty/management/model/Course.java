@@ -1,30 +1,15 @@
 package com.faculty.management.model;
 
 /**
-<<<<<<< HEAD
- * Represents an academic Course offered by the faculty.
- * Shared reference entity — primarily maintained by Member 1 (Admin),
- * consumed here for Timetable, Grade, and Result calculations.
- * Demonstrates Encapsulation (private fields + getters/setters).
-=======
  * Course entity model representing academic modules in the Faculty of Technology.
  * Shared reference entity maintained by Member 1 (Admin) and consumed across the system.
  * Demonstrates Classes & Objects and Encapsulation.
->>>>>>> test
  */
 public class Course {
 
     private int courseId;
     private String courseCode;
     private String courseName;
-<<<<<<< HEAD
-    private int credits;
-    private int theorySessions;
-    private int practicalSessions;
-    private int semesterNumber;
-    private String academicYear;
-    private String department;
-=======
     private int creditValue;
     private int theoryHours;
     private int practicalHours;
@@ -33,31 +18,10 @@ public class Course {
     private String description;
     private int semesterNumber;
     private String academicYear;
->>>>>>> test
 
     public Course() {
     }
 
-<<<<<<< HEAD
-    public Course(String courseCode, String courseName, int credits,
-                  int theorySessions, int practicalSessions, String department,
-                  String academicYear, String description) {
-        this.courseCode = courseCode;
-        this.courseName = courseName;
-        this.credits = credits;
-        this.theorySessions = theorySessions;
-        this.practicalSessions = practicalSessions;
-        this.department = department;
-        this.academicYear = academicYear;
-    }
-
-    public Course(int courseId, String courseCode, String courseName, int credits,
-                  int theorySessions, int practicalSessions, String department,
-                  String academicYear, String description) {
-        this(courseCode, courseName, credits, theorySessions, practicalSessions,
-                department, academicYear, description);
-        this.courseId = courseId;
-=======
     public Course(int courseId, String courseCode, String courseName, int creditValue,
                   int theoryHours, int practicalHours, String department, String semester, String description) {
         this.courseId = courseId;
@@ -74,7 +38,6 @@ public class Course {
     public Course(String courseCode, String courseName, int creditValue,
                   int theoryHours, int practicalHours, String department, String semester, String description) {
         this(0, courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
->>>>>>> test
     }
 
     public Course(int courseId, String courseCode, String courseName, int credits,
@@ -83,31 +46,19 @@ public class Course {
         this.courseId = courseId;
         this.courseCode = courseCode;
         this.courseName = courseName;
-<<<<<<< HEAD
-        this.credits = credits;
-        this.theorySessions = theorySessions;
-        this.practicalSessions = practicalSessions;
-=======
         this.creditValue = credits;
         this.theoryHours = theorySessions;
         this.practicalHours = practicalSessions;
->>>>>>> test
         this.semesterNumber = semesterNumber;
         this.academicYear = academicYear;
         this.department = department;
     }
 
     public boolean hasPractical() {
-<<<<<<< HEAD
-        return practicalSessions > 0;
-    }
-
-=======
         return practicalHours > 0;
     }
 
     // Encapsulated Getters and Setters
->>>>>>> test
     public int getCourseId() {
         return courseId;
     }
@@ -132,46 +83,6 @@ public class Course {
         this.courseName = courseName;
     }
 
-<<<<<<< HEAD
-    public int getCredits() {
-        return credits;
-    }
-
-    public void setCredits(int credits) {
-        this.credits = credits;
-    }
-
-    public int getTheorySessions() {
-        return theorySessions;
-    }
-
-    public void setTheorySessions(int theorySessions) {
-        this.theorySessions = theorySessions;
-    }
-
-    public int getPracticalSessions() {
-        return practicalSessions;
-    }
-
-    public void setPracticalSessions(int practicalSessions) {
-        this.practicalSessions = practicalSessions;
-    }
-
-    public int getSemesterNumber() {
-        return semesterNumber;
-    }
-
-    public void setSemesterNumber(int semesterNumber) {
-        this.semesterNumber = semesterNumber;
-    }
-
-    public String getAcademicYear() {
-        return academicYear;
-    }
-
-    public void setAcademicYear(String academicYear) {
-        this.academicYear = academicYear;
-=======
     public int getCreditValue() {
         return creditValue;
     }
@@ -218,7 +129,6 @@ public class Course {
 
     public void setPracticalSessions(int practicalSessions) {
         this.practicalHours = practicalSessions;
->>>>>>> test
     }
 
     public String getDepartment() {
@@ -229,11 +139,6 @@ public class Course {
         this.department = department;
     }
 
-<<<<<<< HEAD
-    @Override
-    public String toString() {
-        return courseCode + " - " + courseName;
-=======
     public String getSemester() {
         return semester;
     }
@@ -269,6 +174,5 @@ public class Course {
     @Override
     public String toString() {
         return courseCode + " - " + courseName + " (" + creditValue + " Credits)";
->>>>>>> test
     }
 }

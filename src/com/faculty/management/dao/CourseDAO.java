@@ -4,27 +4,11 @@ import com.faculty.management.config.DatabaseConnection;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.model.Course;
 
-<<<<<<< HEAD
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-=======
 import java.sql.*;
->>>>>>> test
 import java.util.ArrayList;
 import java.util.List;
 
 /**
-<<<<<<< HEAD
- * Data Access Object for the shared Course reference table.
- * Read-only from Member 4's perspective — Course creation/editing belongs
- * to Member 1 (Admin & User Management).
- */
-public class CourseDAO {
-
-=======
  * Data Access Object for Course entity operations using JDBC.
  * Demonstrates Database Handling, Abstraction, Polymorphism, and Exception Handling.
  */
@@ -37,26 +21,24 @@ public class CourseDAO {
      * @return Saved Course entity with generated courseId
      * @throws DatabaseException If database operation fails
      */
->>>>>>> test
     public Course createCourse(Course course) throws DatabaseException {
-        String sql = "INSERT INTO courses (course_code, course_name, credits, theory_sessions, practical_sessions, " +
-                     "semester_number, academic_year, department, semester, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO courses (course_code, course_name, credit_value, theory_hours, practical_hours, department, semester, description) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, course.getCourseCode());
             stmt.setString(2, course.getCourseName());
-            stmt.setInt(3, course.getCredits());
-            stmt.setInt(4, course.getTheorySessions());
-            stmt.setInt(5, course.getPracticalSessions());
-            stmt.setInt(6, course.getSemesterNumber());
-            stmt.setString(7, course.getAcademicYear());
-            stmt.setString(8, course.getDepartment());
-            stmt.setString(9, "Semester " + course.getSemesterNumber());
-            stmt.setString(10, null);
+            stmt.setInt(3, course.getCreditValue());
+            stmt.setInt(4, course.getTheoryHours());
+            stmt.setInt(5, course.getPracticalHours());
+            stmt.setString(6, course.getDepartment());
+            stmt.setString(7, course.getSemester());
+            stmt.setString(8, course.getDescription());
 
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) {
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
                 throw new DatabaseException("Creating course failed, no rows affected.");
             }
 
@@ -65,14 +47,14 @@ public class CourseDAO {
                     course.setCourseId(generatedKeys.getInt(1));
                 }
             }
+
             return course;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to insert course: " + e.getMessage(), e);
+            throw new DatabaseException("Failed to insert course into database: " + e.getMessage(), e);
         }
     }
 
-<<<<<<< HEAD
-=======
     /**
      * Retrieves all courses ordered by course code.
      *
@@ -114,117 +96,16 @@ public class CourseDAO {
      * @return Course entity or null if not found
      * @throws DatabaseException If database operation fails
      */
->>>>>>> test
     public Course findById(int courseId) throws DatabaseException {
-        String sql = "SELECT * FROM courses WHERE course_id = ?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-<<<<<<< HEAD
-=======
+        String sql = "SELECT course_id, course_code, course_name, credit_value, theory_hours, practical_hours, " +
+                     "department, semester, description FROM courses WHERE course_id = ?";
 
->>>>>>> test
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, courseId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-<<<<<<< HEAD
-                    return mapRow(rs);
-                }
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to fetch course: " + e.getMessage(), e);
-        }
-        return null;
-    }
-
-    public Course findByCode(String courseCode) throws DatabaseException {
-        String sql = "SELECT * FROM courses WHERE LOWER(course_code) = LOWER(?)";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, courseCode);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapRow(rs);
-                }
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to fetch course by code: " + e.getMessage(), e);
-        }
-        return null;
-    }
-
-    public List<Course> findAll() throws DatabaseException {
-        return getAllCourses();
-    }
-
-    public List<Course> getAllCourses() throws DatabaseException {
-        String sql = "SELECT * FROM courses ORDER BY academic_year DESC, semester_number, course_code";
-        List<Course> courses = new ArrayList<>();
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                courses.add(mapRow(rs));
-            }
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to fetch courses: " + e.getMessage(), e);
-        }
-        return courses;
-    }
-
-    public boolean existsByCode(String courseCode) throws DatabaseException {
-        String sql = "SELECT 1 FROM courses WHERE LOWER(course_code) = LOWER(?) LIMIT 1";
-        return existsBy(sql, courseCode);
-    }
-
-    public boolean existsByCodeExcludingCourse(String courseCode, int courseId) throws DatabaseException {
-        String sql = "SELECT 1 FROM courses WHERE LOWER(course_code) = LOWER(?) AND course_id <> ? LIMIT 1";
-        return existsBy(sql, courseCode, courseId);
-    }
-
-    public boolean updateCourse(Course course) throws DatabaseException {
-        String sql = "UPDATE courses SET course_code = ?, course_name = ?, credits = ?, theory_sessions = ?, " +
-                     "practical_sessions = ?, semester_number = ?, academic_year = ?, department = ? WHERE course_id = ?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, course.getCourseCode());
-            stmt.setString(2, course.getCourseName());
-            stmt.setInt(3, course.getCredits());
-            stmt.setInt(4, course.getTheorySessions());
-            stmt.setInt(5, course.getPracticalSessions());
-            stmt.setInt(6, course.getSemesterNumber());
-            stmt.setString(7, course.getAcademicYear());
-            stmt.setString(8, course.getDepartment());
-            stmt.setInt(9, course.getCourseId());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to update course: " + e.getMessage(), e);
-        }
-    }
-
-    public boolean deleteCourse(int courseId) throws DatabaseException {
-        String sql = "DELETE FROM courses WHERE course_id = ?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, courseId);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new DatabaseException("Failed to delete course: " + e.getMessage(), e);
-        }
-    }
-
-    Course mapRow(ResultSet rs) throws SQLException {
-        return new Course(
-                rs.getInt("course_id"),
-                rs.getString("course_code"),
-                rs.getString("course_name"),
-                rs.getInt("credits"),
-                rs.getInt("theory_sessions"),
-                rs.getInt("practical_sessions"),
-                rs.getInt("semester_number"),
-                rs.getString("academic_year"),
-                rs.getString("department")
-        );
-=======
                     return mapResultSetToCourse(rs);
                 }
             }
@@ -233,34 +114,77 @@ public class CourseDAO {
         }
 
         return null;
->>>>>>> test
     }
 
-    private boolean existsBy(String sql, String value) throws DatabaseException {
+    /**
+     * Finds a course by unique course code.
+     *
+     * @param courseCode Course code (e.g. "ICT2132")
+     * @return Course entity or null if not found
+     * @throws DatabaseException If database operation fails
+     */
+    public Course findByCode(String courseCode) throws DatabaseException {
+        String sql = "SELECT course_id, course_code, course_name, credit_value, theory_hours, practical_hours, " +
+                     "department, semester, description FROM courses WHERE course_code = ?";
+
         Connection conn = DatabaseConnection.getInstance().getConnection();
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, value);
+            stmt.setString(1, courseCode);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+                if (rs.next()) {
+                    return mapResultSetToCourse(rs);
+                }
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to validate course uniqueness: " + e.getMessage(), e);
+            throw new DatabaseException("Failed to find course by code: " + e.getMessage(), e);
         }
+
+        return null;
     }
 
-    private boolean existsBy(String sql, String value, int courseId) throws DatabaseException {
+    /**
+     * Checks if a course exists with the given course code.
+     *
+     * @param courseCode Code to check
+     * @return true if exists, false otherwise
+     * @throws DatabaseException If database operation fails
+     */
+    public boolean existsByCode(String courseCode) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM courses WHERE course_code = ?";
         Connection conn = DatabaseConnection.getInstance().getConnection();
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, value);
+            stmt.setString(1, courseCode);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to check course code existence: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if a course code already exists for another course (excluding a given course ID).
+     */
+    public boolean existsByCodeExcludingCourse(String courseCode, int courseId) throws DatabaseException {
+        String sql = "SELECT COUNT(*) FROM courses WHERE course_code = ? AND course_id != ?";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, courseCode);
             stmt.setInt(2, courseId);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to validate course uniqueness: " + e.getMessage(), e);
+            throw new DatabaseException("Failed to check course code uniqueness: " + e.getMessage(), e);
         }
-<<<<<<< HEAD
-=======
         return false;
     }
 
@@ -374,6 +298,5 @@ public class CourseDAO {
 
     Course mapRow(ResultSet rs) throws SQLException {
         return mapResultSetToCourse(rs);
->>>>>>> test
     }
 }
