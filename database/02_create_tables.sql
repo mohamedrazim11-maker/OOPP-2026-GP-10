@@ -38,19 +38,12 @@ CREATE TABLE IF NOT EXISTS courses (
     credit_value INT NOT NULL DEFAULT 2,
     theory_hours INT DEFAULT 30,
     practical_hours INT DEFAULT 30,
-    credits INT NOT NULL DEFAULT 3,
-    theory_sessions INT NOT NULL DEFAULT 15,
-    practical_sessions INT NOT NULL DEFAULT 0,
     department VARCHAR(100) NOT NULL,
     semester VARCHAR(50) DEFAULT 'Semester 2',
-    semester_number INT NOT NULL DEFAULT 1,
-    academic_year VARCHAR(20) NOT NULL DEFAULT '2025/2026',
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
-<<<<<<< HEAD
-=======
 
 -- =======================================================
 -- Member 3: Attendance & Medical Records Module
@@ -154,4 +147,3 @@ CREATE TABLE IF NOT EXISTS eligibility (
       CONSTRAINT fk_eligibility_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
       UNIQUE KEY unique_student_course_eligibility (student_id, course_id)
 ) ENGINE=InnoDB;
->>>>>>> test
