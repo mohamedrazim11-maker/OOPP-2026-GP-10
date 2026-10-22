@@ -5,7 +5,8 @@ import com.faculty.management.controller.LoginController;
 import javax.swing.*;
 
 /**
- * Entry point for the Faculty Management System application.
+ - Entry point for the Faculty Management System application.
+
  */
 public class Main {
 
