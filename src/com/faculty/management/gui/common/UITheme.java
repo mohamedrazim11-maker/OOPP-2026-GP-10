@@ -1,0 +1,1107 @@
+package com.faculty.management.gui.common;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicScrollBarUI;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+/**
+ * Unified university-style UI design system for the Faculty Management System.
+ * Pure Java Swing / Java 2D - No external dependencies.
+ * Provides consistent colors, typography, custom components, tables, and buttons.
+ */
+public class UITheme {
+
+    // =========================================================================
+    // COLOR PALETTE (University maroon, cream, and gold theme)
+    // =========================================================================
+    public static final Color PRIMARY = new Color(110, 18, 38);
+    public static final Color PRIMARY_HOVER = new Color(134, 27, 46);
+    public static final Color PRIMARY_DARK = new Color(80, 14, 28);
+    public static final Color PRIMARY_LIGHT = new Color(245, 237, 230);
+    public static final Color PRIMARY_TINT = new Color(217, 179, 114);
+    public static final Color PURPLE_BRIGHT = new Color(135, 39, 52);
+    public static final Color PURPLE_GRADIENT_END = new Color(189, 126, 63);
+    public static final Color LAVENDER_SURFACE = new Color(247, 240, 232);
+    public static final Color LAVENDER_BORDER = new Color(224, 202, 170);
+
+    public static final Color ACCENT_BLUE = new Color(123, 56, 40);
+    public static final Color ACCENT_BLUE_LIGHT = new Color(248, 240, 234);
+
+    public static final Color SUCCESS = new Color(24, 116, 88);
+    public static final Color SUCCESS_DARK = new Color(11, 88, 66);
+    public static final Color SUCCESS_LIGHT = new Color(235, 247, 240);
+    public static final Color SUCCESS_BORDER = new Color(171, 216, 190);
+
+    public static final Color WARNING = new Color(191, 146, 75);
+    public static final Color WARNING_DARK = new Color(154, 115, 53);
+    public static final Color WARNING_LIGHT = new Color(249, 239, 210);
+    public static final Color WARNING_BORDER = new Color(215, 191, 128);
+
+    public static final Color DANGER = new Color(148, 32, 52);
+    public static final Color DANGER_DARK = new Color(101, 15, 29);
+    public static final Color DANGER_LIGHT = new Color(249, 238, 240);
+    public static final Color DANGER_BORDER = new Color(214, 173, 184);
+
+    public static final Color PURPLE = new Color(110, 18, 38);
+    public static final Color PURPLE_LIGHT = new Color(246, 240, 236);
+
+    public static final Color TEAL = new Color(108, 74, 53);
+    public static final Color TEAL_LIGHT = new Color(247, 239, 232);
+
+    public static final Color BG_PAGE = new Color(244, 236, 224);
+    public static final Color BG_CARD = new Color(250, 246, 240);
+    public static final Color BG_ALT_ROW = new Color(246, 239, 232);
+    public static final Color BG_HEADER = new Color(238, 226, 211);
+
+    public static final Color BORDER_LIGHT = new Color(221, 205, 180);
+    public static final Color BORDER_FOCUS = new Color(188, 137, 77);
+
+    public static final Color TEXT_MAIN = new Color(75, 18, 20);
+    public static final Color TEXT_BODY = new Color(93, 62, 55);
+    public static final Color TEXT_MUTED = new Color(123, 92, 76);
+    public static final Color TEXT_LIGHT = new Color(162, 128, 98);
+
+    // =========================================================================
+    // TYPOGRAPHY (Segoe UI on Windows, with robust fallbacks)
+    // =========================================================================
+    private static final String FONT_NAME = "Segoe UI";
+
+    public static final Font FONT_HEADER_TITLE = new Font(FONT_NAME, Font.BOLD, 20);
+    public static final Font FONT_PAGE_TITLE = new Font(FONT_NAME, Font.BOLD, 22);
+    public static final Font FONT_SECTION_TITLE = new Font(FONT_NAME, Font.BOLD, 16);
+    public static final Font FONT_CARD_TITLE = new Font(FONT_NAME, Font.BOLD, 15);
+    public static final Font FONT_BODY_BOLD = new Font(FONT_NAME, Font.BOLD, 13);
+    public static final Font FONT_BODY = new Font(FONT_NAME, Font.PLAIN, 13);
+    public static final Font FONT_SMALL_BOLD = new Font(FONT_NAME, Font.BOLD, 11);
+    public static final Font FONT_SMALL = new Font(FONT_NAME, Font.PLAIN, 11);
+    public static final Font FONT_KPI_VALUE = new Font(FONT_NAME, Font.BOLD, 26);
+    public static final Font FONT_KPI_HERO = new Font(FONT_NAME, Font.BOLD, 32);
+
+    // =========================================================================
+    // SYSTEM SETUP & ANTIALIASING
+    // =========================================================================
+    public static void setupSystemRendering() {
+        System.setProperty("awt.useSystemAAFontSettings", "on");
+        System.setProperty("swing.aatext", "true");
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {
+        }
+        // Set standard tooltip styling
+        UIManager.put("ToolTip.background", TEXT_MAIN);
+        UIManager.put("ToolTip.foreground", Color.WHITE);
+        UIManager.put("ToolTip.font", FONT_SMALL);
+        UIManager.put("ToolTip.border", BorderFactory.createEmptyBorder(4, 8, 4, 8));
+    }
+
+    // =========================================================================
+    // CUSTOM ROUNDED BUTTON
+    // =========================================================================
+    public enum ButtonStyle {
+        PRIMARY, SECONDARY, SUCCESS, DANGER, OUTLINE, GHOST
+    }
+
+    public static class ModernButton extends JButton {
+        private final ButtonStyle style;
+        private final int cornerRadius;
+        private boolean isHovered = false;
+        private boolean isPressed = false;
+
+        public ModernButton(String text, ButtonStyle style) {
+            this(text, style, 10);
+        }
+
+        public ModernButton(String text, ButtonStyle style, int cornerRadius) {
+            super(text);
+            this.style = style;
+            this.cornerRadius = Math.min(cornerRadius, 12);
+            setFont(FONT_BODY_BOLD);
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setContentAreaFilled(false);
+            setOpaque(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setBorder(new EmptyBorder(9, 18, 9, 18));
+
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    isHovered = true;
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    isHovered = false;
+                    repaint();
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    isPressed = true;
+                    repaint();
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    isPressed = false;
+                    repaint();
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            Color bg;
+            Color fg;
+            Color border = null;
+
+            switch (style) {
+                case PRIMARY:
+                    bg = isPressed ? PRIMARY_DARK : (isHovered ? PRIMARY_HOVER : PRIMARY);
+                    fg = Color.WHITE;
+                    break;
+                case SUCCESS:
+                    bg = isPressed ? SUCCESS_DARK : (isHovered ? SUCCESS : SUCCESS_DARK);
+                    fg = Color.WHITE;
+                    break;
+                case DANGER:
+                    bg = isPressed ? new Color(185, 28, 28) : (isHovered ? DANGER_DARK : DANGER);
+                    fg = Color.WHITE;
+                    break;
+                case SECONDARY:
+                    bg = isPressed ? new Color(203, 213, 225) : (isHovered ? new Color(226, 232, 240) : new Color(241, 245, 249));
+                    fg = TEXT_BODY;
+                    border = BORDER_LIGHT;
+                    break;
+                case OUTLINE:
+                    bg = isHovered ? PRIMARY_LIGHT : Color.WHITE;
+                    fg = PRIMARY;
+                    border = isHovered ? PRIMARY : BORDER_LIGHT;
+                    break;
+                case GHOST:
+                default:
+                    bg = isHovered ? new Color(241, 245, 249) : new Color(0, 0, 0, 0);
+                    fg = isHovered ? PRIMARY : TEXT_BODY;
+                    break;
+            }
+
+            setForeground(fg);
+
+            // Fill background
+            Shape buttonShape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius);
+            if (style == ButtonStyle.PRIMARY) {
+                Color start = isPressed ? PRIMARY_DARK : (isHovered ? PRIMARY_HOVER : PURPLE_BRIGHT);
+                Color end = isPressed ? PRIMARY : (isHovered ? PURPLE_BRIGHT : PURPLE_GRADIENT_END);
+                g2.setPaint(new GradientPaint(0, 0, start, getWidth(), getHeight(), end));
+            } else {
+                g2.setColor(bg);
+            }
+            g2.fill(buttonShape);
+
+            // Paint border if applicable
+            if (border != null) {
+                g2.setColor(border);
+                g2.setStroke(new BasicStroke(1.2f));
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                        getHeight() - 1f, cornerRadius, cornerRadius));
+            }
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // =========================================================================
+    // CUSTOM ROUNDED TEXT FIELD & PASSWORD FIELD
+    // =========================================================================
+    public static class ModernTextField extends JTextField {
+        private String placeholder = "";
+        private boolean isFocused = false;
+        private int cornerRadius = 7;
+
+        public ModernTextField() {
+            this("");
+        }
+
+        public ModernTextField(String placeholder) {
+            this(placeholder, 20);
+        }
+
+        public ModernTextField(String placeholder, int columns) {
+            super(columns);
+            this.placeholder = placeholder;
+            setFont(FONT_BODY);
+            setForeground(TEXT_MAIN);
+            setCaretColor(PRIMARY);
+            setBackground(Color.WHITE);
+            setOpaque(false);
+            setBorder(new EmptyBorder(8, 12, 8, 12));
+
+            addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    isFocused = true;
+                    repaint();
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    isFocused = false;
+                    repaint();
+                }
+            });
+        }
+
+        public void setPlaceholder(String placeholder) {
+            this.placeholder = placeholder;
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Background
+            g2.setColor(isEditable() ? Color.WHITE : new Color(248, 250, 252));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius));
+
+            // Border
+            if (isFocused) {
+                g2.setColor(BORDER_FOCUS);
+                g2.setStroke(new BasicStroke(1.8f));
+            } else {
+                g2.setColor(BORDER_LIGHT);
+                g2.setStroke(new BasicStroke(1.0f));
+            }
+            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                    getHeight() - 1f, cornerRadius, cornerRadius));
+
+            g2.dispose();
+            super.paintComponent(g);
+
+            // Placeholder
+            if (getText().isEmpty() && !placeholder.isEmpty() && !isFocused) {
+                Graphics2D gPlaceholder = (Graphics2D) g.create();
+                gPlaceholder.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                gPlaceholder.setColor(TEXT_LIGHT);
+                gPlaceholder.setFont(getFont());
+                Insets insets = getInsets();
+                FontMetrics fm = gPlaceholder.getFontMetrics();
+                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                gPlaceholder.drawString(placeholder, insets.left, y);
+                gPlaceholder.dispose();
+            }
+        }
+    }
+
+    public static class ModernPasswordField extends JPasswordField {
+        private String placeholder = "";
+        private boolean isFocused = false;
+        private int cornerRadius = 7;
+
+        public ModernPasswordField() {
+            this("");
+        }
+
+        public ModernPasswordField(String placeholder) {
+            this(placeholder, 20);
+        }
+
+        public ModernPasswordField(String placeholder, int columns) {
+            super(columns);
+            this.placeholder = placeholder;
+            setFont(FONT_BODY);
+            setForeground(TEXT_MAIN);
+            setCaretColor(PRIMARY);
+            setBackground(Color.WHITE);
+            setOpaque(false);
+            setBorder(new EmptyBorder(8, 12, 8, 12));
+
+            addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    isFocused = true;
+                    repaint();
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    isFocused = false;
+                    repaint();
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setColor(isEditable() ? Color.WHITE : new Color(248, 250, 252));
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius));
+
+            if (isFocused) {
+                g2.setColor(BORDER_FOCUS);
+                g2.setStroke(new BasicStroke(1.8f));
+            } else {
+                g2.setColor(BORDER_LIGHT);
+                g2.setStroke(new BasicStroke(1.0f));
+            }
+            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                    getHeight() - 1f, cornerRadius, cornerRadius));
+
+            g2.dispose();
+            super.paintComponent(g);
+
+            if (getPassword().length == 0 && !placeholder.isEmpty() && !isFocused) {
+                Graphics2D gPlaceholder = (Graphics2D) g.create();
+                gPlaceholder.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                gPlaceholder.setColor(TEXT_LIGHT);
+                gPlaceholder.setFont(getFont());
+                Insets insets = getInsets();
+                FontMetrics fm = gPlaceholder.getFontMetrics();
+                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                gPlaceholder.drawString(placeholder, insets.left, y);
+                gPlaceholder.dispose();
+            }
+        }
+    }
+
+    // =========================================================================
+    // MODERN CARD (Rounded container panel with border)
+    // =========================================================================
+    public static class ModernCard extends JPanel {
+        private final int cornerRadius;
+        private Color cardBackground = BG_CARD;
+        private Color borderColor = BORDER_LIGHT;
+
+        public ModernCard() {
+            this(14);
+        }
+
+        public ModernCard(int cornerRadius) {
+            super();
+            this.cornerRadius = Math.min(cornerRadius, 14);
+            setOpaque(false);
+            setBorder(new EmptyBorder(16, 20, 16, 20));
+        }
+
+        public void setCardBackground(Color c) {
+            this.cardBackground = c;
+            repaint();
+        }
+
+        public void setBorderColor(Color c) {
+            this.borderColor = c;
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Card surface
+            g2.setColor(cardBackground);
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    cornerRadius, cornerRadius));
+
+            // Card border
+            if (borderColor != null) {
+                g2.setColor(borderColor);
+                g2.setStroke(new BasicStroke(1.0f));
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                        getHeight() - 1f, cornerRadius, cornerRadius));
+            }
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // =========================================================================
+    // KPI STAT CARD (Metric display with icon, value, label)
+    // =========================================================================
+    public static JPanel createStatCard(String icon, String label, String value, Color accentColor) {
+        JLabel valueLbl = new JLabel(value);
+        return createStatCard(icon, label, valueLbl, accentColor);
+    }
+
+    public static JPanel createStatCard(String icon, String label, JLabel valueLbl, Color accentColor) {
+        ModernCard card = new ModernCard(12);
+        card.setLayout(new BorderLayout(12, 6));
+        card.setBorder(new EmptyBorder(14, 16, 14, 16));
+
+        // Top row: plain metric label
+        JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        topRow.setOpaque(false);
+
+        JLabel titleLbl = new JLabel(label);
+        titleLbl.setFont(FONT_SMALL_BOLD);
+        titleLbl.setForeground(TEXT_MUTED);
+
+        topRow.add(titleLbl);
+
+        // Value
+        valueLbl.setFont(new Font(FONT_NAME, Font.BOLD, 23));
+        valueLbl.setForeground(accentColor != null ? accentColor : TEXT_MAIN);
+        valueLbl.setBorder(new EmptyBorder(4, 4, 0, 0));
+
+        card.add(topRow, BorderLayout.NORTH);
+        card.add(valueLbl, BorderLayout.CENTER);
+
+        return card;
+    }
+
+    // =========================================================================
+    // COMPACT BADGE (Status / Category label)
+    // =========================================================================
+    public static class PillBadge extends JLabel {
+        private Color bgColor;
+        private Color borderColor;
+
+        public PillBadge(String text, Color bg, Color textCol) {
+            this(text, bg, textCol, null);
+        }
+
+        public PillBadge(String text, Color bg, Color textCol, Color borderCol) {
+            super(text);
+            this.bgColor = bg;
+            this.borderColor = borderCol;
+            setFont(FONT_SMALL_BOLD);
+            setForeground(textCol);
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setBorder(new EmptyBorder(3, 10, 3, 10));
+            setOpaque(false);
+        }
+
+        public void setColors(Color bg, Color textCol, Color borderCol) {
+            this.bgColor = bg;
+            this.borderColor = borderCol;
+            setForeground(textCol);
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int arc = getHeight();
+            g2.setColor(bgColor);
+            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
+                    arc, arc));
+
+            if (borderColor != null) {
+                g2.setColor(borderColor);
+                g2.setStroke(new BasicStroke(1.0f));
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f,
+                        getHeight() - 1f, arc, arc));
+            }
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // =========================================================================
+    // CIRCULAR AVATAR (Circle Shape Profile Photo / Avatar)
+    // =========================================================================
+    public static class CircularAvatar extends JComponent {
+        private BufferedImage image;
+        private String placeholder = "👤";
+        private Color ringColor = PRIMARY;
+        private float ringStroke = 3.0f;
+        private Color bgColor = PRIMARY_LIGHT;
+        private Color textColor = PRIMARY;
+
+        public CircularAvatar(int diameter) {
+            this(diameter, PRIMARY);
+        }
+
+        public CircularAvatar(int diameter, Color ringColor) {
+            this.ringColor = ringColor;
+            setPreferredSize(new Dimension(diameter, diameter));
+            setMinimumSize(new Dimension(diameter, diameter));
+            setMaximumSize(new Dimension(diameter, diameter));
+            setOpaque(false);
+        }
+
+        public void setImage(BufferedImage img) {
+            this.image = img;
+            repaint();
+        }
+
+        public void setImagePath(String path) {
+            if (path == null || path.trim().isEmpty()) {
+                this.image = null;
+                repaint();
+                return;
+            }
+            File file = new File(path.trim());
+            if (file.exists() && file.isFile()) {
+                try {
+                    this.image = ImageIO.read(file);
+                } catch (Exception e) {
+                    this.image = null;
+                }
+            } else {
+                this.image = null;
+            }
+            repaint();
+        }
+
+        public void setPlaceholder(String text) {
+            this.placeholder = text;
+            repaint();
+        }
+
+        public void setRingColor(Color c) {
+            this.ringColor = c;
+            repaint();
+        }
+
+        public void setRingStroke(float stroke) {
+            this.ringStroke = stroke;
+            repaint();
+        }
+
+        public void setBgColor(Color c) {
+            this.bgColor = c;
+            repaint();
+        }
+
+        public void setTextColor(Color c) {
+            this.textColor = c;
+            repaint();
+        }
+
+        public boolean hasImage() {
+            return this.image != null;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+
+            int w = getWidth();
+            int h = getHeight();
+            int size = Math.min(w, h) - (int) Math.ceil(ringStroke * 2) - 2;
+            if (size <= 0) size = 10;
+            int x = (w - size) / 2;
+            int y = (h - size) / 2;
+
+            Ellipse2D.Double circle = new Ellipse2D.Double(x, y, size, size);
+
+            if (image != null) {
+                Shape oldClip = g2.getClip();
+                g2.clip(circle);
+
+                int imgW = image.getWidth();
+                int imgH = image.getHeight();
+                double scale = Math.max((double) size / imgW, (double) size / imgH);
+                int drawW = (int) (imgW * scale);
+                int drawH = (int) (imgH * scale);
+                int drawX = x + (size - drawW) / 2;
+                int drawY = y + (size - drawH) / 2;
+
+                g2.drawImage(image, drawX, drawY, drawW, drawH, null);
+                g2.setClip(oldClip);
+            } else {
+                // Background circle
+                g2.setColor(bgColor);
+                g2.fill(circle);
+
+                // Placeholder icon or text in center
+                g2.setColor(textColor);
+                int fontSize = Math.max(14, size / 3);
+                g2.setFont(new Font("Segoe UI Emoji", Font.PLAIN, fontSize));
+                FontMetrics fm = g2.getFontMetrics();
+                int textX = x + (size - fm.stringWidth(placeholder)) / 2;
+                int textY = y + (size - fm.getHeight()) / 2 + fm.getAscent();
+                g2.drawString(placeholder, textX, textY);
+            }
+
+            // Outer decorative ring
+            if (ringColor != null && ringStroke > 0) {
+                g2.setColor(ringColor);
+                g2.setStroke(new BasicStroke(ringStroke));
+                g2.draw(circle);
+            }
+
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // =========================================================================
+    // MODERN TABLE STYLING
+    // =========================================================================
+    public static void styleTable(JTable table) {
+        table.setRowHeight(38);
+        table.setFont(FONT_BODY);
+        table.setForeground(TEXT_MAIN);
+        table.setGridColor(BORDER_LIGHT);
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setSelectionBackground(PRIMARY_LIGHT);
+        table.setSelectionForeground(PRIMARY_DARK);
+        table.setIntercellSpacing(new Dimension(0, 1));
+        table.setFillsViewportHeight(true);
+        table.setBackground(Color.WHITE);
+
+        // Header styling
+        JTableHeader header = table.getTableHeader();
+        header.setFont(FONT_SMALL_BOLD);
+        header.setForeground(TEXT_BODY);
+        header.setBackground(BG_HEADER);
+        header.setPreferredSize(new Dimension(header.getPreferredSize().width, 40));
+        header.setReorderingAllowed(false);
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_LIGHT));
+
+        ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
+
+        // Default cell renderer with zebra striping and padding
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, col);
+                setBorder(new EmptyBorder(0, 12, 0, 12));
+
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : BG_ALT_ROW);
+                    c.setForeground(TEXT_MAIN);
+                } else {
+                    c.setBackground(PRIMARY_LIGHT);
+                    c.setForeground(PRIMARY_DARK);
+                }
+                return c;
+            }
+        });
+    }
+
+    // =========================================================================
+    // MODERN SCROLL PANE
+    // =========================================================================
+    public static JScrollPane createModernScrollPane(Component view) {
+        JScrollPane scrollPane = new JScrollPane(view);
+        scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_LIGHT, 1));
+        scrollPane.setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(Color.WHITE);
+
+        scrollPane.getVerticalScrollBar().setUI(new CleanScrollBarUI());
+        scrollPane.getHorizontalScrollBar().setUI(new CleanScrollBarUI());
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(8, 0));
+        scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 8));
+
+        return scrollPane;
+    }
+
+    private static class CleanScrollBarUI extends BasicScrollBarUI {
+        @Override
+        protected void configureScrollBarColors() {
+            this.thumbColor = new Color(203, 213, 225);
+            this.trackColor = new Color(248, 250, 252);
+        }
+
+        @Override
+        protected JButton createDecreaseButton(int orientation) {
+            return createZeroButton();
+        }
+
+        @Override
+        protected JButton createIncreaseButton(int orientation) {
+            return createZeroButton();
+        }
+
+        private JButton createZeroButton() {
+            JButton b = new JButton();
+            b.setPreferredSize(new Dimension(0, 0));
+            b.setMinimumSize(new Dimension(0, 0));
+            b.setMaximumSize(new Dimension(0, 0));
+            return b;
+        }
+
+        @Override
+        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(thumbColor);
+            g2.fill(new RoundRectangle2D.Float(thumbBounds.x + 1, thumbBounds.y + 1, thumbBounds.width - 2, thumbBounds.height - 2, 6, 6));
+            g2.dispose();
+        }
+    }
+
+    // =========================================================================
+    // MODERN TABBED PANE STYLER
+    // =========================================================================
+    public static void styleTabbedPane(JTabbedPane tabbedPane) {
+        tabbedPane.setFont(FONT_BODY_BOLD);
+        tabbedPane.setBackground(PRIMARY_LIGHT);
+        tabbedPane.setFocusable(false);
+        tabbedPane.setBorder(new EmptyBorder(10, 20, 0, 20));
+        tabbedPane.setUI(new ModernTabbedPaneUI());
+    }
+
+    public static class ModernTabbedPaneUI extends BasicTabbedPaneUI {
+        @Override
+        protected void installDefaults() {
+            super.installDefaults();
+            tabInsets = new Insets(10, 12, 10, 12);
+            selectedTabPadInsets = new Insets(0, 0, 0, 0);
+        }
+
+        @Override
+        protected void paintTabBorder(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
+            // Flat, borderless tab borders
+        }
+
+        @Override
+        protected void paintTabBackground(Graphics g, int tabPlacement, int tabIndex, int x, int y, int w, int h, boolean isSelected) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            if (isSelected) {
+                Shape activeTab = new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 14, 14);
+                g2.setPaint(new GradientPaint(x, y, PURPLE_BRIGHT, x + w, y + h, PURPLE_GRADIENT_END));
+                g2.fill(activeTab);
+            } else {
+                g2.setColor(LAVENDER_SURFACE);
+                g2.fill(new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 14, 14));
+            }
+            g2.dispose();
+        }
+
+        @Override
+        protected void paintContentBorder(Graphics g, int tabPlacement, int selectedIndex) {
+        }
+
+        @Override
+        protected void paintText(Graphics g, int tabPlacement, Font font, FontMetrics metrics, int tabIndex, String title, Rectangle textRect, boolean isSelected) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g2.setFont(font);
+            g2.setColor(isSelected ? Color.WHITE : TEXT_BODY);
+            g2.drawString(title, textRect.x, textRect.y + metrics.getAscent());
+            g2.dispose();
+        }
+    }
+
+    // =========================================================================
+    // CELL RENDERERS FOR BADGES
+    // =========================================================================
+    public static class StatusBadgeRenderer extends DefaultTableCellRenderer {
+        private final PillBadge badge = new PillBadge("", SUCCESS_LIGHT, SUCCESS_DARK, SUCCESS_BORDER);
+        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 4));
+
+        public StatusBadgeRenderer() {
+            panel.setOpaque(true);
+            panel.add(badge);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            String text = value != null ? value.toString() : "-";
+            badge.setText(text);
+
+            Color rowBg = isSelected ? PRIMARY_LIGHT : (row % 2 == 0 ? Color.WHITE : BG_ALT_ROW);
+            panel.setBackground(rowBg);
+
+            String upper = text.toUpperCase();
+            if (upper.contains("ELIGIBLE") && !upper.contains("NOT")) {
+                badge.setColors(SUCCESS_LIGHT, SUCCESS_DARK, SUCCESS_BORDER);
+            } else if (upper.contains("NOT ELIGIBLE") || upper.contains("FAILED") || upper.contains("FAIL")) {
+                badge.setColors(DANGER_LIGHT, DANGER_DARK, DANGER_BORDER);
+            } else if (upper.contains("ENROLLED") || upper.contains("ACTIVE")) {
+                badge.setColors(PRIMARY_LIGHT, PRIMARY, PRIMARY_TINT);
+            } else if (upper.contains("PRACTICAL")) {
+                badge.setColors(PURPLE_LIGHT, PURPLE, new Color(221, 214, 254));
+            } else if (upper.contains("THEORY")) {
+                badge.setColors(ACCENT_BLUE_LIGHT, ACCENT_BLUE, new Color(191, 219, 254));
+            } else {
+                badge.setColors(BG_HEADER, TEXT_BODY, BORDER_LIGHT);
+            }
+
+            return panel;
+        }
+    }
+
+    public static class GradeBadgeRenderer extends DefaultTableCellRenderer {
+        private final PillBadge badge = new PillBadge("", SUCCESS_LIGHT, SUCCESS_DARK, SUCCESS_BORDER);
+        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 4));
+
+        public GradeBadgeRenderer() {
+            panel.setOpaque(true);
+            panel.add(badge);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            String text = value != null ? value.toString() : "-";
+            badge.setText(text);
+
+            Color rowBg = isSelected ? PRIMARY_LIGHT : (row % 2 == 0 ? Color.WHITE : BG_ALT_ROW);
+            panel.setBackground(rowBg);
+
+            if (text.startsWith("A")) {
+                badge.setColors(SUCCESS_LIGHT, SUCCESS_DARK, SUCCESS_BORDER);
+            } else if (text.startsWith("B")) {
+                badge.setColors(ACCENT_BLUE_LIGHT, ACCENT_BLUE, new Color(191, 219, 254));
+            } else if (text.startsWith("C")) {
+                badge.setColors(WARNING_LIGHT, WARNING_DARK, WARNING_BORDER);
+            } else if (text.startsWith("D") || text.startsWith("E") || text.startsWith("F") || text.equals("NE")) {
+                badge.setColors(DANGER_LIGHT, DANGER_DARK, DANGER_BORDER);
+            } else {
+                badge.setColors(BG_HEADER, TEXT_BODY, BORDER_LIGHT);
+            }
+
+            return panel;
+        }
+    }
+
+    // =========================================================================
+    // STANDARDIZED DASHBOARD HEADER BUILDER
+    // =========================================================================
+    public static JPanel buildHeader(JFrame frame, String portalTitle, String userName, String roleLabel, Runnable onLogout) {
+        JPanel headerPanel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setPaint(new GradientPaint(0, 0, PURPLE_BRIGHT,
+                        getWidth(), getHeight(), PURPLE_GRADIENT_END));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        headerPanel.setOpaque(false);
+        headerPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 3, 0, new Color(75, 68, 200)),
+                new EmptyBorder(12, 24, 12, 24)));
+
+        // Left branding
+        JPanel brandBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        brandBox.setOpaque(false);
+
+        JLabel logoLabel = new JLabel("FMS");
+        logoLabel.setFont(new Font(FONT_NAME, Font.BOLD, 19));
+        logoLabel.setForeground(Color.WHITE);
+        logoLabel.setBorder(new EmptyBorder(0, 0, 0, 4));
+
+        JPanel titleBox = new JPanel();
+        titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
+        titleBox.setOpaque(false);
+
+        JLabel appTitle = new JLabel("Faculty Management System");
+        appTitle.setFont(new Font(FONT_NAME, Font.BOLD, 17));
+        appTitle.setForeground(Color.WHITE);
+
+        JLabel portalSub = new JLabel(portalTitle + " | Faculty of Technology");
+        portalSub.setFont(new Font(FONT_NAME, Font.PLAIN, 12));
+        portalSub.setForeground(new Color(199, 210, 254));
+
+        titleBox.add(appTitle);
+        titleBox.add(portalSub);
+
+        brandBox.add(logoLabel);
+        brandBox.add(titleBox);
+
+        // Right User Pill + Logout Button
+        JPanel userBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 0));
+        userBox.setOpaque(false);
+
+        JPanel userCard = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        userCard.setOpaque(false);
+        JLabel userText = new JLabel(userName);
+        userText.setFont(FONT_BODY_BOLD);
+        userText.setForeground(Color.WHITE);
+
+        JLabel roleText = new JLabel(roleLabel.toUpperCase());
+        roleText.setFont(FONT_SMALL_BOLD);
+        roleText.setForeground(new Color(224, 231, 255));
+
+        userCard.add(userText);
+        userCard.add(roleText);
+
+        ModernButton logoutBtn = new ModernButton("Sign out", ButtonStyle.OUTLINE, 6);
+        logoutBtn.setFont(FONT_SMALL_BOLD);
+        logoutBtn.setBorder(new EmptyBorder(6, 14, 6, 14));
+        logoutBtn.setBackground(new Color(224, 228, 229));
+        logoutBtn.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(frame,
+                    "Are you sure you want to sign out?",
+                    "Confirm Sign Out",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                if (onLogout != null) {
+                    onLogout.run();
+                }
+            }
+        });
+
+        userBox.add(userCard);
+        userBox.add(logoutBtn);
+
+        headerPanel.add(brandBox, BorderLayout.WEST);
+        headerPanel.add(userBox, BorderLayout.EAST);
+
+        return headerPanel;
+    }
+
+    // =========================================================================
+    // MODERN ROUNDED PROGRESS BAR
+    // =========================================================================
+    public static class ModernProgressBar extends JComponent {
+        private double percentage = 0.0;
+        private String customText = null;
+        private Color customFillColor = null;
+        private int cornerRadius = 8;
+        private boolean showText = true;
+
+        public ModernProgressBar() {
+            this(0.0);
+        }
+
+        public ModernProgressBar(double percentage) {
+            this.percentage = Math.max(0.0, Math.min(100.0, percentage));
+            setPreferredSize(new Dimension(140, 20));
+            setOpaque(false);
+        }
+
+        public void setPercentage(double p) {
+            this.percentage = Math.max(0.0, Math.min(100.0, p));
+            repaint();
+        }
+
+        public double getPercentage() {
+            return percentage;
+        }
+
+        public void setCustomText(String text) {
+            this.customText = text;
+            repaint();
+        }
+
+        public void setCustomFillColor(Color c) {
+            this.customFillColor = c;
+            repaint();
+        }
+
+        public void setShowText(boolean show) {
+            this.showText = show;
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            int w = getWidth();
+            int h = getHeight();
+
+            // Background track
+            g2.setColor(new Color(241, 245, 249));
+            g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
+            g2.setColor(BORDER_LIGHT);
+            g2.setStroke(new BasicStroke(1.0f));
+            g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, w - 1f, h - 1f, cornerRadius, cornerRadius));
+
+            // Fill color
+            Color fill;
+            if (customFillColor != null) {
+                fill = customFillColor;
+            } else if (percentage >= 80.0) {
+                fill = SUCCESS;
+            } else if (percentage >= 75.0) {
+                fill = WARNING;
+            } else {
+                fill = DANGER;
+            }
+
+            // Fill bar
+            int fillW = (int) Math.round((w * percentage) / 100.0);
+            if (fillW > 0) {
+                g2.setColor(fill);
+                g2.fill(new RoundRectangle2D.Float(0, 0, fillW, h, cornerRadius, cornerRadius));
+            }
+
+            // Text
+            if (showText) {
+                String text = customText != null ? customText : String.format("%.1f%%", percentage);
+                g2.setFont(FONT_SMALL_BOLD);
+                FontMetrics fm = g2.getFontMetrics();
+                int textX = (w - fm.stringWidth(text)) / 2;
+                int textY = (h - fm.getHeight()) / 2 + fm.getAscent();
+
+                    g2.setColor(fillW > (textX + fm.stringWidth(text) / 2) ? Color.WHITE : TEXT_MAIN);
+                g2.drawString(text, textX, textY);
+            }
+
+            g2.dispose();
+        }
+    }
+
+    public static class ProgressBarTableCellRenderer extends DefaultTableCellRenderer {
+        private final ModernProgressBar progressBar = new ModernProgressBar();
+        private final JPanel panel = new JPanel(new GridBagLayout());
+
+        public ProgressBarTableCellRenderer() {
+            panel.setOpaque(true);
+            progressBar.setPreferredSize(new Dimension(130, 18));
+            panel.add(progressBar);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            Color rowBg = isSelected ? PRIMARY_LIGHT : (row % 2 == 0 ? Color.WHITE : BG_ALT_ROW);
+            panel.setBackground(rowBg);
+
+            if (value instanceof Number) {
+                double pct = ((Number) value).doubleValue();
+                progressBar.setPercentage(pct);
+                progressBar.setCustomText(String.format("%.1f%%", pct));
+            } else if (value != null) {
+                String s = value.toString().replace("%", "").trim();
+                try {
+                    double pct = Double.parseDouble(s);
+                    progressBar.setPercentage(pct);
+                    progressBar.setCustomText(String.format("%.1f%%", pct));
+                } catch (NumberFormatException e) {
+                    progressBar.setPercentage(0);
+                    progressBar.setCustomText(value.toString());
+                }
+            } else {
+                progressBar.setPercentage(0);
+                progressBar.setCustomText("-");
+            }
+            return panel;
+        }
+    }
+}
