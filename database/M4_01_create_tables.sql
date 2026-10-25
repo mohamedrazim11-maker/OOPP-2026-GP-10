@@ -29,6 +29,64 @@ CREATE TABLE IF NOT EXISTS courses (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- 1a. Upgrade an existing courses table created by 02_create_tables.sql.
+-- CREATE TABLE IF NOT EXISTS does not add the Member 4 columns to an
+-- already-existing shared courses table, so add each missing column safely.
+SET @fms_add_course_credits = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE courses ADD COLUMN credits INT NOT NULL DEFAULT 3',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'courses' AND COLUMN_NAME = 'credits'
+);
+PREPARE fms_stmt FROM @fms_add_course_credits;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_theory_sessions = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE courses ADD COLUMN theory_sessions INT NOT NULL DEFAULT 15',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'courses' AND COLUMN_NAME = 'theory_sessions'
+);
+PREPARE fms_stmt FROM @fms_add_theory_sessions;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_practical_sessions = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE courses ADD COLUMN practical_sessions INT NOT NULL DEFAULT 0',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'courses' AND COLUMN_NAME = 'practical_sessions'
+);
+PREPARE fms_stmt FROM @fms_add_practical_sessions;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_semester_number = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE courses ADD COLUMN semester_number INT NOT NULL DEFAULT 1',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'courses' AND COLUMN_NAME = 'semester_number'
+);
+PREPARE fms_stmt FROM @fms_add_semester_number;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_academic_year = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE courses ADD COLUMN academic_year VARCHAR(20) NOT NULL DEFAULT ''2025/2026''',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'courses' AND COLUMN_NAME = 'academic_year'
+);
+PREPARE fms_stmt FROM @fms_add_academic_year;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
 -- ---------------------------------------------------------
 -- 2. Enrollments — links a student to a course for a semester
 --    (owned by Member 4: drives SGPA/CGPA grouping)

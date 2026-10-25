@@ -8,9 +8,14 @@ import com.faculty.management.model.StudentAttendanceSummary;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -195,12 +200,20 @@ public class ViewAttendanceDialog extends JDialog {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 12));
         bottomPanel.setBackground(Color.WHITE);
 
+        JButton btnExportCsv = new JButton("📥 Export to CSV");
+        btnExportCsv.setBackground(new Color(16, 185, 129));
+        btnExportCsv.setForeground(Color.WHITE);
+        btnExportCsv.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnExportCsv.setFocusPainted(false);
+        btnExportCsv.addActionListener(e -> exportToCsv());
+
         JButton btnRefresh = new JButton("🔄 Refresh Data");
         btnRefresh.addActionListener(e -> loadAttendanceData());
 
         JButton btnClose = new JButton("Close");
         btnClose.addActionListener(e -> dispose());
 
+        bottomPanel.add(btnExportCsv);
         bottomPanel.add(btnRefresh);
         bottomPanel.add(btnClose);
 
@@ -316,5 +329,83 @@ public class ViewAttendanceDialog extends JDialog {
         lblIneligibleCount.setText(String.valueOf(ineligibleCount));
         double avg = displayedCount > 0 ? (totalPercentage / displayedCount) : 0.0;
         lblBatchAvg.setText(String.format("%.1f%%", avg));
+    }
+
+    /**
+     * Exports the currently displayed attendance table and eligibility statuses to a CSV file.
+     */
+    private void exportToCsv() {
+        if (tableModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this,
+                    "No attendance data available to export.",
+                    "Export Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String courseCode = getSelectedCourseCode();
+        String component = (String) cmbComponent.getSelectedItem();
+        if (component == null) component = "COMBINED";
+
+        String defaultFileName = "Attendance_Report_" + courseCode + "_" + component + ".csv";
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save Attendance Report (CSV)");
+        fileChooser.setSelectedFile(new File(defaultFileName));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("CSV Spreadsheet (*.csv)", "csv"));
+
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File targetFile = fileChooser.getSelectedFile();
+        if (!targetFile.getName().toLowerCase().endsWith(".csv")) {
+            targetFile = new File(targetFile.getParentFile(), targetFile.getName() + ".csv");
+        }
+
+        try (PrintWriter writer = new PrintWriter(new FileWriter(targetFile))) {
+            // Write CSV Header
+            writer.println("Registration No,Student Name,Component,Sessions Held,Attended Sessions,Approved Medicals,Attendance Percentage,Eligibility Status");
+
+            // Write Table Data Rows
+            for (int r = 0; r < tableModel.getRowCount(); r++) {
+                StringBuilder row = new StringBuilder();
+                for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                    Object val = tableModel.getValueAt(r, c);
+                    String strVal = val != null ? val.toString().trim() : "";
+                    strVal = strVal.replace("\"", "\"\"");
+                    row.append("\"").append(strVal).append("\"");
+                    if (c < tableModel.getColumnCount() - 1) {
+                        row.append(",");
+                    }
+                }
+                writer.println(row.toString());
+            }
+
+            int choice = JOptionPane.showOptionDialog(this,
+                    "Attendance report successfully exported to:\n" + targetFile.getAbsolutePath() +
+                    "\n\nWould you like to open the file now?",
+                    "Export Successful",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    new String[]{"Open File", "Close"},
+                    "Open File");
+
+            if (choice == JOptionPane.YES_OPTION && Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().open(targetFile);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Could not open file automatically: " + ex.getMessage(),
+                            "Notice", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to export CSV report: " + e.getMessage(),
+                    "Export Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

@@ -21,7 +21,8 @@ The **Faculty Management System (FMS)** is a desktop-based application developed
 The application requires a running MySQL server; it does not authenticate with offline demo accounts.
 
 1. Start the MySQL service and create the schema by running `database/01_create_database.sql`.
-2. Run the remaining scripts in order: `02_create_tables.sql`, `03_insert_roles.sql`, `04_insert_users.sql`, `M4_01_create_tables.sql`, then `M4_02_seed_data.sql`.
+2. Run the remaining scripts in order: `02_create_tables.sql`, `03_insert_roles.sql`, `04_insert_users.sql`, `M4_01_create_tables.sql`, then `M4_02_seed_data.sql`. `M4_01_create_tables.sql` also upgrades an existing shared `courses` table with the semester/session columns used by the student portal.
+   - If the database was set up previously, rerun `M4_01_create_tables.sql` and then `M4_02_seed_data.sql`; these scripts add the missing columns and populate the student demo courses, enrollments, marks, timetable, and attendance without requiring the database to be dropped.
 3. Configure the database login before launching the application. The default connection is `localhost:3306/faculty_management_db` with user `root` and an empty password. If your MySQL account uses a password or a different username, set `FMS_DB_USER` and `FMS_DB_PASSWORD`. You can also override the JDBC URL with `FMS_DB_URL`.
 4. Run the application from the project directory with `mvn compile exec:java -Dexec.mainClass=com.faculty.management.Main`.
 
