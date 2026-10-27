@@ -4,12 +4,13 @@ import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.*;
 import com.faculty.management.service.CourseService;
+import com.faculty.management.service.NoticeService;
 import com.faculty.management.service.UserService;
 
 import java.util.List;
 
 /**
- * Controller handling Administrator operations for User and Course Management.
+ * Controller handling Administrator operations for User, Course, and Notice Management.
  * Demonstrates Classes & Objects, Inheritance, Abstraction, Polymorphism, 
  * Encapsulation, and Error/Exception Handling.
  */
@@ -17,20 +18,30 @@ public class AdminController {
 
     private final UserService userService;
     private final CourseService courseService;
+    private final NoticeService noticeService;
 
     public AdminController() {
         this.userService = new UserService();
         this.courseService = new CourseService();
+        this.noticeService = new NoticeService();
     }
 
     public AdminController(UserService userService) {
         this.userService = userService;
         this.courseService = new CourseService();
+        this.noticeService = new NoticeService();
     }
 
     public AdminController(UserService userService, CourseService courseService) {
         this.userService = userService;
         this.courseService = courseService;
+        this.noticeService = new NoticeService();
+    }
+
+    public AdminController(UserService userService, CourseService courseService, NoticeService noticeService) {
+        this.userService = userService;
+        this.courseService = courseService;
+        this.noticeService = (noticeService != null) ? noticeService : new NoticeService();
     }
 
     /**
@@ -362,6 +373,27 @@ public class AdminController {
     }
 
     /**
+     * Polymorphic overload to add a course using basic course parameters.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public Course handleAddCourse(String courseCode, String courseName, int creditValue,
+                                  String department, String semester)
+            throws ValidationException, DatabaseException {
+        return courseService.addCourse(courseCode, courseName, creditValue, department, semester);
+    }
+
+    /**
+     * Polymorphic overload to add a course with explicit semester number and academic year.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public Course handleAddCourse(String courseCode, String courseName, int creditValue, int theoryHours,
+                                  int practicalHours, String department, String semester, int semesterNumber,
+                                  String academicYear, String description)
+            throws ValidationException, DatabaseException {
+        return courseService.addCourse(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, semesterNumber, academicYear, description);
+    }
+
+    /**
      * Handles updating an existing course record.
      *
      * @param course Course entity with updated values
@@ -371,6 +403,39 @@ public class AdminController {
      */
     public boolean handleUpdateCourse(Course course) throws ValidationException, DatabaseException {
         return courseService.updateCourse(course);
+    }
+
+    /**
+     * Polymorphic overload to update a course using course code identifier.
+     * Demonstrates Polymorphism and Abstraction.
+     */
+    public boolean handleUpdateCourse(String courseCode, String courseName, int creditValue,
+                                      int theoryHours, int practicalHours, String department, String semester, String description)
+            throws ValidationException, DatabaseException {
+        return courseService.updateCourse(courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
+    }
+
+    /**
+     * Searches courses by course code or title keyword directly from database for View Courses option.
+     * Demonstrates Abstraction and Database Handling.
+     */
+    public List<Course> handleSearchCourses(String query) throws DatabaseException {
+        return courseService.searchCourses(query);
+    }
+
+    /**
+     * Retrieves courses filtered by department for View Courses option.
+     * Demonstrates Abstraction and Database Handling.
+     */
+    public List<Course> handleViewCoursesByDepartment(String department) throws DatabaseException {
+        return courseService.getCoursesByDepartment(department);
+    }
+
+    /**
+     * Retrieves total course count from database.
+     */
+    public int handleGetCourseCount() throws DatabaseException {
+        return courseService.getCourseCount();
     }
 
     /**
@@ -474,5 +539,206 @@ public class AdminController {
             throw new ValidationException("Course entity cannot be null.");
         }
         return handleViewCourse(course.getCourseId());
+    }
+
+    /**
+     * Handles assigning course information to an existing course.
+     * Demonstrates Abstraction, Encapsulation, Error/Exception Handling, and Database Handling.
+     *
+     * @param courseId       Unique ID of course
+     * @param department     Department to assign
+     * @param semester       Semester to assign
+     * @param creditValue    Credits to assign
+     * @param theoryHours    Theory hours to assign
+     * @param practicalHours Practical hours to assign
+     * @param description    Description / syllabus info
+     * @return true if successfully assigned in database
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database operation fails
+     */
+    public boolean handleAssignCourseInformation(int courseId, String department, String semester,
+                                                 int creditValue, int theoryHours, int practicalHours,
+                                                 String description) throws ValidationException, DatabaseException {
+        return courseService.assignCourseInformation(courseId, department, semester, creditValue, theoryHours, practicalHours, description);
+    }
+
+    /**
+     * Polymorphic overload to handle assigning course information using a Course model entity.
+     * Demonstrates Polymorphism and Object-Oriented design.
+     *
+     * @param course Course entity containing assigned details
+     * @return true if successfully assigned
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleAssignCourseInformation(Course course) throws ValidationException, DatabaseException {
+        return courseService.assignCourseInformation(course);
+    }
+
+    /**
+     * Polymorphic overload to handle assigning course information using unique course code.
+     *
+     * @param courseCode     Unique course code
+     * @param department     Department to assign
+     * @param semester       Semester to assign
+     * @param creditValue    Credits to assign
+     * @param theoryHours    Theory hours to assign
+     * @param practicalHours Practical hours to assign
+     * @param description    Description / syllabus info
+     * @return true if successfully assigned
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleAssignCourseInformation(String courseCode, String department, String semester,
+                                                 int creditValue, int theoryHours, int practicalHours,
+                                                 String description) throws ValidationException, DatabaseException {
+        return courseService.assignCourseInformation(courseCode, department, semester, creditValue, theoryHours, practicalHours, description);
+    }
+
+    // =========================================================================
+    // NOTICE MANAGEMENT BACKEND METHODS
+    // =========================================================================
+
+    /**
+     * Handles creation of a new notice.
+     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
+     *
+     * @param notice Notice entity
+     * @return Created Notice with database ID
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public Notice handleCreateNotice(Notice notice) throws ValidationException, DatabaseException {
+        return noticeService.createNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to create a notice using individual parameters.
+     */
+    public Notice handleCreateNotice(String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        return noticeService.createNotice(title, content, category, priority, postedBy);
+    }
+
+    /**
+     * Polymorphic overload to create a notice with default authority attribution.
+     */
+    public Notice handleCreateNotice(String title, String content, String category, String priority)
+            throws ValidationException, DatabaseException {
+        return noticeService.createNotice(title, content, category, priority);
+    }
+
+    /**
+     * Handles updating an existing notice.
+     *
+     * @param notice Notice entity with updated fields
+     * @return true if updated successfully
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleUpdateNotice(Notice notice) throws ValidationException, DatabaseException {
+        return noticeService.updateNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to update a notice with individual parameters.
+     */
+    public boolean handleUpdateNotice(int noticeId, String title, String content, String category, String priority, String postedBy)
+            throws ValidationException, DatabaseException {
+        return noticeService.updateNotice(noticeId, title, content, category, priority, postedBy);
+    }
+
+    /**
+     * Polymorphic overload to update an existing Notice entity with new title and content.
+     */
+    public boolean handleUpdateNotice(Notice existingNotice, String newTitle, String newContent)
+            throws ValidationException, DatabaseException {
+        return noticeService.updateNotice(existingNotice, newTitle, newContent);
+    }
+
+    /**
+     * Handles deleting a notice by its ID.
+     *
+     * @param noticeId Notice ID
+     * @return true if deleted
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+     */
+    public boolean handleDeleteNotice(int noticeId) throws ValidationException, DatabaseException {
+        return noticeService.deleteNotice(noticeId);
+    }
+
+    /**
+     * Polymorphic overload to delete a notice using a Notice entity.
+     */
+    public boolean handleDeleteNotice(Notice notice) throws ValidationException, DatabaseException {
+        return noticeService.deleteNotice(notice);
+    }
+
+    /**
+     * Polymorphic overload to delete a notice by title string.
+     */
+    public boolean handleDeleteNotice(String title) throws ValidationException, DatabaseException {
+        return noticeService.deleteNotice(title);
+    }
+
+    /**
+     * Retrieves a single notice by ID for viewing.
+     *
+     * @param noticeId Notice ID
+     * @return Notice entity
+     * @throws ValidationException If ID invalid or notice not found
+     * @throws DatabaseException   If database error occurs
+     */
+    public Notice handleViewNotice(int noticeId) throws ValidationException, DatabaseException {
+        return noticeService.getNoticeById(noticeId);
+    }
+
+    /**
+     * Polymorphic overload to retrieve a notice by title for viewing.
+     */
+    public Notice handleViewNoticeByTitle(String title) throws ValidationException, DatabaseException {
+        return noticeService.getNoticeByTitle(title);
+    }
+
+    /**
+     * Polymorphic overload to retrieve full notice details using a Notice entity.
+     */
+    public Notice handleViewNotice(Notice notice) throws ValidationException, DatabaseException {
+        if (notice == null) {
+            throw new ValidationException("Notice entity cannot be null for viewing.");
+        }
+        return handleViewNotice(notice.getNoticeId());
+    }
+
+    /**
+     * Retrieves all notices in the system.
+     *
+     * @return List of Notice entities
+     * @throws DatabaseException If database error occurs
+     */
+    public List<Notice> loadAllNotices() throws DatabaseException {
+        return noticeService.getAllNotices();
+    }
+
+    /**
+     * Searches notices by keyword.
+     */
+    public List<Notice> handleSearchNotices(String keyword) throws DatabaseException {
+        return noticeService.searchNotices(keyword);
+    }
+
+    /**
+     * Retrieves notices filtered by category.
+     */
+    public List<Notice> handleViewNoticesByCategory(String category) throws DatabaseException {
+        return noticeService.getNoticesByCategory(category);
+    }
+
+    /**
+     * Returns total count of notices in the system.
+     */
+    public int handleGetNoticeCount() throws DatabaseException {
+        return noticeService.getNoticeCount();
     }
 }

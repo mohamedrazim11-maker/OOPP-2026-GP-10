@@ -269,8 +269,12 @@ public class ValidationUtil {
         if (isEmpty(course.getCourseCode())) {
             throw new ValidationException("Course Code is required (e.g. ICT2132).");
         }
-        if (course.getCourseCode().trim().length() < 4) {
+        String trimmedCode = course.getCourseCode().trim();
+        if (trimmedCode.length() < 4) {
             throw new ValidationException("Course Code must be at least 4 characters long.");
+        }
+        if (!trimmedCode.matches("^[a-zA-Z]{2,5}[0-9]{3,4}$")) {
+            throw new ValidationException("Invalid Course Code format. Example valid formats: ICT2132, BST2113, ENG2113.");
         }
         if (isEmpty(course.getCourseName())) {
             throw new ValidationException("Course Name is required.");
@@ -287,8 +291,228 @@ public class ValidationUtil {
         if (course.getPracticalHours() < 0) {
             throw new ValidationException("Practical hours cannot be negative.");
         }
-        if (isEmpty(course.getDepartment())) {
-            throw new ValidationException("Department selection is required.");
+        if (course.getTheoryHours() == 0 && course.getPracticalHours() == 0) {
+            throw new ValidationException("A course module must have at least one of theory hours or practical hours greater than 0.");
+        }
+        if (isEmpty(course.getDepartment()) || "-- Select Department --".equals(course.getDepartment().trim())) {
+            throw new ValidationException("Please select an academic Department.");
+        }
+        if (isEmpty(course.getSemester())) {
+            throw new ValidationException("Please select an academic Semester.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate course fields directly from parameters.
+     * Demonstrates Polymorphism, Encapsulation, and Error/Exception Handling.
+     */
+    public static void validateCourse(String courseCode, String courseName, int creditValue,
+                                      int theoryHours, int practicalHours, String department, String semester)
+            throws ValidationException {
+        Course c = new Course();
+        c.setCourseCode(courseCode);
+        c.setCourseName(courseName);
+        c.setCreditValue(creditValue);
+        c.setTheoryHours(theoryHours);
+        c.setPracticalHours(practicalHours);
+        c.setDepartment(department);
+        c.setSemester(semester);
+        validateCourse(c);
+    }
+
+    /**
+     * Validates course assignment information fields.
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     *
+     * @param course Course entity containing assigned information
+     * @throws ValidationException If validation fails
+     */
+    public static void validateCourseAssignment(Course course) throws ValidationException {
+        if (course == null) {
+            throw new ValidationException("Course information cannot be null.");
+        }
+        if (course.getCourseId() <= 0 && isEmpty(course.getCourseCode())) {
+            throw new ValidationException("Please select a valid course to assign information.");
+        }
+        if (isEmpty(course.getDepartment()) || "-- Select Department --".equals(course.getDepartment().trim())) {
+            throw new ValidationException("Please assign a valid academic Department.");
+        }
+        if (isEmpty(course.getSemester())) {
+            throw new ValidationException("Please assign a valid Semester.");
+        }
+        if (course.getCreditValue() <= 0 || course.getCreditValue() > 10) {
+            throw new ValidationException("Credit value must be between 1 and 10.");
+        }
+        if (course.getTheoryHours() < 0) {
+            throw new ValidationException("Theory hours cannot be negative.");
+        }
+        if (course.getPracticalHours() < 0) {
+            throw new ValidationException("Practical hours cannot be negative.");
+        }
+    }
+
+    /**
+     * Overloaded validation method for course assignment parameters.
+     */
+    public static void validateCourseAssignment(int courseId, String department, String semester,
+                                                int creditValue, int theoryHours, int practicalHours) throws ValidationException {
+        if (courseId <= 0) {
+            throw new ValidationException("Please select a valid course to assign information.");
+        }
+        if (isEmpty(department) || "-- Select Department --".equals(department.trim())) {
+            throw new ValidationException("Please assign a valid academic Department.");
+        }
+        if (isEmpty(semester)) {
+            throw new ValidationException("Please assign a valid Semester.");
+        }
+        if (creditValue <= 0 || creditValue > 10) {
+            throw new ValidationException("Assigned Credit Value must be between 1 and 10.");
+        }
+        if (theoryHours < 0) {
+            throw new ValidationException("Theory hours cannot be negative.");
+        }
+        if (practicalHours < 0) {
+            throw new ValidationException("Practical hours cannot be negative.");
+        }
+    }
+
+    /**
+     * Validates an existing course object for update operations.
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     */
+    public static void validateCourseUpdate(Course course) throws ValidationException {
+        if (course == null) {
+            throw new ValidationException("Course entity cannot be null for update.");
+        }
+        if (course.getCourseId() <= 0) {
+            throw new ValidationException("Invalid Course ID specified for update.");
+        }
+        validateCourse(course);
+    }
+
+    /**
+     * Validates course deletion parameters.
+     * Demonstrates Error and Exception Handling.
+     */
+    public static void validateCourseDeletion(int courseId) throws ValidationException {
+        if (courseId <= 0) {
+            throw new ValidationException("Invalid Course ID specified for deletion.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate course deletion by course code string.
+     */
+    public static void validateCourseDeletion(String courseCode) throws ValidationException {
+        if (isEmpty(courseCode)) {
+            throw new ValidationException("Course Code cannot be empty for deletion.");
+        }
+    }
+
+    /**
+     * Validates course lookup parameters for View Courses.
+     */
+    public static void validateCourseLookup(int courseId) throws ValidationException {
+        if (courseId <= 0) {
+            throw new ValidationException("Invalid Course ID specified for lookup.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate course lookup by course code.
+     */
+    public static void validateCourseLookup(String courseCode) throws ValidationException {
+        if (isEmpty(courseCode)) {
+            throw new ValidationException("Course Code cannot be empty for lookup.");
+        }
+    }
+
+    /**
+     * Validates notice fields for creation or updating.
+     * Demonstrates Encapsulation and Error/Exception Handling.
+     *
+     * @param notice Notice entity to validate
+     * @throws ValidationException If validation constraints fail
+     */
+    public static void validateNotice(com.faculty.management.model.Notice notice) throws ValidationException {
+        if (notice == null) {
+            throw new ValidationException("Notice data cannot be null.");
+        }
+        if (isEmpty(notice.getTitle())) {
+            throw new ValidationException("Notice title is required.");
+        }
+        if (notice.getTitle().trim().length() < 3) {
+            throw new ValidationException("Notice title must be at least 3 characters long.");
+        }
+        if (isEmpty(notice.getContent())) {
+            throw new ValidationException("Notice content is required.");
+        }
+        if (notice.getContent().trim().length() < 5) {
+            throw new ValidationException("Notice content must be at least 5 characters long.");
+        }
+        if (isEmpty(notice.getCategory()) || "-- Select Category --".equalsIgnoreCase(notice.getCategory().trim())) {
+            throw new ValidationException("Please select a valid notice category.");
+        }
+        if (isEmpty(notice.getPriority())) {
+            throw new ValidationException("Please select a notice priority level.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate notice parameters directly.
+     */
+    public static void validateNotice(String title, String content, String category, String priority, String postedBy)
+            throws ValidationException {
+        com.faculty.management.model.Notice notice = new com.faculty.management.model.Notice(title, content, category, priority, postedBy);
+        validateNotice(notice);
+    }
+
+    /**
+     * Validates an existing notice for updating.
+     */
+    public static void validateNoticeUpdate(com.faculty.management.model.Notice notice) throws ValidationException {
+        if (notice == null) {
+            throw new ValidationException("Notice entity cannot be null for update.");
+        }
+        if (notice.getNoticeId() <= 0) {
+            throw new ValidationException("Invalid Notice ID specified for update.");
+        }
+        validateNotice(notice);
+    }
+
+    /**
+     * Validates notice deletion parameter.
+     */
+    public static void validateNoticeDeletion(int noticeId) throws ValidationException {
+        if (noticeId <= 0) {
+            throw new ValidationException("Invalid Notice ID specified for deletion.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate notice deletion by title string.
+     */
+    public static void validateNoticeDeletion(String title) throws ValidationException {
+        if (isEmpty(title)) {
+            throw new ValidationException("Notice title cannot be empty for deletion.");
+        }
+    }
+
+    /**
+     * Validates notice lookup parameter.
+     */
+    public static void validateNoticeLookup(int noticeId) throws ValidationException {
+        if (noticeId <= 0) {
+            throw new ValidationException("Invalid Notice ID specified for lookup.");
+        }
+    }
+
+    /**
+     * Polymorphic overload to validate notice lookup by title string.
+     */
+    public static void validateNoticeLookup(String title) throws ValidationException {
+        if (isEmpty(title)) {
+            throw new ValidationException("Notice title cannot be empty for lookup.");
         }
     }
 }

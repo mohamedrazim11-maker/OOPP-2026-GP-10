@@ -48,6 +48,8 @@ Thumbs.db
 # Project notes & prompt files
 impl.txt
 my.txt
-prompts
-prompts.txt
+
+# OOP Lecture notes & materials
+OOP/
+*.pdf
 

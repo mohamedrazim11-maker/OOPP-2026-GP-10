@@ -2,6 +2,7 @@ package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
+import com.faculty.management.exception.ValidationException;
 import com.faculty.management.gui.common.CustomButton;
 import com.faculty.management.gui.common.PrimaryButton;
 import com.faculty.management.model.Course;
@@ -15,7 +16,7 @@ import java.util.List;
  * Course Management Panel for Administrator (Member 1).
  * Represents the Course Management section in the Admin Dashboard.
  * 
- * Provides strictly the "Add Course", "Update Course", "Delete Course", and "View Courses" options UI for managing academic courses.
+ * Provides strictly the "Add Course", "Update Course", "Delete Course", "View Courses", and "Assign Course Information" options UI for managing academic courses.
  * Strictly avoids adding any other options inside course management as requested.
  * 
  * Demonstrates Core OOP Principles:
@@ -35,6 +36,7 @@ public class CourseManagementPanel extends JPanel {
     private CustomButton updateCourseButton;
     private CustomButton deleteCourseButton;
     private CustomButton viewCourseButton;
+    private CustomButton assignCourseInfoButton;
     private JLabel lastActionCourseLabel;
 
     public CourseManagementPanel() {
@@ -125,10 +127,25 @@ public class CourseManagementPanel extends JPanel {
         viewCourseButton.setToolTipText("Browse and inspect comprehensive details of academic course modules");
         viewCourseButton.addActionListener(e -> handleViewCoursesAction());
 
+        assignCourseInfoButton = new CustomButton(
+                "📋  Assign Course Information",
+                new Color(109, 40, 217), // Purple background
+                new Color(124, 58, 237), // Hover Purple
+                new Color(91, 33, 182),  // Pressed Dark Purple
+                Color.WHITE,             // White text
+                null,
+                8                        // Corner radius
+        );
+        assignCourseInfoButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        assignCourseInfoButton.setPreferredSize(new Dimension(245, 42));
+        assignCourseInfoButton.setToolTipText("Select an academic course module and assign its department, semester, credits, and contact hours");
+        assignCourseInfoButton.addActionListener(e -> handleAssignCourseInfoAction());
+
         actionToolbar.add(addCourseButton);
         actionToolbar.add(updateCourseButton);
         actionToolbar.add(deleteCourseButton);
         actionToolbar.add(viewCourseButton);
+        actionToolbar.add(assignCourseInfoButton);
 
         // Feature Card (Clean presentation of the Course Management options)
         JPanel featureCard = new JPanel(new BorderLayout(0, 15));
@@ -154,7 +171,8 @@ public class CourseManagementPanel extends JPanel {
                 "lecture/practical contact hours, academic department, semester, and syllabus description.<br><br>" +
                 "• <b>Delete Courses Option:</b> Select an existing course module from the database, review its curriculum details, and permanently delete it with validation and database integrity checks.<br><br>" +
                 "• <b>View Courses Option:</b> Browse and inspect complete academic course details including module codes, titles, credits, contact hours, department allocations, and syllabus descriptions from MySQL database.<br><br>" +
-                "<i>(Note: This section strictly contains only the Add Course, Update Course, Delete Course, and View Courses management options).</i>" +
+                "• <b>Assign Course Information Option:</b> Select an academic course module from the database and assign its academic department, semester allocation, credit value, theory lecture hours, practical laboratory contact hours, and curriculum description.<br><br>" +
+                "<i>(Note: This section strictly contains only the Add Course, Update Course, Delete Course, View Courses, and Assign Course Information management options).</i>" +
                 "</html>");
         cardDescription.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cardDescription.setForeground(new Color(100, 116, 139));
@@ -171,7 +189,7 @@ public class CourseManagementPanel extends JPanel {
                 new EmptyBorder(5, 12, 5, 12)
         ));
 
-        lastActionCourseLabel = new JLabel("Click 'Add Course', 'Update Course', 'Delete Course', or 'View Courses' to manage academic modules in MySQL database.");
+        lastActionCourseLabel = new JLabel("Click 'Add Course', 'Update Course', 'Delete Course', 'View Courses', or 'Assign Course Information' to manage academic modules in MySQL database.");
         lastActionCourseLabel.setFont(new Font("Segoe UI", Font.ITALIC, 13));
         lastActionCourseLabel.setForeground(new Color(71, 85, 105));
 
@@ -205,6 +223,70 @@ public class CourseManagementPanel extends JPanel {
                 lastActionCourseLabel.setForeground(new Color(22, 101, 52)); // Success green
             }
         }
+    }
+
+    /**
+     * Programmatic backend method to add a new course via the panel's controller.
+     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
+     *
+     * @param course Course entity to register
+     * @return Registered Course entity with generated ID
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database insertion fails
+     */
+    public Course handleAddCourse(Course course) throws ValidationException, DatabaseException {
+        return adminController.handleAddCourse(course);
+    }
+
+    /**
+     * Programmatic backend method to update an existing course via the panel's controller.
+     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
+     */
+    public boolean handleUpdateCourse(Course course) throws ValidationException, DatabaseException {
+        return adminController.handleUpdateCourse(course);
+    }
+
+    /**
+     * Programmatic backend method to delete a course by ID via the panel's controller.
+     * Demonstrates Abstraction, Encapsulation, and Database Handling.
+     */
+    public boolean handleDeleteCourse(int courseId) throws ValidationException, DatabaseException {
+        return adminController.handleDeleteCourse(courseId);
+    }
+
+    /**
+     * Polymorphic overload to delete a course using a Course entity.
+     */
+    public boolean handleDeleteCourse(Course course) throws ValidationException, DatabaseException {
+        return adminController.handleDeleteCourse(course);
+    }
+
+    /**
+     * Programmatic backend method to load all courses from the database.
+     */
+    public List<Course> handleLoadAllCourses() throws DatabaseException {
+        return adminController.loadAllCourses();
+    }
+
+    /**
+     * Programmatic backend method to view a specific course by ID.
+     */
+    public Course handleViewCourse(int courseId) throws ValidationException, DatabaseException {
+        return adminController.handleViewCourse(courseId);
+    }
+
+    /**
+     * Programmatic backend method to view a specific course by Code.
+     */
+    public Course handleViewCourseByCode(String courseCode) throws ValidationException, DatabaseException {
+        return adminController.handleViewCourseByCode(courseCode);
+    }
+
+    /**
+     * Programmatic backend method to search courses by query.
+     */
+    public List<Course> handleSearchCourses(String query) throws DatabaseException {
+        return adminController.handleSearchCourses(query);
     }
 
     /**
@@ -310,6 +392,41 @@ public class CourseManagementPanel extends JPanel {
         }
     }
 
+    /**
+     * Handles opening the Assign Course Information Dialog.
+     * Demonstrates Abstraction, Polymorphism, Database Handling, and Error & Exception Handling.
+     */
+    private void handleAssignCourseInfoAction() {
+        try {
+            List<Course> courses = adminController.loadAllCourses();
+            if (courses == null || courses.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "No courses found in database to assign information. Please add a course first.",
+                        "No Courses Available",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.ASSIGN_INFO);
+            dialog.setVisible(true);
+
+            if (dialog.isSaved()) {
+                Course course = dialog.getCreatedCourse();
+                if (course != null) {
+                    lastActionCourseLabel.setText("✓ Successfully assigned information for: " + course.getCourseCode() + " — " +
+                            course.getCourseName() + " (" + course.getDepartment() + " | " + course.getSemester() + ")");
+                    lastActionCourseLabel.setForeground(new Color(109, 40, 217)); // Purple
+                }
+            }
+        } catch (DatabaseException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Failed to retrieve courses from database: " + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // Encapsulated Getters
     public AdminController getAdminController() {
         return adminController;
@@ -329,6 +446,10 @@ public class CourseManagementPanel extends JPanel {
 
     public CustomButton getViewCourseButton() {
         return viewCourseButton;
+    }
+
+    public CustomButton getAssignCourseInfoButton() {
+        return assignCourseInfoButton;
     }
 
     public JLabel getLastActionCourseLabel() {

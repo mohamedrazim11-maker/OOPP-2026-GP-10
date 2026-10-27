@@ -2,30 +2,61 @@ package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.gui.common.DangerButton;
+import com.faculty.management.model.Admin;
+import com.faculty.management.model.Role;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * Admin Dashboard GUI.
  * Target redirect frame for Administrator role.
+ *
+ * Demonstrates Core OOP Concepts from Lecture Notes:
+ * 1. Classes & Objects: Blueprint for Administrator Portal window.
+ * 2. Inheritance: Extends javax.swing.JFrame and explicitly invokes super(title).
+ * 3. Constructor Chaining & Overloading: Default and parameterized constructors via this(...).
+ * 4. Abstraction & Encapsulation: Private instance fields with public accessors.
+ * 5. Polymorphism & Dynamic Binding: Runtime method dispatch via currentUser.getRoleTitle()
+ *    and currentUser.getDashboardGreeting().
+ * 6. Exception Handling: Structured try-catch blocks for robust operation.
  */
 public class AdminDashboard extends JFrame {
 
+    // Encapsulated instance fields (Encapsulation / Information Hiding)
     private final User currentUser;
     private JTabbedPane tabbedPane;
     private UserManagementPanel userManagementPanel;
     private CourseManagementPanel courseManagementPanel;
+    private NoticeManagementPanel noticeManagementPanel;
 
+    /**
+     * Default constructor (no-arg).
+     * Demonstrates Constructor Overloading and Constructor Chaining using this(...).
+     * (OOP Lesson 02 Part 02 & Lesson 03 Part 01)
+     */
+    public AdminDashboard() {
+        this(null);
+    }
+
+    /**
+     * Parameterized constructor.
+     * Explicitly calls superclass constructor super(...) as first statement.
+     * Provides null-safety fallback to Admin object to prevent NullPointerException.
+     *
+     * @param user The authenticated user instance
+     */
     public AdminDashboard(User user) {
-        this.currentUser = user;
+        super("Faculty Management System — Administrator Portal");
+        this.currentUser = (user != null) ? user : new Admin(1, "admin", "admin123", "admin@faculty.edu", "System", "Admin", new Role(1, Role.ADMIN, "Administrator"), "0771234567", null, "ACTIVE");
         initComponents();
     }
 
     private void initComponents() {
-        setTitle("Faculty Management System — Administrator Portal");
         setSize(1080, 680);
         setMinimumSize(new Dimension(900, 580));
         setLocationRelativeTo(null);
@@ -44,17 +75,22 @@ public class AdminDashboard extends JFrame {
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
         userPanel.setOpaque(false);
 
-        JLabel userLabel = new JLabel(currentUser.getFullName() + " (Admin)");
+        // Dynamic Binding / Polymorphism: invokes currentUser.getRoleTitle() at runtime
+        JLabel userLabel = new JLabel(currentUser.getFullName() + " (" + currentUser.getRoleTitle() + ")");
         userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         userLabel.setForeground(Color.WHITE);
 
         DangerButton logoutButton = new DangerButton("Logout");
         logoutButton.setPreferredSize(new Dimension(85, 30));
         logoutButton.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to log out?", "Confirm Logout", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                dispose();
-                LoginController.showLogin();
+            try {
+                int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to log out?", "Confirm Logout", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    dispose();
+                    LoginController.showLogin();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error during logout: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -78,9 +114,13 @@ public class AdminDashboard extends JFrame {
         // Tab 3: Course Management
         courseManagementPanel = new CourseManagementPanel();
 
+        // Tab 4: Notice Board Management
+        noticeManagementPanel = new NoticeManagementPanel();
+
         tabbedPane.addTab("  Overview  ", overviewPanel);
         tabbedPane.addTab("  User Profiles  ", userManagementPanel);
         tabbedPane.addTab("  Course Management  ", courseManagementPanel);
+        tabbedPane.addTab("  Notice Board  ", noticeManagementPanel);
 
         add(headerPanel, BorderLayout.NORTH);
         add(tabbedPane, BorderLayout.CENTER);
@@ -114,25 +154,34 @@ public class AdminDashboard extends JFrame {
 
         JPanel userCard = createModuleCard("👥 User Management", "Create, update, and maintain credentials for system users (Lecturers, TOs, Students). Click to manage.", new Color(37, 99, 235));
         userCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        userCard.addMouseListener(new java.awt.event.MouseAdapter() {
+        userCard.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 tabbedPane.setSelectedIndex(1); // Switch to User Profiles tab
             }
         });
 
         JPanel courseCard = createModuleCard("📚 Course Management", "Add, update, delete, view courses, and assign course details. Click to manage.", new Color(16, 185, 129));
         courseCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        courseCard.addMouseListener(new java.awt.event.MouseAdapter() {
+        courseCard.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 tabbedPane.setSelectedIndex(2); // Switch to Course Management tab
+            }
+        });
+
+        JPanel noticeCard = createModuleCard("📢 Notice Board", "Create, edit, delete, and view official faculty notices and circulars. Click to manage.", new Color(245, 158, 11));
+        noticeCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        noticeCard.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                tabbedPane.setSelectedIndex(3); // Switch to Notice Board tab
             }
         });
 
         modulesGrid.add(userCard);
         modulesGrid.add(courseCard);
-        modulesGrid.add(createModuleCard("📢 Notice Board", "Publish and maintain official faculty notices and circulars.", new Color(245, 158, 11)));
+        modulesGrid.add(noticeCard);
         modulesGrid.add(createModuleCard("🗓️ Timetable Management", "Create and maintain lecture and lab timetables.", new Color(139, 92, 246)));
 
         welcomeCard.add(welcomeLabel);
@@ -165,4 +214,30 @@ public class AdminDashboard extends JFrame {
 
         return card;
     }
+
+    public UserManagementPanel getUserManagementPanel() {
+        return userManagementPanel;
+    }
+
+    public CourseManagementPanel getCourseManagementPanel() {
+        return courseManagementPanel;
+    }
+
+    public NoticeManagementPanel getNoticeManagementPanel() {
+        return noticeManagementPanel;
+    }
+
+    public JTabbedPane getTabbedPane() {
+        return tabbedPane;
+    }
+
+    /**
+     * Getter for currentUser (Encapsulation).
+     *
+     * @return The active User (Admin)
+     */
+    public User getCurrentUser() {
+        return currentUser;
+    }
 }
+

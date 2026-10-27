@@ -181,6 +181,68 @@ Polymorphism
 Encapsulation 
 Error and exception handling 
 Database Handlin . and commit it to github
+[PROMPT 18] - Remove Fake/Hardcoded Data & Connect Directly to Real MySQL Database
+--------------------------------------------------------------------------------
+remove the fake data/hardcoded data from the system connect with real data base using sql and use folliwing also Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
+
+
+[PROMPT 19] - Assign Course Information in Course Management in Admin Dashboard
+--------------------------------------------------------------------------------
+admin can Assign course information course managemnet in admin dashboard strictly dont add other option inside that course management option  .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
+[PROMPT 20] - Backend Logics for Add Courses Option in Course Management Admin Page
+--------------------------------------------------------------------------------
+add backend logics to add courses option in course managemnet admin page .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
+[PROMPT 21] - Backend Logics for Update, Delete, View Courses Option in Course Management Admin Page
+--------------------------------------------------------------------------------
+add backend logics to update,delete,view courses option in course managemnet admin page .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
+================================================================================
+
+[PROMPT 22] - Notice Option UI in Admin Dashboard
+--------------------------------------------------------------------------------
+add a notice option ui in admin dashboard strictly dont add other option inside that  option  .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
+================================================================================
+
+[PROMPT 23] - Create, Edit, Delete, and View Notices UI & Backend Options One by One
+--------------------------------------------------------------------------------
+Create notices
+* Edit notices
+* Delete notices
+* View notices so implement ui and back end for each options and push them into github one by one   .and go through req.txt and folder.txt strictly create/update neccsary files or folders to make above backend changes . update propmpts.txt with this command strictly use simplse codes as much as possible and  Classes and Objects 
+Inheritance 
+Abstraction 
+Polymorphism 
+Encapsulation 
+Error and exception handling 
+Database Handlin . and commit it to github
 ================================================================================
 
 
