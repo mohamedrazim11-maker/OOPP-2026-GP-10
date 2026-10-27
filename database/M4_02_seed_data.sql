@@ -46,7 +46,14 @@ INSERT INTO courses (course_code, course_name, credits, theory_sessions, practic
 ('CS203', 'Database Management Systems', 3, 15, 15, 2, '2025/2026', 'ICT'),
 ('CS204', 'Computer Networks', 3, 15, 0, 2, '2025/2026', 'ICT'),
 ('MA201', 'Discrete Mathematics', 2, 15, 0, 2, '2025/2026', 'ICT')
-ON DUPLICATE KEY UPDATE course_name = VALUES(course_name), credits = VALUES(credits);
+ON DUPLICATE KEY UPDATE
+    course_name = VALUES(course_name),
+    credits = VALUES(credits),
+    theory_sessions = VALUES(theory_sessions),
+    practical_sessions = VALUES(practical_sessions),
+    semester_number = VALUES(semester_number),
+    academic_year = VALUES(academic_year),
+    department = VALUES(department);
 
 -- ---------------------------------------------------------
 -- Enrollments (all 20 students in all 5 semester-1 courses;
@@ -291,7 +298,7 @@ INSERT INTO timetable (course_id, day_of_week, start_time, end_time, session_typ
 INSERT INTO attendance_records (student_id, course_id, theory_attended, theory_total, practical_attended, practical_total)
 SELECT e.student_id, e.course_id,
        GREATEST(0, c.theory_sessions - 2), c.theory_sessions,
-       CASE WHEN c.practical_sessions > 0 THEN GREATEST(0, c.practical_sessions - 1) ELSE 0 END, c.practical_sessions
+       GREATEST(0, c.practical_sessions - 1), c.practical_sessions
 FROM enrollments e JOIN courses c ON c.course_id = e.course_id
 ON DUPLICATE KEY UPDATE theory_attended = VALUES(theory_attended), theory_total = VALUES(theory_total),
                         practical_attended = VALUES(practical_attended), practical_total = VALUES(practical_total);
