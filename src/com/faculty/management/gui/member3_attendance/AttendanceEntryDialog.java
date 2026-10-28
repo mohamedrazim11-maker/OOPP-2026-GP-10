@@ -1,7 +1,6 @@
 package com.faculty.management.gui.member3_attendance;
 
-import com.faculty.management.dao.AttendanceDAO;
-import com.faculty.management.dao.CourseDAO;
+import com.faculty.management.controller.TechnicalOfficerController;
 import com.faculty.management.model.Course;
 import com.faculty.management.model.Undergraduate;
 import com.faculty.management.model.User;
@@ -21,12 +20,12 @@ import java.util.Map;
 /**
  * Attendance Entry Dialog for Technical Officer.
  * Provides attendance marking, updating, deleting, date validation, and real-time student searching.
+ * Architecture: Interacts exclusively via TechnicalOfficerController.
  */
 public class AttendanceEntryDialog extends JDialog {
 
     private final User currentUser;
-    private final AttendanceDAO attendanceDAO;
-    private final CourseDAO courseDAO;
+    private final TechnicalOfficerController controller;
 
     private JComboBox<String> cmbCourses;
     private JComboBox<String> cmbSessionType;
@@ -49,8 +48,7 @@ public class AttendanceEntryDialog extends JDialog {
     public AttendanceEntryDialog(JFrame parent, User currentUser) {
         super(parent, "Attendance Management — Technical Operations", true);
         this.currentUser = currentUser;
-        this.attendanceDAO = new AttendanceDAO();
-        this.courseDAO = new CourseDAO();
+        this.controller = new TechnicalOfficerController();
 
         initComponents();
         loadCourses();
@@ -256,7 +254,7 @@ public class AttendanceEntryDialog extends JDialog {
     private void loadCourses() {
         cmbCourses.removeAllItems();
         try {
-            List<Course> courses = courseDAO.getAllCourses();
+            List<Course> courses = controller.getAllCourses();
             for (Course c : courses) {
                 cmbCourses.addItem(c.getCourseCode() + " - " + c.getCourseName());
             }
@@ -293,7 +291,7 @@ public class AttendanceEntryDialog extends JDialog {
         }
 
         try {
-            activeSessionId = attendanceDAO.getOrCreateSession(
+            activeSessionId = controller.getOrCreateSession(
                     courseCode, sessionType, sessionNo, sessionDate,
                     currentUser != null ? currentUser.getUserId() : 1
             );
@@ -302,15 +300,15 @@ public class AttendanceEntryDialog extends JDialog {
         }
 
         // Fetch students & their marked status
-        studentList = attendanceDAO.getAllUndergraduates();
+        studentList = controller.getAllUndergraduates();
         Map<Integer, String> markedStatus;
         try {
-            markedStatus = attendanceDAO.getAttendanceForSession(activeSessionId);
+            markedStatus = controller.getAttendanceForSession(activeSessionId);
         } catch (Exception e) {
             markedStatus = new HashMap<>();
         }
 
-        boolean hasExistingRecords = attendanceDAO.hasAttendanceRecords(activeSessionId) || !markedStatus.isEmpty();
+        boolean hasExistingRecords = controller.hasAttendanceRecords(activeSessionId) || !markedStatus.isEmpty();
 
         // Update status indicator and buttons
         if (hasExistingRecords) {
@@ -396,7 +394,7 @@ public class AttendanceEntryDialog extends JDialog {
         }
 
         try {
-            boolean success = attendanceDAO.saveBatchAttendance(activeSessionId, attendanceMap);
+            boolean success = controller.saveBatchAttendance(activeSessionId, attendanceMap);
             if (success) {
                 String action = btnSave.getText().contains("Update") ? "updated" : "saved";
                 JOptionPane.showMessageDialog(this,
@@ -432,7 +430,7 @@ public class AttendanceEntryDialog extends JDialog {
         }
 
         try {
-            boolean success = attendanceDAO.deleteSessionAttendance(activeSessionId);
+            boolean success = controller.deleteSessionAttendance(activeSessionId);
             if (success) {
                 JOptionPane.showMessageDialog(this,
                         "Attendance records for Session " + sessionNo + " (" + sessionType + ") have been deleted successfully.",

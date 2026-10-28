@@ -1,6 +1,6 @@
 package com.faculty.management.gui.member3_attendance;
 
-import com.faculty.management.dao.TimetableDAO;
+import com.faculty.management.controller.TechnicalOfficerController;
 import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Course;
 import com.faculty.management.model.TimetableEntry;
@@ -29,13 +29,13 @@ import java.util.stream.Collectors;
  * Department Class & Laboratory Timetable Dialog for Technical Officer.
  * Allows inspecting lecture and lab time slots, laboratory venue allocation,
  * equipment readiness, and filtering by department, session type, and day.
- * Fulfills the requirement: "Technical Officer can see timetables of their department".
+ * Architecture: Interacts exclusively via TechnicalOfficerController.
  */
 public class DepartmentTimetableDialog extends JDialog {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("hh:mm a");
 
-    private final TimetableDAO timetableDAO;
+    private final TechnicalOfficerController controller;
     private List<TimetableEntry> allEntries = new ArrayList<>();
 
     private JComboBox<String> cmbDepartment;
@@ -55,7 +55,7 @@ public class DepartmentTimetableDialog extends JDialog {
 
     public DepartmentTimetableDialog(JFrame parent) {
         super(parent, "Department Timetable & Laboratory Allocation — Technical Operations", true);
-        this.timetableDAO = new TimetableDAO();
+        this.controller = new TechnicalOfficerController();
 
         initComponents();
         loadTimetableData();
@@ -266,11 +266,11 @@ public class DepartmentTimetableDialog extends JDialog {
     private void loadTimetableData() {
         allEntries.clear();
         try {
-            // First attempt to load Semester 2 and Semester 1 timetable entries from DAO
-            List<TimetableEntry> sem2Entries = timetableDAO.findBySemester(2, "2025/2026");
+            // First attempt to load Semester 2 and Semester 1 timetable entries from controller
+            List<TimetableEntry> sem2Entries = controller.getDepartmentTimetable(2, "2025/2026");
             if (sem2Entries != null) allEntries.addAll(sem2Entries);
 
-            List<TimetableEntry> sem1Entries = timetableDAO.findBySemester(1, "2025/2026");
+            List<TimetableEntry> sem1Entries = controller.getDepartmentTimetable(1, "2025/2026");
             if (sem1Entries != null) allEntries.addAll(sem1Entries);
         } catch (Exception ignored) {
             // Database may be offline or table unseeded

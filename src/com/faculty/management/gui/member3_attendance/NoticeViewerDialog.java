@@ -1,6 +1,6 @@
 package com.faculty.management.gui.member3_attendance;
 
-import com.faculty.management.dao.NoticeDAO;
+import com.faculty.management.controller.TechnicalOfficerController;
 import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Notice;
 
@@ -16,11 +16,11 @@ import java.util.stream.Collectors;
 /**
  * Notice Board Viewer Dialog for Technical Officer.
  * Displays official faculty notices, circulars, exam memos, and lab announcements.
- * Fulfills the requirement: "Technical Officer can see notices".
+ * Architecture: Interacts exclusively via TechnicalOfficerController.
  */
 public class NoticeViewerDialog extends JDialog {
 
-    private final NoticeDAO noticeDAO;
+    private final TechnicalOfficerController controller;
     private List<Notice> allNotices = new ArrayList<>();
 
     private JTextField txtSearch;
@@ -34,7 +34,7 @@ public class NoticeViewerDialog extends JDialog {
 
     public NoticeViewerDialog(JFrame parent) {
         super(parent, "Faculty Notice Board & Official Circulars — Technical Operations", true);
-        this.noticeDAO = new NoticeDAO();
+        this.controller = new TechnicalOfficerController();
 
         initComponents();
         loadNotices();
@@ -167,7 +167,7 @@ public class NoticeViewerDialog extends JDialog {
 
     private void loadNotices() {
         try {
-            allNotices = noticeDAO.findAll();
+            allNotices = controller.getAllNotices();
             if (allNotices == null) allNotices = new ArrayList<>();
 
             int total = allNotices.size();

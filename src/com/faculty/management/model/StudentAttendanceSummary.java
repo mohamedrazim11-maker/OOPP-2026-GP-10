@@ -34,15 +34,9 @@ public class StudentAttendanceSummary {
     }
 
     public void calculatePercentageAndEligibility() {
-        if (totalSessions <= 0) {
-            this.percentage = 0.0;
-            this.eligible = false;
-            return;
-        }
-        // Total effective attendance includes physically attended sessions + approved medical sessions
-        int effectiveAttended = Math.min(totalSessions, attendedSessions + approvedMedicals);
-        this.percentage = Math.round(((double) effectiveAttended / totalSessions) * 1000.0) / 10.0;
-        this.eligible = this.percentage >= 80.0;
+        this.percentage = com.faculty.management.util.AttendanceCalculator.calculateEffectivePercentage(
+                attendedSessions, approvedMedicals, totalSessions);
+        this.eligible = com.faculty.management.util.AttendanceCalculator.isEligible(this.percentage);
     }
 
     // Getters and Setters
