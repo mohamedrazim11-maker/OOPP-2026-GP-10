@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS attendance_sessions (
     session_id INT AUTO_INCREMENT PRIMARY KEY,
     course_id VARCHAR(20) NOT NULL,
     session_type ENUM('THEORY', 'PRACTICAL') NOT NULL,
+    session_number INT DEFAULT 1,
     session_date DATE NOT NULL,
     hours DECIMAL(3,1) DEFAULT 2.0,
     created_by INT,
