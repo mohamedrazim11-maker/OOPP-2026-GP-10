@@ -68,8 +68,9 @@ c. Import the SQL scripts located in the 'database/' folder in this order:
    3) database/03_insert_roles.sql
    4) database/04_insert_users.sql
    5) database/05_insert_courses.sql
-   6) database/M4_01_create_tables.sql
-   7) database/M4_02_seed_data.sql
+   6) database/06_insert_attendance_medical.sql
+   7) database/M4_01_create_tables.sql
+   8) database/M4_02_seed_data.sql
 
 * Database Configuration:
   Check or customize 'database/local.properties':

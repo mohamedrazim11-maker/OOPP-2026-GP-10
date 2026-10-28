@@ -32,12 +32,13 @@ STEP 2: Import the Database
 ----------------------------
 1. Open your browser and go to: http://localhost/phpmyadmin
 2. Click on "Import" (or "SQL") at the top.
-3. Open and run the 5 SQL files from the 'database/' folder IN THIS EXACT ORDER:
+3. Open and run the 6 SQL files from the 'database/' folder IN THIS EXACT ORDER:
    - database/01_create_database.sql
    - database/02_create_tables.sql
    - database/03_insert_roles.sql
    - database/04_insert_users.sql
    - database/05_insert_courses.sql
+   - database/06_insert_attendance_medical.sql
 
 STEP 3: Check MySQL Password
 ----------------------------
@@ -62,12 +63,13 @@ STEP 2: Import the Database in MySQL Workbench
 -----------------------------------------------
 1. Open MySQL Workbench and connect to your local MySQL instance (port 3306).
 2. Go to File -> Open SQL Script...
-3. Open and execute (click the lightning bolt icon) the 5 files in order:
+3. Open and execute (click the lightning bolt icon) the 6 files in order:
    - database/01_create_database.sql
    - database/02_create_tables.sql
    - database/03_insert_roles.sql
    - database/04_insert_users.sql
    - database/05_insert_courses.sql
+   - database/06_insert_attendance_medical.sql
 
 STEP 3: Set Your Password in Code
 ----------------------------------
