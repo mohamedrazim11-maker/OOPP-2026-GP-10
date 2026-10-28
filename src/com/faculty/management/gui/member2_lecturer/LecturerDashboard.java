@@ -2,6 +2,7 @@ package com.faculty.management.gui.member2_lecturer;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.gui.common.UITheme;
+import com.faculty.management.gui.member3_attendance.ViewAttendanceDialog;
 import com.faculty.management.model.Lecturer;
 import com.faculty.management.model.User;
 
@@ -150,10 +151,9 @@ public class LecturerDashboard extends JFrame {
         modulesGrid.add(createModuleCard("Attendance & Medical Records",
                 "Audit undergraduate student attendance percentages and inspect approved medical certificates for missed sessions.",
                 UITheme.WARNING_DARK, "View Attendance", () -> {
-                    JOptionPane.showMessageDialog(this,
-                            "Lecturer module [Attendance & Medical Records] is configured and ready.",
-                            "Attendance & Medical Records",
-                            JOptionPane.INFORMATION_MESSAGE);
+                    // Open Member 3's actual attendance view dialog
+                    ViewAttendanceDialog attendanceDialog = new ViewAttendanceDialog(this);
+                    attendanceDialog.setVisible(true);
                 }));
 
         mainContent.add(bannerCard);
