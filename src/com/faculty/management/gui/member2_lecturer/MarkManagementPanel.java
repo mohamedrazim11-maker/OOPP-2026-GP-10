@@ -31,44 +31,95 @@ public class MarkManagementPanel extends JPanel {
 
     private void initUI() {
         // Top Toolbar Panel (Student Lookup & Filters)
-        JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        topToolbar.setBackground(new Color(241, 245, 249));
+        JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        topToolbar.setOpaque(false);
 
-        txtSearchStudent = new JTextField(8);
+        txtSearchStudent = new JTextField(10);
+        txtSearchStudent.setPreferredSize(new Dimension(110, 32));
         btnSearchStudent = new JButton("Search Student");
+        btnSearchStudent.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnSearchStudent.setBackground(Color.WHITE);
+        btnSearchStudent.setFocusPainted(false);
+        btnSearchStudent.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                new EmptyBorder(5, 12, 5, 12)
+        ));
 
-        txtSearchEval = new JTextField(5);
+        txtSearchEval = new JTextField(8);
+        txtSearchEval.setPreferredSize(new Dimension(90, 32));
         btnSearchEval = new JButton("Search Evaluation");
+        btnSearchEval.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnSearchEval.setBackground(Color.WHITE);
+        btnSearchEval.setFocusPainted(false);
+        btnSearchEval.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                new EmptyBorder(5, 12, 5, 12)
+        ));
 
-        btnAddMark = new JButton("+ Add New Mark");
-        btnAddMark.setBackground(new Color(15, 118, 110));
-        btnAddMark.setForeground(Color.WHITE);
+        JLabel lblStudent = new JLabel("Student ID:");
+        lblStudent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblStudent.setForeground(new Color(51, 65, 85));
 
-        btnEditMark = new JButton("Edit Selected");
-        btnDeleteMark = new JButton("Delete Selected");
+        JLabel lblEval = new JLabel("Eval ID:");
+        lblEval.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblEval.setForeground(new Color(51, 65, 85));
 
-        topToolbar.add(new JLabel("Student ID:"));
+        topToolbar.add(lblStudent);
         topToolbar.add(txtSearchStudent);
         topToolbar.add(btnSearchStudent);
-        topToolbar.add(new JSeparator(JSeparator.VERTICAL));
-        topToolbar.add(new JLabel("Eval ID:"));
+        topToolbar.add(Box.createHorizontalStrut(8));
+        topToolbar.add(lblEval);
         topToolbar.add(txtSearchEval);
         topToolbar.add(btnSearchEval);
-        topToolbar.add(btnAddMark);
 
         // Table Model Setup
         tableModel = new DefaultTableModel(new String[]{"Student ID", "Evaluation ID", "Marks Obtained"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Disable direct table editing
+                return false;
             }
         };
 
         markTable = new JTable(tableModel);
-        markTable.setRowHeight(25);
+        markTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        markTable.setRowHeight(32);
+        markTable.setShowGrid(true);
+        markTable.setGridColor(new Color(226, 232, 240));
+        markTable.setSelectionBackground(new Color(224, 231, 255));
+        markTable.setSelectionForeground(new Color(15, 23, 42));
 
-        // Bottom Action Panel
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        // Bottom Action Panel per Wireframe 04: [ + Add Marks ] [ Edit Selected ] [ Delete Selected ]
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        bottomPanel.setOpaque(false);
+
+        btnAddMark = new JButton("+ Add Marks");
+        btnAddMark.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnAddMark.setBackground(Color.WHITE);
+        btnAddMark.setFocusPainted(false);
+        btnAddMark.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                new EmptyBorder(6, 14, 6, 14)
+        ));
+
+        btnEditMark = new JButton("Edit Selected");
+        btnEditMark.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnEditMark.setBackground(Color.WHITE);
+        btnEditMark.setFocusPainted(false);
+        btnEditMark.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                new EmptyBorder(6, 14, 6, 14)
+        ));
+
+        btnDeleteMark = new JButton("Delete Selected");
+        btnDeleteMark.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnDeleteMark.setBackground(Color.WHITE);
+        btnDeleteMark.setFocusPainted(false);
+        btnDeleteMark.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                new EmptyBorder(6, 14, 6, 14)
+        ));
+
+        bottomPanel.add(btnAddMark);
         bottomPanel.add(btnEditMark);
         bottomPanel.add(btnDeleteMark);
 

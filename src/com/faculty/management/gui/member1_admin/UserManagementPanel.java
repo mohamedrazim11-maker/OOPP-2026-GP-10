@@ -78,7 +78,7 @@ public class UserManagementPanel extends JPanel {
         mainTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         mainTitle.setForeground(new Color(15, 23, 42));
 
-        JLabel subTitle = new JLabel("Create users, view profiles, assign roles, maintain credentials, and manage system accounts.");
+        JLabel subTitle = new JLabel("Create users, assign roles, maintain credentials");
         subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         subTitle.setForeground(new Color(100, 116, 139));
 

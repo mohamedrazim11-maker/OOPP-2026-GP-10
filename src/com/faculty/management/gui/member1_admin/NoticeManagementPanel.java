@@ -80,7 +80,7 @@ public class NoticeManagementPanel extends JPanel {
         mainTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
         mainTitleLabel.setForeground(new Color(15, 23, 42));
 
-        JLabel subTitleLabel = new JLabel("Publish and maintain official faculty announcements, circulars, examination updates, and timetables.");
+        JLabel subTitleLabel = new JLabel("Publish and maintain official announcements");
         subTitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         subTitleLabel.setForeground(new Color(100, 116, 139));
 
@@ -93,53 +93,53 @@ public class NoticeManagementPanel extends JPanel {
         mainContentPanel.setLayout(new BoxLayout(mainContentPanel, BoxLayout.Y_AXIS));
         mainContentPanel.setOpaque(false);
 
-        JPanel actionToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
+        JPanel actionToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actionToolbar.setOpaque(false);
 
-        createNoticeButton = new PrimaryButton("📢  Create Notice");
-        createNoticeButton.setPreferredSize(new Dimension(160, 42));
+        createNoticeButton = new PrimaryButton("Create Notice");
+        createNoticeButton.setPreferredSize(new Dimension(140, 36));
         createNoticeButton.setToolTipText("Open dialog to draft and publish a new faculty announcement");
         createNoticeButton.addActionListener(e -> handleCreateNoticeAction());
 
         editNoticeButton = new CustomButton(
-                "✏️  Edit Notice",
-                new Color(15, 118, 110),
-                new Color(13, 148, 136),
-                new Color(17, 94, 89),
-                Color.WHITE,
-                null,
-                8
+                "Edit Notice",
+                new Color(241, 245, 249),
+                new Color(226, 232, 240),
+                new Color(203, 213, 225),
+                new Color(30, 41, 59),
+                new Color(203, 213, 225),
+                6
         );
-        editNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        editNoticeButton.setPreferredSize(new Dimension(150, 42));
+        editNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        editNoticeButton.setPreferredSize(new Dimension(130, 36));
         editNoticeButton.setToolTipText("Select and modify an existing published notice");
         editNoticeButton.addActionListener(e -> handleEditNoticeAction());
 
         deleteNoticeButton = new CustomButton(
-                "🗑️  Delete Notice",
+                "Delete Notice",
+                new Color(254, 242, 242),
+                new Color(254, 226, 226),
+                new Color(252, 165, 165),
                 new Color(220, 38, 38),
-                new Color(185, 28, 28),
-                new Color(153, 27, 27),
-                Color.WHITE,
-                null,
-                8
+                new Color(252, 165, 165),
+                6
         );
-        deleteNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        deleteNoticeButton.setPreferredSize(new Dimension(160, 42));
+        deleteNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        deleteNoticeButton.setPreferredSize(new Dimension(135, 36));
         deleteNoticeButton.setToolTipText("Permanently remove an outdated announcement from the notice board");
         deleteNoticeButton.addActionListener(e -> handleDeleteNoticeAction());
 
         viewNoticeButton = new CustomButton(
-                "👁️  View Notice",
-                new Color(71, 85, 105),
-                new Color(100, 116, 139),
-                new Color(51, 65, 85),
-                Color.WHITE,
-                null,
-                8
+                "View Notice",
+                new Color(241, 245, 249),
+                new Color(226, 232, 240),
+                new Color(203, 213, 225),
+                new Color(30, 41, 59),
+                new Color(203, 213, 225),
+                6
         );
-        viewNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        viewNoticeButton.setPreferredSize(new Dimension(150, 42));
+        viewNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        viewNoticeButton.setPreferredSize(new Dimension(130, 36));
         viewNoticeButton.setToolTipText("Inspect the full text and details of selected notice");
         viewNoticeButton.addActionListener(e -> handleViewNoticeAction());
 
