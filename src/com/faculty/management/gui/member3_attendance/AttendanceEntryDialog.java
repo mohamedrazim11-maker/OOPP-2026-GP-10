@@ -63,7 +63,7 @@ public class AttendanceEntryDialog extends JDialog {
 
         // 1. Header Panel
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(124, 45, 18)); // Technical Officer Rust/Amber
+        headerPanel.setBackground(new Color(92, 18, 33)); // Solid University Burgundy #5C1221
         headerPanel.setBorder(new EmptyBorder(15, 25, 15, 25));
 
         JLabel titleLabel = new JLabel("📋 Undergraduate Attendance Entry & Management");
@@ -72,7 +72,7 @@ public class AttendanceEntryDialog extends JDialog {
 
         JLabel subLabel = new JLabel("Record, update, or remove Theory and Practical session attendance (Sessions 1 to 15)");
         subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        subLabel.setForeground(new Color(254, 215, 170));
+        subLabel.setForeground(new Color(226, 194, 186));
 
         JPanel headerTextPanel = new JPanel(new GridLayout(2, 1, 0, 3));
         headerTextPanel.setOpaque(false);

@@ -4,7 +4,9 @@ import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.gui.common.CustomButton;
+import com.faculty.management.gui.common.DangerButton;
 import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Course;
 
 import javax.swing.*;
@@ -61,7 +63,7 @@ public class CourseManagementPanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout(0, 16));
-        setBackground(new Color(248, 250, 252));
+        setBackground(UITheme.BG_PAGE);
         setBorder(new EmptyBorder(20, 25, 20, 25));
 
         // 1. Header Title & Description (Wireframe 04 Course Management)
@@ -70,12 +72,12 @@ public class CourseManagementPanel extends JPanel {
         headerPanel.setOpaque(false);
 
         JLabel mainTitleLabel = new JLabel("Course Management");
-        mainTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        mainTitleLabel.setForeground(new Color(15, 23, 42));
+        mainTitleLabel.setFont(UITheme.FONT_PAGE_TITLE);
+        mainTitleLabel.setForeground(UITheme.TEXT_MAIN);
 
         JLabel subTitleLabel = new JLabel("Register and maintain academic course modules");
-        subTitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        subTitleLabel.setForeground(new Color(100, 116, 139));
+        subTitleLabel.setFont(UITheme.FONT_BODY);
+        subTitleLabel.setForeground(UITheme.TEXT_MUTED);
 
         headerPanel.add(mainTitleLabel);
         headerPanel.add(Box.createVerticalStrut(4));
@@ -89,64 +91,32 @@ public class CourseManagementPanel extends JPanel {
         JPanel actionToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actionToolbar.setOpaque(false);
 
-        addCourseButton = new PrimaryButton("Add Course");
+        addCourseButton = new PrimaryButton("+ Add Course");
         addCourseButton.setPreferredSize(new Dimension(135, 36));
         addCourseButton.setToolTipText("Open form to register a new academic course");
         addCourseButton.addActionListener(e -> handleAddCourseAction());
 
-        updateCourseButton = new CustomButton(
-                "Update Course",
-                new Color(241, 245, 249),
-                new Color(226, 232, 240),
-                new Color(203, 213, 225),
-                new Color(30, 41, 59),
-                new Color(203, 213, 225),
-                6
-        );
-        updateCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        updateCourseButton = new CustomButton("Update Course", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
+        updateCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         updateCourseButton.setPreferredSize(new Dimension(145, 36));
         updateCourseButton.setToolTipText("Modify selected academic course module");
         updateCourseButton.addActionListener(e -> handleUpdateCourseAction());
 
-        deleteCourseButton = new CustomButton(
-                "Delete Course",
-                new Color(254, 242, 242),
-                new Color(254, 226, 226),
-                new Color(252, 165, 165),
-                new Color(220, 38, 38),
-                new Color(252, 165, 165),
-                6
-        );
-        deleteCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        deleteCourseButton.setPreferredSize(new Dimension(140, 36));
+        deleteCourseButton = new DangerButton("Delete Course");
+        deleteCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        deleteCourseButton.setPreferredSize(new Dimension(135, 36));
         deleteCourseButton.setToolTipText("Remove selected academic course module");
         deleteCourseButton.addActionListener(e -> handleDeleteCourseAction());
 
-        viewCourseButton = new CustomButton(
-                "View Courses",
-                new Color(241, 245, 249),
-                new Color(226, 232, 240),
-                new Color(203, 213, 225),
-                new Color(30, 41, 59),
-                new Color(203, 213, 225),
-                6
-        );
-        viewCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        viewCourseButton = new CustomButton("View Courses", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
+        viewCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         viewCourseButton.setPreferredSize(new Dimension(135, 36));
         viewCourseButton.setToolTipText("Inspect comprehensive course details from database");
         viewCourseButton.addActionListener(e -> handleViewCoursesAction());
 
-        assignCourseInfoButton = new CustomButton(
-                "Assign Course Information",
-                new Color(241, 245, 249),
-                new Color(226, 232, 240),
-                new Color(203, 213, 225),
-                new Color(30, 41, 59),
-                new Color(203, 213, 225),
-                6
-        );
-        assignCourseInfoButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        assignCourseInfoButton.setPreferredSize(new Dimension(210, 36));
+        assignCourseInfoButton = new CustomButton("Assign Course Info", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
+        assignCourseInfoButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        assignCourseInfoButton.setPreferredSize(new Dimension(160, 36));
         assignCourseInfoButton.setToolTipText("Assign department, semester, credits, and contact hours");
         assignCourseInfoButton.addActionListener(e -> handleAssignCourseInfoAction());
 
@@ -166,19 +136,8 @@ public class CourseManagementPanel extends JPanel {
         };
 
         courseTable = new JTable(tableModel);
-        courseTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        courseTable.setRowHeight(34);
+        UITheme.styleTable(courseTable);
         courseTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        courseTable.setShowGrid(true);
-        courseTable.setGridColor(new Color(226, 232, 240));
-        courseTable.setSelectionBackground(new Color(224, 231, 255));
-        courseTable.setSelectionForeground(new Color(15, 23, 42));
-
-        JTableHeader tableHeader = courseTable.getTableHeader();
-        tableHeader.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        tableHeader.setBackground(new Color(241, 245, 249));
-        tableHeader.setForeground(new Color(51, 65, 85));
-        tableHeader.setPreferredSize(new Dimension(tableHeader.getWidth(), 36));
 
         // Column widths
         courseTable.getColumnModel().getColumn(0).setPreferredWidth(110);
@@ -197,21 +156,19 @@ public class CourseManagementPanel extends JPanel {
         courseTable.getColumnModel().getColumn(4).setCellRenderer(centerRender);
         courseTable.getColumnModel().getColumn(6).setCellRenderer(centerRender);
 
-        JScrollPane scrollPane = new JScrollPane(courseTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(203, 213, 225), 1));
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        JScrollPane scrollPane = UITheme.createModernScrollPane(courseTable);
 
         // 3. Results area / operation help text banner
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
-        statusPanel.setBackground(new Color(241, 245, 249));
+        statusPanel.setBackground(Color.WHITE);
         statusPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
                 new EmptyBorder(4, 10, 4, 10)
         ));
 
         lastActionCourseLabel = new JLabel("Results area / operation help text");
-        lastActionCourseLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lastActionCourseLabel.setForeground(new Color(71, 85, 105));
+        lastActionCourseLabel.setFont(UITheme.FONT_SMALL);
+        lastActionCourseLabel.setForeground(UITheme.TEXT_MUTED);
         statusPanel.add(lastActionCourseLabel);
 
         centerContainer.add(actionToolbar, BorderLayout.NORTH);

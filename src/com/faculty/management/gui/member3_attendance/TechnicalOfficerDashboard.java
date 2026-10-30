@@ -15,6 +15,18 @@ import java.awt.*;
 public class TechnicalOfficerDashboard extends JFrame {
 
     private final User currentUser;
+    private UITheme.SidebarNavigation sidebarNav;
+    private UITheme.HeaderPanel headerPanel;
+
+    private static final String[] TO_NAV_TITLES = {
+            "Home Overview",
+            "Attendance Entry",
+            "Medical Certificates",
+            "Batch Summary",
+            "Dept Timetables",
+            "Notice Board",
+            "My Profile"
+    };
 
     public TechnicalOfficerDashboard(User user) {
         this.currentUser = user;
@@ -23,18 +35,48 @@ public class TechnicalOfficerDashboard extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Technical Officer Portal");
-        setSize(1020, 680);
-        setMinimumSize(new Dimension(880, 560));
+        setSize(1180, 740);
+        setMinimumSize(new Dimension(980, 620));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         getContentPane().setBackground(UITheme.BG_PAGE);
 
+        // 1. Left Sidebar Navigation (Per FMS UI PDF - Solid Burgundy #5C1221, Gold Active Pill)
+        sidebarNav = new UITheme.SidebarNavigation("Tech Officer Portal", TO_NAV_TITLES, 0, idx -> {
+            headerPanel.setTitle(TO_NAV_TITLES[idx]);
+            switch (idx) {
+                case 1:
+                    new AttendanceEntryDialog(this, currentUser).setVisible(true);
+                    break;
+                case 2:
+                    new MedicalManagementDialog(this).setVisible(true);
+                    break;
+                case 3:
+                    new ViewAttendanceDialog(this).setVisible(true);
+                    break;
+                case 4:
+                    new DepartmentTimetableDialog(this).setVisible(true);
+                    break;
+                case 5:
+                    new NoticeViewerDialog(this).setVisible(true);
+                    break;
+                case 6:
+                    new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true);
+                    break;
+            }
+        });
+
+        // 2. Right / Center Container
+        JPanel mainContentContainer = new JPanel(new BorderLayout());
+        mainContentContainer.setOpaque(false);
+
         // Standardized Modern Header
-        add(UITheme.buildHeader(this, "Technical Operations Portal", currentUser.getFullName(), "Tech Officer", () -> {
+        headerPanel = new UITheme.HeaderPanel(this, TO_NAV_TITLES[0], currentUser.getFullName(), "Tech Officer", () -> {
             dispose();
             LoginController.showLogin();
-        }), BorderLayout.NORTH);
+        });
+        mainContentContainer.add(headerPanel, BorderLayout.NORTH);
 
         // Main Content Container
         JPanel mainContent = new JPanel();
@@ -145,7 +187,7 @@ public class TechnicalOfficerDashboard extends JFrame {
         // Module 6: Technical Officer Profile
         modulesGrid.add(createModuleCard("Staff Profile & Account",
                 "Manage contact phone numbers, email address, and personal staff details.",
-                UITheme.PURPLE_BRIGHT, "Edit Profile", () -> {
+                UITheme.PRIMARY, "Edit Profile", () -> {
                     new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true);
                 }));
 
@@ -154,7 +196,12 @@ public class TechnicalOfficerDashboard extends JFrame {
         mainContent.add(sectionTitle);
         mainContent.add(modulesGrid);
 
-        add(UITheme.createModernScrollPane(mainContent), BorderLayout.CENTER);
+        JScrollPane scrollContent = UITheme.createModernScrollPane(mainContent);
+        scrollContent.getViewport().setBackground(UITheme.BG_PAGE);
+        mainContentContainer.add(scrollContent, BorderLayout.CENTER);
+
+        add(sidebarNav, BorderLayout.WEST);
+        add(mainContentContainer, BorderLayout.CENTER);
     }
 
     private JPanel createModuleCard(String title, String desc, Color accentColor, String actionText, Runnable onClick) {

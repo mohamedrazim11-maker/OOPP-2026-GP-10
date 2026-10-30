@@ -120,15 +120,15 @@ public class CourseFormDialog extends JDialog {
         JPanel headerPanel = new JPanel(new BorderLayout());
         Color headerBg;
         if (mode == FormMode.DELETE) {
-            headerBg = new Color(220, 38, 38); // Red for Delete
+            headerBg = new Color(185, 28, 28); // Dark Crimson for Delete
         } else if (mode == FormMode.UPDATE) {
-            headerBg = new Color(15, 118, 110); // Teal for Update
+            headerBg = new Color(110, 22, 36); // Primary Action Burgundy
         } else if (mode == FormMode.VIEW) {
-            headerBg = new Color(37, 99, 235); // Royal Blue for View
+            headerBg = new Color(92, 18, 33); // University Burgundy
         } else if (mode == FormMode.ASSIGN_INFO) {
-            headerBg = new Color(109, 40, 217); // Purple for Assign Info
+            headerBg = new Color(110, 22, 36);
         } else {
-            headerBg = new Color(30, 58, 138); // Navy for Add
+            headerBg = new Color(92, 18, 33); // Solid University Burgundy #5C1221
         }
         headerPanel.setBackground(headerBg);
         headerPanel.setBorder(new EmptyBorder(18, 24, 18, 24));

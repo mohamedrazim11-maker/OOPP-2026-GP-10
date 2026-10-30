@@ -112,19 +112,19 @@ public class NoticeFormDialog extends JDialog {
         String bannerSubtitle;
 
         if (mode == FormMode.DELETE) {
-            bannerColor = new Color(220, 38, 38);
+            bannerColor = new Color(185, 28, 28);
             bannerTitle = "🗑️  Delete Faculty Notice";
             bannerSubtitle = "Permanently remove an official notice or circular from the faculty board.";
         } else if (mode == FormMode.UPDATE) {
-            bannerColor = new Color(15, 118, 110);
+            bannerColor = new Color(110, 22, 36);
             bannerTitle = "✏️  Edit Faculty Notice";
             bannerSubtitle = "Modify title, category, priority, or body content of published notices.";
         } else if (mode == FormMode.VIEW) {
-            bannerColor = new Color(71, 85, 105);
+            bannerColor = new Color(92, 18, 33);
             bannerTitle = "👁️  View Notice Details";
             bannerSubtitle = "Read-only preview of published circulars and official announcements.";
         } else {
-            bannerColor = new Color(30, 58, 138);
+            bannerColor = new Color(92, 18, 33);
             bannerTitle = "📢  Create Official Notice";
             bannerSubtitle = "Publish a new academic announcement, examination notice, or circular.";
         }

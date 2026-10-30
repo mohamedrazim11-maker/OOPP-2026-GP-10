@@ -49,7 +49,7 @@ public class NoticeViewerDialog extends JDialog {
 
         // 1. Header Panel
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(15, 23, 42)); // Slate Navy
+        headerPanel.setBackground(new Color(92, 18, 33)); // Solid University Burgundy #5C1221
         headerPanel.setBorder(new EmptyBorder(16, 25, 16, 25));
 
         JLabel titleLabel = new JLabel("📢 Faculty Notice Board & Announcements");
@@ -58,7 +58,7 @@ public class NoticeViewerDialog extends JDialog {
 
         JLabel subLabel = new JLabel("Review official circulars, examination eligibility memos, lab venue notices, and schedules");
         subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        subLabel.setForeground(new Color(148, 163, 184));
+        subLabel.setForeground(new Color(226, 194, 186));
 
         JPanel headerText = new JPanel(new GridLayout(2, 1, 0, 4));
         headerText.setOpaque(false);

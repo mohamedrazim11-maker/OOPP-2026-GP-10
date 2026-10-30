@@ -59,7 +59,7 @@ public class ViewAttendanceDialog extends JDialog {
 
         // Header Panel
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(15, 23, 42)); // Slate Navy
+        headerPanel.setBackground(new Color(92, 18, 33)); // Solid University Burgundy #5C1221
         headerPanel.setBorder(new EmptyBorder(15, 25, 15, 25));
 
         JLabel titleLabel = new JLabel("📊 Undergraduate Attendance Summary & Eligibility");
@@ -68,7 +68,7 @@ public class ViewAttendanceDialog extends JDialog {
 
         JLabel subLabel = new JLabel("Evaluate 80% eligibility across Theory, Practical, and Combined sessions");
         subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        subLabel.setForeground(new Color(148, 163, 184));
+        subLabel.setForeground(new Color(226, 194, 186));
 
         JPanel headerTextPanel = new JPanel(new GridLayout(2, 1, 0, 3));
         headerTextPanel.setOpaque(false);

@@ -4,6 +4,7 @@ import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.gui.common.CustomButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
@@ -62,7 +63,7 @@ public class UserManagementPanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout(0, 15));
-        setBackground(new Color(248, 250, 252));
+        setBackground(UITheme.BG_PAGE);
         setBorder(new EmptyBorder(20, 25, 20, 25));
 
         // 1. Top Section: Header & Action Toolbar
@@ -75,12 +76,12 @@ public class UserManagementPanel extends JPanel {
         titlePanel.setOpaque(false);
 
         JLabel mainTitle = new JLabel("User Profile & Access Management");
-        mainTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        mainTitle.setForeground(new Color(15, 23, 42));
+        mainTitle.setFont(UITheme.FONT_PAGE_TITLE);
+        mainTitle.setForeground(UITheme.TEXT_MAIN);
 
         JLabel subTitle = new JLabel("Create users, assign roles, maintain credentials");
-        subTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        subTitle.setForeground(new Color(100, 116, 139));
+        subTitle.setFont(UITheme.FONT_BODY);
+        subTitle.setForeground(UITheme.TEXT_MUTED);
 
         titlePanel.add(mainTitle);
         titlePanel.add(Box.createVerticalStrut(4));
@@ -95,26 +96,26 @@ public class UserManagementPanel extends JPanel {
         JPanel actionButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         actionButtons.setOpaque(false);
 
-        viewButton = createActionButton("View User", new Color(241, 245, 249), new Color(30, 41, 59));
+        viewButton = createActionButton("View User", Color.WHITE, UITheme.TEXT_BODY);
         viewButton.addActionListener(e -> handleViewUser());
 
-        createButton = createActionButton("+ Create User", new Color(37, 99, 235), Color.WHITE);
+        createButton = createActionButton("+ Create User", UITheme.PRIMARY, Color.WHITE);
         createButton.addActionListener(e -> handleCreateUser());
 
-        updateButton = createActionButton("Update User", new Color(241, 245, 249), new Color(30, 41, 59));
+        updateButton = createActionButton("Update User", Color.WHITE, UITheme.TEXT_BODY);
         updateButton.addActionListener(e -> handleUpdateUser());
 
-        assignRoleButton = createActionButton("Assign Role", new Color(241, 245, 249), new Color(30, 41, 59));
+        assignRoleButton = createActionButton("Assign Role", Color.WHITE, UITheme.TEXT_BODY);
         assignRoleButton.addActionListener(e -> handleAssignRole());
 
-        maintainCredsButton = createActionButton("Maintain Credentials", new Color(241, 245, 249), new Color(30, 41, 59));
+        maintainCredsButton = createActionButton("Maintain Credentials", Color.WHITE, UITheme.TEXT_BODY);
         maintainCredsButton.setToolTipText("Maintain and update username and password for selected user");
         maintainCredsButton.addActionListener(e -> handleMaintainCredentials());
 
-        deleteButton = createActionButton("Delete User", new Color(254, 242, 242), new Color(220, 38, 38));
+        deleteButton = createActionButton("Delete User", UITheme.DANGER, Color.WHITE);
         deleteButton.addActionListener(e -> handleDeleteUser());
 
-        refreshButton = createActionButton("Refresh", new Color(241, 245, 249), new Color(71, 85, 105));
+        refreshButton = createActionButton("Refresh", Color.WHITE, UITheme.TEXT_BODY);
         refreshButton.addActionListener(e -> {
             resetFilters();
             loadUserDataFromBackend();
@@ -133,30 +134,30 @@ public class UserManagementPanel extends JPanel {
         searchFilterPanel.setOpaque(false);
 
         JLabel filterLabel = new JLabel("Filter by Role:");
-        filterLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        filterLabel.setForeground(new Color(71, 85, 105));
+        filterLabel.setFont(UITheme.FONT_SMALL_BOLD);
+        filterLabel.setForeground(UITheme.TEXT_BODY);
 
         String[] roles = {"All Roles", "Admin", "Lecturer", "Technical Officer", "Undergraduate"};
         roleFilterComboBox = new JComboBox<>(roles);
-        roleFilterComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        roleFilterComboBox.setFont(UITheme.FONT_BODY);
         roleFilterComboBox.setPreferredSize(new Dimension(140, 32));
         roleFilterComboBox.setBackground(Color.WHITE);
         roleFilterComboBox.addActionListener(e -> applyFilter());
 
         JLabel searchLabel = new JLabel("Search:");
-        searchLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        searchLabel.setForeground(new Color(71, 85, 105));
+        searchLabel.setFont(UITheme.FONT_SMALL_BOLD);
+        searchLabel.setForeground(UITheme.TEXT_BODY);
 
         searchField = new JTextField();
-        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        searchField.setFont(UITheme.FONT_BODY);
         searchField.setPreferredSize(new Dimension(200, 32));
         searchField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
                 new EmptyBorder(2, 8, 2, 8)
         ));
         searchField.addActionListener(e -> applyFilter());
 
-        JButton searchBtn = createActionButton("Search", new Color(71, 85, 105), Color.WHITE);
+        JButton searchBtn = createActionButton("Search", UITheme.PRIMARY, Color.WHITE);
         searchBtn.addActionListener(e -> applyFilter());
 
         searchFilterPanel.add(filterLabel);
@@ -183,39 +184,16 @@ public class UserManagementPanel extends JPanel {
         };
 
         userTable = new JTable(tableModel);
-        userTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        userTable.setRowHeight(36);
+        UITheme.styleTable(userTable);
         userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        userTable.setShowGrid(false);
-        userTable.setShowHorizontalLines(true);
-        userTable.setGridColor(new Color(241, 245, 249));
-        userTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        userTable.getTableHeader().setBackground(new Color(241, 245, 249));
-        userTable.getTableHeader().setForeground(new Color(51, 65, 85));
-        userTable.getTableHeader().setPreferredSize(new Dimension(0, 38));
 
         // Custom Renderers (Polymorphism & Inheritance)
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         userTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
 
-        // Status Badge Renderer
-        userTable.getColumnModel().getColumn(7).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                label.setHorizontalAlignment(JLabel.CENTER);
-                String status = value != null ? value.toString() : "";
-                if ("ACTIVE".equalsIgnoreCase(status)) {
-                    label.setForeground(new Color(22, 101, 52)); // Dark Green
-                    label.setText("● ACTIVE");
-                } else {
-                    label.setForeground(new Color(153, 27, 27)); // Dark Red
-                    label.setText("○ INACTIVE");
-                }
-                return label;
-            }
-        });
+        // Status Badge Renderer using PillBadge colors
+        userTable.getColumnModel().getColumn(7).setCellRenderer(new UITheme.StatusBadgeRenderer());
 
         // Row Sorter for filtering and sorting
         rowSorter = new TableRowSorter<>(tableModel);
@@ -231,16 +209,14 @@ public class UserManagementPanel extends JPanel {
             }
         });
 
-        JScrollPane scrollPane = new JScrollPane(userTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240), 1));
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        JScrollPane scrollPane = UITheme.createModernScrollPane(userTable);
 
         add(topSection, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
     }
 
     private JButton createActionButton(String text, Color bg, Color fg) {
-        Color border = (bg.getRed() > 230 && bg.getGreen() > 230) ? new Color(203, 213, 225) : null;
+        Color border = (bg.equals(Color.WHITE) || bg.getRed() > 220 && bg.getGreen() > 220) ? UITheme.BORDER_INPUT : null;
         CustomButton btn = new CustomButton(text, bg, fg, border);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setPreferredSize(new Dimension(btn.getPreferredSize().width + 16, 34));

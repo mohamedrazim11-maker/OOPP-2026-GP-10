@@ -124,7 +124,7 @@ public class UserFormDialog extends JDialog {
 
         // 1. Header Panel
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(30, 58, 138)); // Deep Navy Blue
+        headerPanel.setBackground(new Color(92, 18, 33)); // Solid University Burgundy #5C1221
         headerPanel.setBorder(new EmptyBorder(16, 22, 16, 22));
 
         String headerTitle = getHeaderTitle();

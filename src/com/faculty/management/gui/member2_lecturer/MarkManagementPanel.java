@@ -1,5 +1,8 @@
 package com.faculty.management.gui.member2_lecturer;
 
+import com.faculty.management.gui.common.DangerButton;
+import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Mark;
 import com.faculty.management.service.MarkService;
 
@@ -25,6 +28,7 @@ public class MarkManagementPanel extends JPanel {
 
     public MarkManagementPanel() {
         setLayout(new BorderLayout());
+        setBackground(UITheme.BG_PAGE);
         setBorder(new EmptyBorder(15, 15, 15, 15));
         initUI();
     }
@@ -35,34 +39,50 @@ public class MarkManagementPanel extends JPanel {
         topToolbar.setOpaque(false);
 
         txtSearchStudent = new JTextField(10);
+        txtSearchStudent.setFont(UITheme.FONT_BODY);
         txtSearchStudent.setPreferredSize(new Dimension(110, 32));
+        txtSearchStudent.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(2, 6, 2, 6)
+        ));
+
         btnSearchStudent = new JButton("Search Student");
-        btnSearchStudent.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnSearchStudent.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnSearchStudent.setBackground(Color.WHITE);
+        btnSearchStudent.setForeground(UITheme.TEXT_BODY);
         btnSearchStudent.setFocusPainted(false);
+        btnSearchStudent.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSearchStudent.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
                 new EmptyBorder(5, 12, 5, 12)
         ));
 
         txtSearchEval = new JTextField(8);
+        txtSearchEval.setFont(UITheme.FONT_BODY);
         txtSearchEval.setPreferredSize(new Dimension(90, 32));
+        txtSearchEval.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(2, 6, 2, 6)
+        ));
+
         btnSearchEval = new JButton("Search Evaluation");
-        btnSearchEval.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnSearchEval.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnSearchEval.setBackground(Color.WHITE);
+        btnSearchEval.setForeground(UITheme.TEXT_BODY);
         btnSearchEval.setFocusPainted(false);
+        btnSearchEval.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSearchEval.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
                 new EmptyBorder(5, 12, 5, 12)
         ));
 
         JLabel lblStudent = new JLabel("Student ID:");
-        lblStudent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblStudent.setForeground(new Color(51, 65, 85));
+        lblStudent.setFont(UITheme.FONT_SMALL_BOLD);
+        lblStudent.setForeground(UITheme.TEXT_BODY);
 
         JLabel lblEval = new JLabel("Eval ID:");
-        lblEval.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblEval.setForeground(new Color(51, 65, 85));
+        lblEval.setFont(UITheme.FONT_SMALL_BOLD);
+        lblEval.setForeground(UITheme.TEXT_BODY);
 
         topToolbar.add(lblStudent);
         topToolbar.add(txtSearchStudent);
@@ -81,43 +101,30 @@ public class MarkManagementPanel extends JPanel {
         };
 
         markTable = new JTable(tableModel);
-        markTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        markTable.setRowHeight(32);
-        markTable.setShowGrid(true);
-        markTable.setGridColor(new Color(226, 232, 240));
-        markTable.setSelectionBackground(new Color(224, 231, 255));
-        markTable.setSelectionForeground(new Color(15, 23, 42));
+        UITheme.styleTable(markTable);
 
         // Bottom Action Panel per Wireframe 04: [ + Add Marks ] [ Edit Selected ] [ Delete Selected ]
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
         bottomPanel.setOpaque(false);
 
-        btnAddMark = new JButton("+ Add Marks");
-        btnAddMark.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnAddMark.setBackground(Color.WHITE);
-        btnAddMark.setFocusPainted(false);
-        btnAddMark.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
-                new EmptyBorder(6, 14, 6, 14)
-        ));
+        btnAddMark = new PrimaryButton("+ Add Marks");
+        btnAddMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnAddMark.setPreferredSize(new Dimension(130, 34));
 
         btnEditMark = new JButton("Edit Selected");
-        btnEditMark.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnEditMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnEditMark.setBackground(Color.WHITE);
+        btnEditMark.setForeground(UITheme.TEXT_BODY);
         btnEditMark.setFocusPainted(false);
+        btnEditMark.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnEditMark.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
                 new EmptyBorder(6, 14, 6, 14)
         ));
 
-        btnDeleteMark = new JButton("Delete Selected");
-        btnDeleteMark.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        btnDeleteMark.setBackground(Color.WHITE);
-        btnDeleteMark.setFocusPainted(false);
-        btnDeleteMark.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
-                new EmptyBorder(6, 14, 6, 14)
-        ));
+        btnDeleteMark = new DangerButton("Delete Selected");
+        btnDeleteMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnDeleteMark.setPreferredSize(new Dimension(140, 34));
 
         bottomPanel.add(btnAddMark);
         bottomPanel.add(btnEditMark);
@@ -131,7 +138,7 @@ public class MarkManagementPanel extends JPanel {
         btnDeleteMark.addActionListener(e -> deleteSelectedMark());
 
         add(topToolbar, BorderLayout.NORTH);
-        add(new JScrollPane(markTable), BorderLayout.CENTER);
+        add(UITheme.createModernScrollPane(markTable), BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 

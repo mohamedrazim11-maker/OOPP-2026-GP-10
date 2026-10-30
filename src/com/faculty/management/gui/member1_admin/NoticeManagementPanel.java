@@ -4,7 +4,9 @@ import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.gui.common.CustomButton;
+import com.faculty.management.gui.common.DangerButton;
 import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Notice;
 
 import javax.swing.*;
@@ -68,7 +70,7 @@ public class NoticeManagementPanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout(0, 20));
-        setBackground(new Color(248, 250, 252));
+        setBackground(UITheme.BG_PAGE);
         setBorder(new EmptyBorder(25, 30, 25, 30));
 
         // 1. Header Title & Description
@@ -77,12 +79,12 @@ public class NoticeManagementPanel extends JPanel {
         headerPanel.setOpaque(false);
 
         JLabel mainTitleLabel = new JLabel("Notice Board Management");
-        mainTitleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        mainTitleLabel.setForeground(new Color(15, 23, 42));
+        mainTitleLabel.setFont(UITheme.FONT_PAGE_TITLE);
+        mainTitleLabel.setForeground(UITheme.TEXT_MAIN);
 
         JLabel subTitleLabel = new JLabel("Publish and maintain official announcements");
-        subTitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        subTitleLabel.setForeground(new Color(100, 116, 139));
+        subTitleLabel.setFont(UITheme.FONT_BODY);
+        subTitleLabel.setForeground(UITheme.TEXT_MUTED);
 
         headerPanel.add(mainTitleLabel);
         headerPanel.add(Box.createVerticalStrut(4));
@@ -96,49 +98,25 @@ public class NoticeManagementPanel extends JPanel {
         JPanel actionToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         actionToolbar.setOpaque(false);
 
-        createNoticeButton = new PrimaryButton("Create Notice");
+        createNoticeButton = new PrimaryButton("+ Post Notice");
         createNoticeButton.setPreferredSize(new Dimension(140, 36));
         createNoticeButton.setToolTipText("Open dialog to draft and publish a new faculty announcement");
         createNoticeButton.addActionListener(e -> handleCreateNoticeAction());
 
-        editNoticeButton = new CustomButton(
-                "Edit Notice",
-                new Color(241, 245, 249),
-                new Color(226, 232, 240),
-                new Color(203, 213, 225),
-                new Color(30, 41, 59),
-                new Color(203, 213, 225),
-                6
-        );
-        editNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        editNoticeButton = new CustomButton("Edit Notice", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
+        editNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         editNoticeButton.setPreferredSize(new Dimension(130, 36));
         editNoticeButton.setToolTipText("Select and modify an existing published notice");
         editNoticeButton.addActionListener(e -> handleEditNoticeAction());
 
-        deleteNoticeButton = new CustomButton(
-                "Delete Notice",
-                new Color(254, 242, 242),
-                new Color(254, 226, 226),
-                new Color(252, 165, 165),
-                new Color(220, 38, 38),
-                new Color(252, 165, 165),
-                6
-        );
-        deleteNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        deleteNoticeButton = new DangerButton("Delete Notice");
+        deleteNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         deleteNoticeButton.setPreferredSize(new Dimension(135, 36));
         deleteNoticeButton.setToolTipText("Permanently remove an outdated announcement from the notice board");
         deleteNoticeButton.addActionListener(e -> handleDeleteNoticeAction());
 
-        viewNoticeButton = new CustomButton(
-                "View Notice",
-                new Color(241, 245, 249),
-                new Color(226, 232, 240),
-                new Color(203, 213, 225),
-                new Color(30, 41, 59),
-                new Color(203, 213, 225),
-                6
-        );
-        viewNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        viewNoticeButton = new CustomButton("View Notice", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
+        viewNoticeButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         viewNoticeButton.setPreferredSize(new Dimension(130, 36));
         viewNoticeButton.setToolTipText("Inspect the full text and details of selected notice");
         viewNoticeButton.addActionListener(e -> handleViewNoticeAction());
@@ -154,12 +132,12 @@ public class NoticeManagementPanel extends JPanel {
         statusBar.setBorder(new EmptyBorder(12, 4, 12, 4));
 
         totalNoticesCountLabel = new JLabel("Total Notices: 0 published announcements");
-        totalNoticesCountLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        totalNoticesCountLabel.setForeground(new Color(51, 65, 85));
+        totalNoticesCountLabel.setFont(UITheme.FONT_BODY_BOLD);
+        totalNoticesCountLabel.setForeground(UITheme.TEXT_MAIN);
 
         lastActionNoticeLabel = new JLabel("Ready. Strictly Notice Board Management options active.");
-        lastActionNoticeLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
-        lastActionNoticeLabel.setForeground(new Color(100, 116, 139));
+        lastActionNoticeLabel.setFont(UITheme.FONT_SMALL);
+        lastActionNoticeLabel.setForeground(UITheme.TEXT_MUTED);
 
         statusBar.add(totalNoticesCountLabel, BorderLayout.WEST);
         statusBar.add(lastActionNoticeLabel, BorderLayout.EAST);
@@ -173,26 +151,31 @@ public class NoticeManagementPanel extends JPanel {
         searchPanel.setOpaque(false);
 
         JLabel searchLbl = new JLabel("🔍 Search:");
-        searchLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        searchLbl.setForeground(new Color(51, 65, 85));
+        searchLbl.setFont(UITheme.FONT_SMALL_BOLD);
+        searchLbl.setForeground(UITheme.TEXT_BODY);
 
         searchField = new JTextField(18);
-        searchField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        searchField.setFont(UITheme.FONT_BODY);
         searchField.setPreferredSize(new Dimension(200, 34));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(2, 8, 2, 8)
+        ));
         searchField.addActionListener(e -> applyFilter());
 
-        JButton searchBtn = new JButton("Search");
+        JButton searchBtn = new CustomButton("Search", UITheme.PRIMARY, Color.WHITE);
         searchBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        searchBtn.setPreferredSize(new Dimension(80, 34));
+        searchBtn.setPreferredSize(new Dimension(85, 34));
         searchBtn.addActionListener(e -> applyFilter());
 
         JLabel categoryLbl = new JLabel("Category:");
-        categoryLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        categoryLbl.setForeground(new Color(51, 65, 85));
+        categoryLbl.setFont(UITheme.FONT_SMALL_BOLD);
+        categoryLbl.setForeground(UITheme.TEXT_BODY);
 
         categoryFilterBox = new JComboBox<>(new String[]{"ALL", "ACADEMIC", "EXAMINATION", "TIMETABLE", "GENERAL"});
-        categoryFilterBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        categoryFilterBox.setFont(UITheme.FONT_BODY);
         categoryFilterBox.setPreferredSize(new Dimension(140, 34));
+        categoryFilterBox.setBackground(Color.WHITE);
         categoryFilterBox.addActionListener(e -> applyFilter());
 
         searchPanel.add(searchLbl);
@@ -205,7 +188,7 @@ public class NoticeManagementPanel extends JPanel {
         JPanel rightControls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightControls.setOpaque(false);
 
-        refreshButton = new JButton("🔄 Refresh");
+        refreshButton = new CustomButton("Refresh", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
         refreshButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         refreshButton.setPreferredSize(new Dimension(100, 34));
         refreshButton.addActionListener(e -> {
@@ -228,13 +211,8 @@ public class NoticeManagementPanel extends JPanel {
         };
 
         noticeTable = new JTable(tableModel);
-        noticeTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        noticeTable.setRowHeight(36);
+        UITheme.styleTable(noticeTable);
         noticeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        noticeTable.setShowGrid(true);
-        noticeTable.setGridColor(new Color(241, 245, 249));
-        noticeTable.setSelectionBackground(new Color(224, 231, 255));
-        noticeTable.setSelectionForeground(new Color(30, 41, 59));
 
         // Column widths
         noticeTable.getColumnModel().getColumn(0).setPreferredWidth(50);
@@ -248,15 +226,9 @@ public class NoticeManagementPanel extends JPanel {
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         noticeTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        noticeTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+        noticeTable.getColumnModel().getColumn(2).setCellRenderer(new UITheme.StatusBadgeRenderer());
         noticeTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
         noticeTable.getColumnModel().getColumn(5).setCellRenderer(centerRenderer);
-
-        JTableHeader header = noticeTable.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        header.setBackground(new Color(241, 245, 249));
-        header.setForeground(new Color(51, 65, 85));
-        header.setPreferredSize(new Dimension(0, 38));
 
         // Double click to view
         noticeTable.addMouseListener(new MouseAdapter() {
@@ -268,9 +240,7 @@ public class NoticeManagementPanel extends JPanel {
             }
         });
 
-        JScrollPane scrollPane = new JScrollPane(noticeTable);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240), 1));
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        JScrollPane scrollPane = UITheme.createModernScrollPane(noticeTable);
 
         mainContentPanel.add(actionToolbar);
         mainContentPanel.add(Box.createVerticalStrut(10));

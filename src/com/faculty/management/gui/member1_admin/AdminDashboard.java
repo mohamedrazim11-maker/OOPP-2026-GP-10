@@ -2,6 +2,7 @@ package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.gui.common.DangerButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Admin;
 import com.faculty.management.model.Role;
 import com.faculty.management.model.User;
@@ -30,9 +31,18 @@ public class AdminDashboard extends JFrame {
     // Encapsulated instance fields (Encapsulation / Information Hiding)
     private final User currentUser;
     private JTabbedPane tabbedPane;
+    private UITheme.SidebarNavigation sidebarNav;
+    private UITheme.HeaderPanel headerPanel;
     private UserManagementPanel userManagementPanel;
     private CourseManagementPanel courseManagementPanel;
     private NoticeManagementPanel noticeManagementPanel;
+
+    private static final String[] NAV_TITLES = {
+            "Overview",
+            "User Profiles",
+            "Course Management",
+            "Notice Board"
+    };
 
     /**
      * Default constructor (no-arg).
@@ -57,64 +67,42 @@ public class AdminDashboard extends JFrame {
     }
 
     private void initComponents() {
-        setSize(1080, 680);
-        setMinimumSize(new Dimension(900, 580));
+        setSize(1180, 740);
+        setMinimumSize(new Dimension(980, 620));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(UITheme.BG_PAGE);
 
-        // Top Header Panel (Wireframe 01 Overview)
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(225, 229, 235));
-        headerPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(203, 213, 225)),
-                new EmptyBorder(12, 25, 12, 25)
-        ));
+        String roleTitle = (currentUser.getRole() != null) ? currentUser.getRole().getRoleName() : "Administrator";
 
-        JLabel titleLabel = new JLabel("FMS Faculty Management System");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 17));
-        titleLabel.setForeground(new Color(15, 23, 42));
+        // 1. Left Sidebar Navigation (Per FMS UI PDF - Solid Burgundy #5C1221, Gold Active Pill)
+        sidebarNav = new UITheme.SidebarNavigation("Administrator Portal", NAV_TITLES, 0, idx -> {
+            if (tabbedPane != null && tabbedPane.getSelectedIndex() != idx) {
+                tabbedPane.setSelectedIndex(idx);
+            }
+            if (headerPanel != null) {
+                headerPanel.setTitle(NAV_TITLES[idx]);
+            }
+        });
 
-        JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
-        userPanel.setOpaque(false);
+        // 2. Right / Center Container
+        JPanel mainContentContainer = new JPanel(new BorderLayout());
+        mainContentContainer.setOpaque(false);
 
-        String roleTitle = (currentUser.getRole() != null) ? currentUser.getRole().getRoleName() : "System Administrator";
-        JLabel userLabel = new JLabel(currentUser.getFullName() + " (" + roleTitle + ")");
-        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        userLabel.setForeground(new Color(51, 65, 85));
-
-        JButton logoutButton = new JButton("Sign out");
-        logoutButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        logoutButton.setBackground(Color.WHITE);
-        logoutButton.setForeground(new Color(15, 23, 42));
-        logoutButton.setFocusPainted(false);
-        logoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        logoutButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
-                new EmptyBorder(5, 14, 5, 14)
-        ));
-        logoutButton.addActionListener(e -> {
+        // Standardized Modern Header (Sand / Beige Header per PDF)
+        headerPanel = new UITheme.HeaderPanel(this, NAV_TITLES[0], currentUser.getFullName(), roleTitle, () -> {
             try {
-                int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to sign out?", "Confirm Sign Out", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    dispose();
-                    LoginController.showLogin();
-                }
+                dispose();
+                LoginController.showLogin();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error during sign out: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        userPanel.add(userLabel);
-        userPanel.add(logoutButton);
-
-        headerPanel.add(titleLabel, BorderLayout.WEST);
-        headerPanel.add(userPanel, BorderLayout.EAST);
-
         // Tabbed Navigation
         tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        tabbedPane.setBackground(Color.WHITE);
+        UITheme.styleTabbedPane(tabbedPane);
 
         // Tab 1: Overview Dashboard
         JPanel overviewPanel = createOverviewPanel();
@@ -133,30 +121,41 @@ public class AdminDashboard extends JFrame {
         tabbedPane.addTab("  Course Management  ", courseManagementPanel);
         tabbedPane.addTab("  Notice Board  ", noticeManagementPanel);
 
-        add(headerPanel, BorderLayout.NORTH);
-        add(tabbedPane, BorderLayout.CENTER);
+        tabbedPane.addChangeListener(e -> {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < NAV_TITLES.length) {
+                sidebarNav.setSelectedIndex(selectedIndex);
+                headerPanel.setTitle(NAV_TITLES[selectedIndex]);
+            }
+        });
+
+        mainContentContainer.add(headerPanel, BorderLayout.NORTH);
+        mainContentContainer.add(tabbedPane, BorderLayout.CENTER);
+
+        add(sidebarNav, BorderLayout.WEST);
+        add(mainContentContainer, BorderLayout.CENTER);
     }
 
     private JPanel createOverviewPanel() {
         JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(new Color(248, 250, 252));
+        centerPanel.setBackground(UITheme.BG_PAGE);
         centerPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
         JPanel welcomeCard = new JPanel();
         welcomeCard.setLayout(new BoxLayout(welcomeCard, BoxLayout.Y_AXIS));
         welcomeCard.setBackground(Color.WHITE);
         welcomeCard.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(226, 232, 240), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
                 new EmptyBorder(25, 25, 25, 25)
         ));
 
         JLabel welcomeLabel = new JLabel("Welcome to Admin Portal, " + currentUser.getFullName() + "!");
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        welcomeLabel.setForeground(new Color(15, 23, 42));
+        welcomeLabel.setForeground(UITheme.TEXT_MAIN);
 
-        JLabel roleDescLabel = new JLabel("Full administrative privileges");
+        JLabel roleDescLabel = new JLabel("Full administrative privileges · System User Accounts, Modules & Announcements");
         roleDescLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        roleDescLabel.setForeground(new Color(100, 116, 139));
+        roleDescLabel.setForeground(UITheme.TEXT_MUTED);
         roleDescLabel.setBorder(new EmptyBorder(6, 0, 20, 0));
 
         // Quick Modules Cards (2x2 Grid per Wireframe 01 Overview)
@@ -194,9 +193,9 @@ public class AdminDashboard extends JFrame {
 
     private JPanel createModuleCard(String title, String desc, Runnable onManage) {
         JPanel card = new JPanel(new BorderLayout(10, 10));
-        card.setBackground(new Color(245, 247, 250));
+        card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
                 new EmptyBorder(16, 18, 16, 18)
         ));
 
@@ -206,11 +205,11 @@ public class AdminDashboard extends JFrame {
 
         JLabel titleLbl = new JLabel(title);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        titleLbl.setForeground(new Color(15, 23, 42));
+        titleLbl.setForeground(UITheme.TEXT_MAIN);
 
         JLabel descLbl = new JLabel(desc);
         descLbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        descLbl.setForeground(new Color(100, 116, 139));
+        descLbl.setForeground(UITheme.TEXT_MUTED);
         descLbl.setBorder(new EmptyBorder(6, 0, 0, 0));
 
         textPanel.add(titleLbl);
@@ -220,13 +219,13 @@ public class AdminDashboard extends JFrame {
         btnPanel.setOpaque(false);
 
         JButton manageBtn = new JButton("Click to manage");
-        manageBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        manageBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         manageBtn.setBackground(Color.WHITE);
-        manageBtn.setForeground(new Color(15, 23, 42));
+        manageBtn.setForeground(UITheme.PRIMARY);
         manageBtn.setFocusPainted(false);
         manageBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         manageBtn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
                 new EmptyBorder(6, 14, 6, 14)
         ));
         if (onManage != null) {
