@@ -1,5 +1,8 @@
 package com.faculty.management.gui.member2_lecturer;
 
+import com.faculty.management.gui.common.DangerButton;
+import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Mark;
 import com.faculty.management.service.MarkService;
 
@@ -25,50 +28,105 @@ public class MarkManagementPanel extends JPanel {
 
     public MarkManagementPanel() {
         setLayout(new BorderLayout());
+        setBackground(UITheme.BG_PAGE);
         setBorder(new EmptyBorder(15, 15, 15, 15));
         initUI();
     }
 
     private void initUI() {
         // Top Toolbar Panel (Student Lookup & Filters)
-        JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        topToolbar.setBackground(new Color(241, 245, 249));
+        JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        topToolbar.setOpaque(false);
 
-        txtSearchStudent = new JTextField(8);
+        txtSearchStudent = new JTextField(10);
+        txtSearchStudent.setFont(UITheme.FONT_BODY);
+        txtSearchStudent.setPreferredSize(new Dimension(110, 32));
+        txtSearchStudent.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(2, 6, 2, 6)
+        ));
+
         btnSearchStudent = new JButton("Search Student");
+        btnSearchStudent.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSearchStudent.setBackground(Color.WHITE);
+        btnSearchStudent.setForeground(UITheme.TEXT_BODY);
+        btnSearchStudent.setFocusPainted(false);
+        btnSearchStudent.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSearchStudent.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(5, 12, 5, 12)
+        ));
 
-        txtSearchEval = new JTextField(5);
+        txtSearchEval = new JTextField(8);
+        txtSearchEval.setFont(UITheme.FONT_BODY);
+        txtSearchEval.setPreferredSize(new Dimension(90, 32));
+        txtSearchEval.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(2, 6, 2, 6)
+        ));
+
         btnSearchEval = new JButton("Search Evaluation");
+        btnSearchEval.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSearchEval.setBackground(Color.WHITE);
+        btnSearchEval.setForeground(UITheme.TEXT_BODY);
+        btnSearchEval.setFocusPainted(false);
+        btnSearchEval.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSearchEval.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(5, 12, 5, 12)
+        ));
 
-        btnAddMark = new JButton("+ Add New Mark");
-        btnAddMark.setBackground(new Color(15, 118, 110));
-        btnAddMark.setForeground(Color.WHITE);
+        JLabel lblStudent = new JLabel("Student ID:");
+        lblStudent.setFont(UITheme.FONT_SMALL_BOLD);
+        lblStudent.setForeground(UITheme.TEXT_BODY);
 
-        btnEditMark = new JButton("Edit Selected");
-        btnDeleteMark = new JButton("Delete Selected");
+        JLabel lblEval = new JLabel("Eval ID:");
+        lblEval.setFont(UITheme.FONT_SMALL_BOLD);
+        lblEval.setForeground(UITheme.TEXT_BODY);
 
-        topToolbar.add(new JLabel("Student ID:"));
+        topToolbar.add(lblStudent);
         topToolbar.add(txtSearchStudent);
         topToolbar.add(btnSearchStudent);
-        topToolbar.add(new JSeparator(JSeparator.VERTICAL));
-        topToolbar.add(new JLabel("Eval ID:"));
+        topToolbar.add(Box.createHorizontalStrut(8));
+        topToolbar.add(lblEval);
         topToolbar.add(txtSearchEval);
         topToolbar.add(btnSearchEval);
-        topToolbar.add(btnAddMark);
 
         // Table Model Setup
         tableModel = new DefaultTableModel(new String[]{"Student ID", "Evaluation ID", "Marks Obtained"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Disable direct table editing
+                return false;
             }
         };
 
         markTable = new JTable(tableModel);
-        markTable.setRowHeight(25);
+        UITheme.styleTable(markTable);
 
-        // Bottom Action Panel
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        // Bottom Action Panel per Wireframe 04: [ + Add Marks ] [ Edit Selected ] [ Delete Selected ]
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        bottomPanel.setOpaque(false);
+
+        btnAddMark = new PrimaryButton("+ Add Marks");
+        btnAddMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnAddMark.setPreferredSize(new Dimension(130, 34));
+
+        btnEditMark = new JButton("Edit Selected");
+        btnEditMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnEditMark.setBackground(Color.WHITE);
+        btnEditMark.setForeground(UITheme.TEXT_BODY);
+        btnEditMark.setFocusPainted(false);
+        btnEditMark.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnEditMark.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(6, 14, 6, 14)
+        ));
+
+        btnDeleteMark = new DangerButton("Delete Selected");
+        btnDeleteMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnDeleteMark.setPreferredSize(new Dimension(140, 34));
+
+        bottomPanel.add(btnAddMark);
         bottomPanel.add(btnEditMark);
         bottomPanel.add(btnDeleteMark);
 
@@ -80,7 +138,7 @@ public class MarkManagementPanel extends JPanel {
         btnDeleteMark.addActionListener(e -> deleteSelectedMark());
 
         add(topToolbar, BorderLayout.NORTH);
-        add(new JScrollPane(markTable), BorderLayout.CENTER);
+        add(UITheme.createModernScrollPane(markTable), BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 

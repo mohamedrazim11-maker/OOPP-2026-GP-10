@@ -21,6 +21,22 @@ public class UndergraduateDashboard extends JFrame {
 
     private final User currentUser;
     private final UndergraduateController controller = new UndergraduateController();
+    private JTabbedPane tabs;
+    private UITheme.SidebarNavigation sidebarNav;
+    private UITheme.HeaderPanel headerPanel;
+
+    private static final String[] STUDENT_TABS = {
+            "Profile",
+            "Courses",
+            "Timetable",
+            "Attendance",
+            "Medical",
+            "Notices",
+            "Grades",
+            "Results",
+            "SGPA",
+            "CGPA"
+    };
 
     public UndergraduateDashboard(User user) {
         this.currentUser = user;
@@ -36,24 +52,40 @@ public class UndergraduateDashboard extends JFrame {
         setLayout(new BorderLayout());
         getContentPane().setBackground(UITheme.BG_PAGE);
 
+        // 1. Left Sidebar Navigation (Per FMS UI PDF - Solid Burgundy #5C1221, Gold Active Pill)
+        sidebarNav = new UITheme.SidebarNavigation("Student Portal", STUDENT_TABS, 0, idx -> {
+            if (tabs != null && tabs.getSelectedIndex() != idx) {
+                tabs.setSelectedIndex(idx);
+            }
+            if (headerPanel != null) {
+                headerPanel.setTitle(STUDENT_TABS[idx]);
+            }
+        });
+
+        // 2. Right / Center Container
+        JPanel mainContentContainer = new JPanel(new BorderLayout());
+        mainContentContainer.setOpaque(false);
+
         JPanel topContainer = new JPanel();
         topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.Y_AXIS));
+        topContainer.setOpaque(false);
 
-        // 1. Unified Brand Header
-        topContainer.add(UITheme.buildHeader(this, "Student Academic Portal",
+        // Unified Brand Header
+        headerPanel = new UITheme.HeaderPanel(this, STUDENT_TABS[0],
                 currentUser.getFullName() + " (" + currentUser.getUsername() + ")", "Student", () -> {
             dispose();
             LoginController.showLogin();
-        }));
+        });
+        topContainer.add(headerPanel);
 
-        // 2. Student Identity & Quick Status Banner
+        // Student Identity & Quick Status Banner
         JPanel subBanner = new JPanel(new BorderLayout());
-        subBanner.setBackground(UITheme.LAVENDER_SURFACE);
+        subBanner.setBackground(Color.WHITE);
         subBanner.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(UITheme.LAVENDER_BORDER, 1),
+                        BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
                         new EmptyBorder(10, 16, 10, 16)),
-                new EmptyBorder(8, 24, 8, 24)
+                new EmptyBorder(6, 20, 6, 20)
         ));
 
         // Left: Avatar + Greeting Stack
@@ -102,12 +134,24 @@ public class UndergraduateDashboard extends JFrame {
 
         JPanel bannerMargin = new JPanel(new BorderLayout());
         bannerMargin.setBackground(UITheme.BG_PAGE);
-        bannerMargin.setBorder(new EmptyBorder(12, 24, 8, 24));
+        bannerMargin.setBorder(new EmptyBorder(10, 20, 6, 20));
         bannerMargin.add(subBanner, BorderLayout.CENTER);
         topContainer.add(bannerMargin);
 
-        add(topContainer, BorderLayout.NORTH);
-        add(buildTabs(), BorderLayout.CENTER);
+        tabs = buildTabs();
+        tabs.addChangeListener(e -> {
+            int selectedIndex = tabs.getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < STUDENT_TABS.length) {
+                sidebarNav.setSelectedIndex(selectedIndex);
+                headerPanel.setTitle(STUDENT_TABS[selectedIndex]);
+            }
+        });
+
+        mainContentContainer.add(topContainer, BorderLayout.NORTH);
+        mainContentContainer.add(tabs, BorderLayout.CENTER);
+
+        add(sidebarNav, BorderLayout.WEST);
+        add(mainContentContainer, BorderLayout.CENTER);
     }
 
     private JTabbedPane buildTabs() {

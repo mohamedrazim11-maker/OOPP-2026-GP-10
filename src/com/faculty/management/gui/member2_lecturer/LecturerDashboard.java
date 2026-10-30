@@ -19,6 +19,16 @@ public class LecturerDashboard extends JFrame {
     private final User currentUser;
     private Lecturer currentLecturer;
     private JTabbedPane tabbedPane;
+    private UITheme.SidebarNavigation sidebarNav;
+    private UITheme.HeaderPanel headerPanel;
+
+    private static final String[] NAV_TITLES = {
+            "Home Overview",
+            "My Profile",
+            "Course Materials",
+            "Marks Entry",
+            "CA Eligibility"
+    };
 
     public LecturerDashboard(User user) {
         this.currentUser = user;
@@ -42,39 +52,65 @@ public class LecturerDashboard extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Lecturer Portal");
-        setSize(1040, 720);
-        setMinimumSize(new Dimension(880, 580));
+        setSize(1180, 750);
+        setMinimumSize(new Dimension(980, 620));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         getContentPane().setBackground(UITheme.BG_PAGE);
 
-        // Standardized Modern Header
-        add(UITheme.buildHeader(this, "Academic Staff Portal", currentUser.getFullName(), "Lecturer", () -> {
+        // 1. Left Sidebar Navigation (Per FMS UI PDF - Solid Burgundy #5C1221, Gold Active Pill)
+        sidebarNav = new UITheme.SidebarNavigation("Lecturer Portal", NAV_TITLES, 0, idx -> {
+            if (tabbedPane != null && tabbedPane.getSelectedIndex() != idx) {
+                tabbedPane.setSelectedIndex(idx);
+            }
+            if (headerPanel != null) {
+                headerPanel.setTitle(NAV_TITLES[idx]);
+            }
+        });
+
+        // 2. Right / Center Container
+        JPanel mainContentContainer = new JPanel(new BorderLayout());
+        mainContentContainer.setOpaque(false);
+
+        // Standardized Modern Header (Sand / Beige Header per PDF)
+        headerPanel = new UITheme.HeaderPanel(this, NAV_TITLES[0], currentUser.getFullName(), "Lecturer", () -> {
             dispose();
             LoginController.showLogin();
-        }), BorderLayout.NORTH);
+        });
 
         // --- Tabbed Content Area ---
         tabbedPane = new JTabbedPane();
         UITheme.styleTabbedPane(tabbedPane);
 
         // Tab 0: Welcome Overview
-        tabbedPane.addTab("🏠 Home Overview", createHomeOverviewPanel());
+        tabbedPane.addTab("Home Overview", createHomeOverviewPanel());
 
         // Tab 1: Profile Management (Week 2 Requirement)
-        tabbedPane.addTab("👤 My Profile", new LecturerProfilePanel(currentLecturer));
+        tabbedPane.addTab("My Profile", new LecturerProfilePanel(currentLecturer));
 
         // Tab 2: Course Materials (Week 2 Requirement)
-        tabbedPane.addTab("📄 Course Materials", new CourseMaterialsPanel());
+        tabbedPane.addTab("Course Materials", new CourseMaterialsPanel());
 
         // Tab 3: Marks Management Engine (Week 3 Requirement)
-        tabbedPane.addTab("📝 Marks Entry", new MarkManagementPanel());
+        tabbedPane.addTab("Marks Entry", new MarkManagementPanel());
 
         // Tab 4: CA Summary & Eligibility
-        tabbedPane.addTab("📊 CA Eligibility", new CASummaryPanel());
+        tabbedPane.addTab("CA Eligibility", new CASummaryPanel());
 
-        add(tabbedPane, BorderLayout.CENTER);
+        tabbedPane.addChangeListener(e -> {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < NAV_TITLES.length) {
+                sidebarNav.setSelectedIndex(selectedIndex);
+                headerPanel.setTitle(NAV_TITLES[selectedIndex]);
+            }
+        });
+
+        mainContentContainer.add(headerPanel, BorderLayout.NORTH);
+        mainContentContainer.add(tabbedPane, BorderLayout.CENTER);
+
+        add(sidebarNav, BorderLayout.WEST);
+        add(mainContentContainer, BorderLayout.CENTER);
     }
 
     private JComponent createHomeOverviewPanel() {

@@ -62,8 +62,8 @@ public class StudentProfilePanel extends JPanel {
         titleBox.setOpaque(false);
         titleBox.setBorder(new EmptyBorder(0, 0, 16, 0));
 
-        UITheme.CircularAvatar profileMark = new UITheme.CircularAvatar(48, UITheme.PURPLE_BRIGHT);
-        profileMark.setBgColor(UITheme.PURPLE_BRIGHT);
+        UITheme.CircularAvatar profileMark = new UITheme.CircularAvatar(48, UITheme.PRIMARY);
+        profileMark.setBgColor(UITheme.PRIMARY);
         profileMark.setTextColor(Color.WHITE);
         profileMark.setPlaceholder("P");
 
@@ -114,8 +114,8 @@ public class StudentProfilePanel extends JPanel {
                 Shape cardShape = new java.awt.geom.RoundRectangle2D.Float(
                         0, 0, getWidth(), getHeight(), 14, 14);
                 g2.setClip(cardShape);
-                g2.setPaint(new GradientPaint(0, 0, UITheme.PURPLE_BRIGHT,
-                        getWidth(), 160, new Color(171, 137, 255)));
+                g2.setPaint(new GradientPaint(0, 0, UITheme.PRIMARY,
+                        getWidth(), 160, UITheme.PRIMARY_HOVER));
                 g2.fillRect(0, 0, getWidth(), 170);
                 g2.dispose();
             }
@@ -141,7 +141,7 @@ public class StudentProfilePanel extends JPanel {
         usernameBadgeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         UITheme.PillBadge rolePill = new UITheme.PillBadge("UNDERGRADUATE",
-                new Color(235, 228, 255), UITheme.PURPLE_BRIGHT, new Color(216, 205, 255));
+                UITheme.PRIMARY_LIGHT, UITheme.PRIMARY, UITheme.PRIMARY_TINT);
         rolePill.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         UITheme.ModernButton browseBtn = new UITheme.ModernButton("Change Photo...", UITheme.ButtonStyle.OUTLINE, 8);

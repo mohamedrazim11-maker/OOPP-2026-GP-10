@@ -2,6 +2,7 @@ package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.gui.common.DangerButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Admin;
 import com.faculty.management.model.Role;
 import com.faculty.management.model.User;
@@ -30,9 +31,18 @@ public class AdminDashboard extends JFrame {
     // Encapsulated instance fields (Encapsulation / Information Hiding)
     private final User currentUser;
     private JTabbedPane tabbedPane;
+    private UITheme.SidebarNavigation sidebarNav;
+    private UITheme.HeaderPanel headerPanel;
     private UserManagementPanel userManagementPanel;
     private CourseManagementPanel courseManagementPanel;
     private NoticeManagementPanel noticeManagementPanel;
+
+    private static final String[] NAV_TITLES = {
+            "Overview",
+            "User Profiles",
+            "Course Management",
+            "Notice Board"
+    };
 
     /**
      * Default constructor (no-arg).
@@ -57,53 +67,42 @@ public class AdminDashboard extends JFrame {
     }
 
     private void initComponents() {
-        setSize(1080, 680);
-        setMinimumSize(new Dimension(900, 580));
+        setSize(1180, 740);
+        setMinimumSize(new Dimension(980, 620));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(UITheme.BG_PAGE);
 
-        // Top Header Panel
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(30, 58, 138)); // Deep Navy Blue
-        headerPanel.setBorder(new EmptyBorder(12, 25, 12, 25));
+        String roleTitle = (currentUser.getRole() != null) ? currentUser.getRole().getRoleName() : "Administrator";
 
-        JLabel titleLabel = new JLabel("Faculty Management System (FMS)");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        titleLabel.setForeground(Color.WHITE);
-
-        JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
-        userPanel.setOpaque(false);
-
-        // Dynamic Binding / Polymorphism: invokes currentUser.getRoleTitle() at runtime
-        JLabel userLabel = new JLabel(currentUser.getFullName() + " (" + currentUser.getRoleTitle() + ")");
-        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        userLabel.setForeground(Color.WHITE);
-
-        DangerButton logoutButton = new DangerButton("Logout");
-        logoutButton.setPreferredSize(new Dimension(85, 30));
-        logoutButton.addActionListener(e -> {
-            try {
-                int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to log out?", "Confirm Logout", JOptionPane.YES_NO_OPTION);
-                if (confirm == JOptionPane.YES_OPTION) {
-                    dispose();
-                    LoginController.showLogin();
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error during logout: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        // 1. Left Sidebar Navigation (Per FMS UI PDF - Solid Burgundy #5C1221, Gold Active Pill)
+        sidebarNav = new UITheme.SidebarNavigation("Administrator Portal", NAV_TITLES, 0, idx -> {
+            if (tabbedPane != null && tabbedPane.getSelectedIndex() != idx) {
+                tabbedPane.setSelectedIndex(idx);
+            }
+            if (headerPanel != null) {
+                headerPanel.setTitle(NAV_TITLES[idx]);
             }
         });
 
-        userPanel.add(userLabel);
-        userPanel.add(logoutButton);
+        // 2. Right / Center Container
+        JPanel mainContentContainer = new JPanel(new BorderLayout());
+        mainContentContainer.setOpaque(false);
 
-        headerPanel.add(titleLabel, BorderLayout.WEST);
-        headerPanel.add(userPanel, BorderLayout.EAST);
+        // Standardized Modern Header (Sand / Beige Header per PDF)
+        headerPanel = new UITheme.HeaderPanel(this, NAV_TITLES[0], currentUser.getFullName(), roleTitle, () -> {
+            try {
+                dispose();
+                LoginController.showLogin();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error during sign out: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         // Tabbed Navigation
         tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        tabbedPane.setBackground(Color.WHITE);
+        UITheme.styleTabbedPane(tabbedPane);
 
         // Tab 1: Overview Dashboard
         JPanel overviewPanel = createOverviewPanel();
@@ -122,67 +121,67 @@ public class AdminDashboard extends JFrame {
         tabbedPane.addTab("  Course Management  ", courseManagementPanel);
         tabbedPane.addTab("  Notice Board  ", noticeManagementPanel);
 
-        add(headerPanel, BorderLayout.NORTH);
-        add(tabbedPane, BorderLayout.CENTER);
+        tabbedPane.addChangeListener(e -> {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < NAV_TITLES.length) {
+                sidebarNav.setSelectedIndex(selectedIndex);
+                headerPanel.setTitle(NAV_TITLES[selectedIndex]);
+            }
+        });
+
+        mainContentContainer.add(headerPanel, BorderLayout.NORTH);
+        mainContentContainer.add(tabbedPane, BorderLayout.CENTER);
+
+        add(sidebarNav, BorderLayout.WEST);
+        add(mainContentContainer, BorderLayout.CENTER);
     }
 
     private JPanel createOverviewPanel() {
         JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(new Color(248, 250, 252));
+        centerPanel.setBackground(UITheme.BG_PAGE);
         centerPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
         JPanel welcomeCard = new JPanel();
         welcomeCard.setLayout(new BoxLayout(welcomeCard, BoxLayout.Y_AXIS));
         welcomeCard.setBackground(Color.WHITE);
         welcomeCard.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(226, 232, 240), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
                 new EmptyBorder(25, 25, 25, 25)
         ));
 
-        JLabel welcomeLabel = new JLabel(currentUser.getDashboardGreeting());
-        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        welcomeLabel.setForeground(new Color(15, 23, 42));
+        JLabel welcomeLabel = new JLabel("Welcome to Admin Portal, " + currentUser.getFullName() + "!");
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        welcomeLabel.setForeground(UITheme.TEXT_MAIN);
 
-        JLabel roleDescLabel = new JLabel("You have full administrative privileges: User Profiles, Courses, Notices, and Timetables.");
-        roleDescLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        roleDescLabel.setForeground(new Color(100, 116, 139));
-        roleDescLabel.setBorder(new EmptyBorder(10, 0, 20, 0));
+        JLabel roleDescLabel = new JLabel("Full administrative privileges · System User Accounts, Modules & Announcements");
+        roleDescLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        roleDescLabel.setForeground(UITheme.TEXT_MUTED);
+        roleDescLabel.setBorder(new EmptyBorder(6, 0, 20, 0));
 
-        // Quick Stats / Modules Cards
+        // Quick Modules Cards (2x2 Grid per Wireframe 01 Overview)
         JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 20, 20));
         modulesGrid.setOpaque(false);
 
-        JPanel userCard = createModuleCard("👥 User Management", "Create, update, and maintain credentials for system users (Lecturers, TOs, Students). Click to manage.", new Color(37, 99, 235));
-        userCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        userCard.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                tabbedPane.setSelectedIndex(1); // Switch to User Profiles tab
-            }
+        JPanel userCard = createModuleCard("User Management", "Create, update, maintain credentials", () -> {
+            tabbedPane.setSelectedIndex(1);
         });
 
-        JPanel courseCard = createModuleCard("📚 Course Management", "Add, update, delete, view courses, and assign course details. Click to manage.", new Color(16, 185, 129));
-        courseCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        courseCard.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                tabbedPane.setSelectedIndex(2); // Switch to Course Management tab
-            }
+        JPanel courseCard = createModuleCard("Course Management", "Add, update, delete, view courses", () -> {
+            tabbedPane.setSelectedIndex(2);
         });
 
-        JPanel noticeCard = createModuleCard("📢 Notice Board", "Create, edit, delete, and view official faculty notices and circulars. Click to manage.", new Color(245, 158, 11));
-        noticeCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        noticeCard.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                tabbedPane.setSelectedIndex(3); // Switch to Notice Board tab
-            }
+        JPanel noticeCard = createModuleCard("Notice Board", "Create, edit, delete notices", () -> {
+            tabbedPane.setSelectedIndex(3);
+        });
+
+        JPanel timetableCard = createModuleCard("Timetable Management", "Create lecture and lab timetables", () -> {
+            JOptionPane.showMessageDialog(this, "Timetable module is managed per semester schedules.", "Timetable Management", JOptionPane.INFORMATION_MESSAGE);
         });
 
         modulesGrid.add(userCard);
         modulesGrid.add(courseCard);
         modulesGrid.add(noticeCard);
-        modulesGrid.add(createModuleCard("🗓️ Timetable Management", "Create and maintain lecture and lab timetables.", new Color(139, 92, 246)));
+        modulesGrid.add(timetableCard);
 
         welcomeCard.add(welcomeLabel);
         welcomeCard.add(roleDescLabel);
@@ -192,25 +191,51 @@ public class AdminDashboard extends JFrame {
         return centerPanel;
     }
 
-    private JPanel createModuleCard(String title, String desc, Color accentColor) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(new Color(241, 245, 249));
+    private JPanel createModuleCard(String title, String desc, Runnable onManage) {
+        JPanel card = new JPanel(new BorderLayout(10, 10));
+        card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor),
-                new EmptyBorder(15, 15, 15, 15)
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
+                new EmptyBorder(16, 18, 16, 18)
         ));
+
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setOpaque(false);
 
         JLabel titleLbl = new JLabel(title);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        titleLbl.setForeground(new Color(30, 41, 59));
+        titleLbl.setForeground(UITheme.TEXT_MAIN);
 
-        JLabel descLbl = new JLabel("<html>" + desc + "</html>");
-        descLbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        descLbl.setForeground(new Color(100, 116, 139));
-        descLbl.setBorder(new EmptyBorder(5, 0, 0, 0));
+        JLabel descLbl = new JLabel(desc);
+        descLbl.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        descLbl.setForeground(UITheme.TEXT_MUTED);
+        descLbl.setBorder(new EmptyBorder(6, 0, 0, 0));
 
-        card.add(titleLbl, BorderLayout.NORTH);
-        card.add(descLbl, BorderLayout.CENTER);
+        textPanel.add(titleLbl);
+        textPanel.add(descLbl);
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        btnPanel.setOpaque(false);
+
+        JButton manageBtn = new JButton("Click to manage");
+        manageBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        manageBtn.setBackground(Color.WHITE);
+        manageBtn.setForeground(UITheme.PRIMARY);
+        manageBtn.setFocusPainted(false);
+        manageBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        manageBtn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(6, 14, 6, 14)
+        ));
+        if (onManage != null) {
+            manageBtn.addActionListener(e -> onManage.run());
+        }
+
+        btnPanel.add(manageBtn);
+
+        card.add(textPanel, BorderLayout.CENTER);
+        card.add(btnPanel, BorderLayout.SOUTH);
 
         return card;
     }

@@ -25,54 +25,74 @@ import java.io.File;
 public class UITheme {
 
     // =========================================================================
-    // COLOR PALETTE (University maroon, cream, and gold theme)
+    // COLOR PALETTE (From "FMS — Faculty Management System UI.pdf")
     // =========================================================================
-    public static final Color PRIMARY = new Color(110, 18, 38);
-    public static final Color PRIMARY_HOVER = new Color(134, 27, 46);
-    public static final Color PRIMARY_DARK = new Color(80, 14, 28);
-    public static final Color PRIMARY_LIGHT = new Color(245, 237, 230);
-    public static final Color PRIMARY_TINT = new Color(217, 179, 114);
-    public static final Color PURPLE_BRIGHT = new Color(135, 39, 52);
-    public static final Color PURPLE_GRADIENT_END = new Color(189, 126, 63);
-    public static final Color LAVENDER_SURFACE = new Color(247, 240, 232);
-    public static final Color LAVENDER_BORDER = new Color(224, 202, 170);
+    public static final Color MAROON_SIDEBAR = new Color(92, 18, 33);        // #5C1221 Solid University Burgundy
+    public static final Color PRIMARY        = new Color(110, 22, 36);       // #6E1624 Primary Action Burgundy
+    public static final Color PRIMARY_HOVER  = new Color(132, 27, 45);       // #841B2D Hover Burgundy
+    public static final Color PRIMARY_DARK   = new Color(72, 14, 26);        // #480E1A Pressed Burgundy
+    public static final Color PRIMARY_LIGHT  = new Color(248, 239, 240);     // #F8EFF0
+    public static final Color PRIMARY_TINT   = new Color(217, 179, 114);
 
-    public static final Color ACCENT_BLUE = new Color(123, 56, 40);
-    public static final Color ACCENT_BLUE_LIGHT = new Color(248, 240, 234);
+    // Sidebar Gold Active Pill
+    public static final Color GOLD_ACTIVE_BG = new Color(232, 175, 68);      // #E8AF44 Warm Golden-Yellow
+    public static final Color GOLD_ACTIVE_FG = new Color(44, 30, 20);        // #2C1E14 Dark Charcoal/Brown
+    public static final Color NAV_INACTIVE_FG= new Color(252, 238, 235);     // #FCEEEB Soft Cream White
+    public static final Color NAV_INACTIVE_DOT = new Color(209, 165, 158);   // #D1A59E Subtle dot
 
-    public static final Color SUCCESS = new Color(24, 116, 88);
-    public static final Color SUCCESS_DARK = new Color(11, 88, 66);
-    public static final Color SUCCESS_LIGHT = new Color(235, 247, 240);
-    public static final Color SUCCESS_BORDER = new Color(171, 216, 190);
+    // Backgrounds
+    public static final Color BG_PAGE        = new Color(246, 239, 230);     // #F6EFE6 Warm Soft Ivory / Cream
+    public static final Color BG_CARD        = new Color(255, 255, 255);     // #FFFFFF Pure White
+    public static final Color BG_HEADER      = new Color(241, 233, 221);     // #F1E9DD Warm Soft Sand / Beige
+    public static final Color BG_ALT_ROW     = new Color(252, 249, 245);
 
-    public static final Color WARNING = new Color(191, 146, 75);
-    public static final Color WARNING_DARK = new Color(154, 115, 53);
-    public static final Color WARNING_LIGHT = new Color(249, 239, 210);
-    public static final Color WARNING_BORDER = new Color(215, 191, 128);
+    // Borders & Focus
+    public static final Color BORDER_LIGHT   = new Color(236, 229, 216);     // #ECE5D8 Warm subtle border
+    public static final Color BORDER_INPUT   = new Color(213, 206, 196);     // #D5CEC4 Input border
+    public static final Color BORDER_FOCUS   = new Color(110, 22, 36);
 
-    public static final Color DANGER = new Color(148, 32, 52);
-    public static final Color DANGER_DARK = new Color(101, 15, 29);
-    public static final Color DANGER_LIGHT = new Color(249, 238, 240);
-    public static final Color DANGER_BORDER = new Color(214, 173, 184);
+    // Typography
+    public static final Color TEXT_MAIN      = new Color(24, 24, 27);        // #18181B Heading Dark
+    public static final Color TEXT_BODY      = new Color(55, 65, 81);        // #374151 Body Slate
+    public static final Color TEXT_MUTED     = new Color(107, 114, 128);     // #6B7280 Muted Subtitles
+    public static final Color TEXT_LIGHT     = new Color(156, 163, 175);     // #9CA3AF Placeholders
 
-    public static final Color PURPLE = new Color(110, 18, 38);
-    public static final Color PURPLE_LIGHT = new Color(246, 240, 236);
+    // Status Badges & Accents (Pastel Pills matching UI PDF)
+    public static final Color SUCCESS        = new Color(21, 128, 61);       // #15803D
+    public static final Color SUCCESS_LIGHT  = new Color(220, 252, 231);     // #DCFCE7 Mint Green
+    public static final Color SUCCESS_DARK   = new Color(21, 128, 61);
+    public static final Color SUCCESS_BORDER = new Color(187, 247, 208);
 
-    public static final Color TEAL = new Color(108, 74, 53);
-    public static final Color TEAL_LIGHT = new Color(247, 239, 232);
+    public static final Color WARNING        = new Color(180, 83, 9);        // #B45309 Dark Amber
+    public static final Color WARNING_LIGHT  = new Color(254, 243, 199);     // #FEF3C7 Light Amber
+    public static final Color WARNING_DARK   = new Color(180, 83, 9);
+    public static final Color WARNING_BORDER = new Color(253, 230, 138);
 
-    public static final Color BG_PAGE = new Color(244, 236, 224);
-    public static final Color BG_CARD = new Color(250, 246, 240);
-    public static final Color BG_ALT_ROW = new Color(246, 239, 232);
-    public static final Color BG_HEADER = new Color(238, 226, 211);
+    public static final Color DANGER         = new Color(185, 28, 28);       // #B91C1C Dark Crimson
+    public static final Color DANGER_LIGHT   = new Color(254, 226, 226);     // #FEE2E2 Light Rose
+    public static final Color DANGER_DARK    = new Color(185, 28, 28);
+    public static final Color DANGER_BORDER  = new Color(254, 202, 202);
 
-    public static final Color BORDER_LIGHT = new Color(221, 205, 180);
-    public static final Color BORDER_FOCUS = new Color(188, 137, 77);
+    public static final Color ACCENT_ROSE    = new Color(190, 18, 60);       // #BE123C
+    public static final Color ACCENT_ROSE_LIGHT = new Color(255, 228, 230);  // #FFE4E6 Soft Coral
+    public static final Color ACCENT_ROSE_BORDER = new Color(254, 205, 211);
 
-    public static final Color TEXT_MAIN = new Color(75, 18, 20);
-    public static final Color TEXT_BODY = new Color(93, 62, 55);
-    public static final Color TEXT_MUTED = new Color(123, 92, 76);
-    public static final Color TEXT_LIGHT = new Color(162, 128, 98);
+    public static final Color ACCENT_PURPLE  = new Color(109, 40, 217);      // #6D28D9 Dark Violet
+    public static final Color ACCENT_PURPLE_LIGHT = new Color(237, 233, 254);// #EDE9FE Light Lavender
+    public static final Color ACCENT_PURPLE_BORDER = new Color(221, 214, 254);
+
+    public static final Color ACCENT_BLUE    = new Color(3, 105, 161);       // #0369A1 Deep Blue
+    public static final Color ACCENT_BLUE_LIGHT = new Color(224, 242, 254);  // #E0F2FE Light Sky
+    public static final Color ACCENT_BLUE_BORDER = new Color(186, 230, 253);
+
+    public static final Color PURPLE_BRIGHT      = PRIMARY;
+    public static final Color PURPLE_GRADIENT_END= PRIMARY_HOVER;
+    public static final Color LAVENDER_SURFACE   = BG_PAGE;
+    public static final Color LAVENDER_BORDER    = BORDER_LIGHT;
+    public static final Color PURPLE             = ACCENT_PURPLE;
+    public static final Color PURPLE_LIGHT       = ACCENT_PURPLE_LIGHT;
+    public static final Color TEAL               = PRIMARY;
+    public static final Color TEAL_LIGHT         = BG_PAGE;
 
     // =========================================================================
     // TYPOGRAPHY (Segoe UI on Windows, with robust fallbacks)
@@ -186,18 +206,18 @@ public class UITheme {
                     fg = Color.WHITE;
                     break;
                 case SECONDARY:
-                    bg = isPressed ? new Color(203, 213, 225) : (isHovered ? new Color(226, 232, 240) : new Color(241, 245, 249));
+                    bg = isPressed ? new Color(234, 227, 217) : (isHovered ? new Color(244, 239, 234) : Color.WHITE);
                     fg = TEXT_BODY;
-                    border = BORDER_LIGHT;
+                    border = BORDER_INPUT;
                     break;
                 case OUTLINE:
                     bg = isHovered ? PRIMARY_LIGHT : Color.WHITE;
                     fg = PRIMARY;
-                    border = isHovered ? PRIMARY : BORDER_LIGHT;
+                    border = isHovered ? PRIMARY : BORDER_INPUT;
                     break;
                 case GHOST:
                 default:
-                    bg = isHovered ? new Color(241, 245, 249) : new Color(0, 0, 0, 0);
+                    bg = isHovered ? new Color(244, 239, 234) : new Color(0, 0, 0, 0);
                     fg = isHovered ? PRIMARY : TEXT_BODY;
                     break;
             }
@@ -207,13 +227,7 @@ public class UITheme {
             // Fill background
             Shape buttonShape = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(),
                     cornerRadius, cornerRadius);
-            if (style == ButtonStyle.PRIMARY) {
-                Color start = isPressed ? PRIMARY_DARK : (isHovered ? PRIMARY_HOVER : PURPLE_BRIGHT);
-                Color end = isPressed ? PRIMARY : (isHovered ? PURPLE_BRIGHT : PURPLE_GRADIENT_END);
-                g2.setPaint(new GradientPaint(0, 0, start, getWidth(), getHeight(), end));
-            } else {
-                g2.setColor(bg);
-            }
+            g2.setColor(bg);
             g2.fill(buttonShape);
 
             // Paint border if applicable
@@ -668,8 +682,8 @@ public class UITheme {
         table.setGridColor(BORDER_LIGHT);
         table.setShowVerticalLines(false);
         table.setShowHorizontalLines(true);
-        table.setSelectionBackground(PRIMARY_LIGHT);
-        table.setSelectionForeground(PRIMARY_DARK);
+        table.setSelectionBackground(new Color(245, 238, 227));
+        table.setSelectionForeground(TEXT_MAIN);
         table.setIntercellSpacing(new Dimension(0, 1));
         table.setFillsViewportHeight(true);
         table.setBackground(Color.WHITE);
@@ -677,7 +691,7 @@ public class UITheme {
         // Header styling
         JTableHeader header = table.getTableHeader();
         header.setFont(FONT_SMALL_BOLD);
-        header.setForeground(TEXT_BODY);
+        header.setForeground(new Color(102, 92, 80));
         header.setBackground(BG_HEADER);
         header.setPreferredSize(new Dimension(header.getPreferredSize().width, 40));
         header.setReorderingAllowed(false);
@@ -696,8 +710,8 @@ public class UITheme {
                     c.setBackground(row % 2 == 0 ? Color.WHITE : BG_ALT_ROW);
                     c.setForeground(TEXT_MAIN);
                 } else {
-                    c.setBackground(PRIMARY_LIGHT);
-                    c.setForeground(PRIMARY_DARK);
+                    c.setBackground(new Color(245, 238, 227));
+                    c.setForeground(TEXT_MAIN);
                 }
                 return c;
             }
@@ -786,12 +800,14 @@ public class UITheme {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             if (isSelected) {
-                Shape activeTab = new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 14, 14);
-                g2.setPaint(new GradientPaint(x, y, PURPLE_BRIGHT, x + w, y + h, PURPLE_GRADIENT_END));
+                Shape activeTab = new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 12, 12);
+                g2.setColor(PRIMARY);
                 g2.fill(activeTab);
             } else {
-                g2.setColor(LAVENDER_SURFACE);
-                g2.fill(new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 14, 14));
+                g2.setColor(BG_HEADER);
+                g2.fill(new RoundRectangle2D.Float(x + 3, y + 4, w - 6, h - 8, 12, 12));
+                g2.setColor(BORDER_LIGHT);
+                g2.draw(new RoundRectangle2D.Float(x + 3.5f, y + 4.5f, w - 7f, h - 9f, 12, 12));
             }
             g2.dispose();
         }
@@ -805,7 +821,7 @@ public class UITheme {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             g2.setFont(font);
-            g2.setColor(isSelected ? Color.WHITE : TEXT_BODY);
+            g2.setColor(isSelected ? Color.WHITE : new Color(85, 75, 62));
             g2.drawString(title, textRect.x, textRect.y + metrics.getAscent());
             g2.dispose();
         }
@@ -884,93 +900,275 @@ public class UITheme {
     }
 
     // =========================================================================
-    // STANDARDIZED DASHBOARD HEADER BUILDER
+    // STANDARDIZED DASHBOARD HEADER & SIDEBAR (Per FMS UI PDF)
     // =========================================================================
-    public static JPanel buildHeader(JFrame frame, String portalTitle, String userName, String roleLabel, Runnable onLogout) {
-        JPanel headerPanel = new JPanel(new BorderLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setPaint(new GradientPaint(0, 0, PURPLE_BRIGHT,
-                        getWidth(), getHeight(), PURPLE_GRADIENT_END));
-                g2.fillRect(0, 0, getWidth(), getHeight());
-                g2.dispose();
-            }
-        };
-        headerPanel.setOpaque(false);
-        headerPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 3, 0, new Color(75, 68, 200)),
-                new EmptyBorder(12, 24, 12, 24)));
+    public static class HeaderPanel extends JPanel {
+        private final JLabel titleLabel;
+        private final JLabel subLabel;
+        private final JLabel userLabel;
+        private final JLabel roleLabel;
 
-        // Left branding
-        JPanel brandBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        brandBox.setOpaque(false);
+        public HeaderPanel(JFrame frame, String initialTitle, String userName, String role, Runnable onLogout) {
+            setLayout(new BorderLayout());
+            setBackground(Color.WHITE);
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_LIGHT),
+                    new EmptyBorder(12, 24, 12, 24)
+            ));
 
-        JLabel logoLabel = new JLabel("FMS");
-        logoLabel.setFont(new Font(FONT_NAME, Font.BOLD, 19));
-        logoLabel.setForeground(Color.WHITE);
-        logoLabel.setBorder(new EmptyBorder(0, 0, 0, 4));
+            // Left: Title & Subtitle Stack
+            JPanel leftBox = new JPanel();
+            leftBox.setLayout(new BoxLayout(leftBox, BoxLayout.Y_AXIS));
+            leftBox.setOpaque(false);
 
-        JPanel titleBox = new JPanel();
-        titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
-        titleBox.setOpaque(false);
+            titleLabel = new JLabel(initialTitle);
+            titleLabel.setFont(FONT_PAGE_TITLE);
+            titleLabel.setForeground(TEXT_MAIN);
 
-        JLabel appTitle = new JLabel("Faculty Management System");
-        appTitle.setFont(new Font(FONT_NAME, Font.BOLD, 17));
-        appTitle.setForeground(Color.WHITE);
+            subLabel = new JLabel("Faculty of Technology · University of Ruhuna");
+            subLabel.setFont(FONT_SMALL);
+            subLabel.setForeground(TEXT_MUTED);
 
-        JLabel portalSub = new JLabel(portalTitle + " | Faculty of Technology");
-        portalSub.setFont(new Font(FONT_NAME, Font.PLAIN, 12));
-        portalSub.setForeground(new Color(199, 210, 254));
+            leftBox.add(titleLabel);
+            leftBox.add(Box.createVerticalStrut(2));
+            leftBox.add(subLabel);
 
-        titleBox.add(appTitle);
-        titleBox.add(portalSub);
+            // Right: User Pill (Card) + Sign Out Button
+            JPanel rightBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0));
+            rightBox.setOpaque(false);
 
-        brandBox.add(logoLabel);
-        brandBox.add(titleBox);
+            // User Pill Card
+            ModernCard userPill = new ModernCard(8);
+            userPill.setCardBackground(BG_PAGE);
+            userPill.setBorderColor(BORDER_LIGHT);
+            userPill.setLayout(new FlowLayout(FlowLayout.LEFT, 8, 4));
+            userPill.setBorder(new EmptyBorder(4, 12, 4, 12));
 
-        // Right User Pill + Logout Button
-        JPanel userBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 14, 0));
-        userBox.setOpaque(false);
+            userLabel = new JLabel(userName);
+            userLabel.setFont(FONT_BODY_BOLD);
+            userLabel.setForeground(TEXT_MAIN);
 
-        JPanel userCard = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        userCard.setOpaque(false);
-        JLabel userText = new JLabel(userName);
-        userText.setFont(FONT_BODY_BOLD);
-        userText.setForeground(Color.WHITE);
+            JLabel dotSep = new JLabel("·");
+            dotSep.setFont(FONT_BODY_BOLD);
+            dotSep.setForeground(TEXT_MUTED);
 
-        JLabel roleText = new JLabel(roleLabel.toUpperCase());
-        roleText.setFont(FONT_SMALL_BOLD);
-        roleText.setForeground(new Color(224, 231, 255));
+            roleLabel = new JLabel(role != null ? role.toUpperCase() : "");
+            roleLabel.setFont(FONT_SMALL_BOLD);
+            roleLabel.setForeground(PRIMARY);
 
-        userCard.add(userText);
-        userCard.add(roleText);
+            userPill.add(userLabel);
+            userPill.add(dotSep);
+            userPill.add(roleLabel);
 
-        ModernButton logoutBtn = new ModernButton("Sign out", ButtonStyle.OUTLINE, 6);
-        logoutBtn.setFont(FONT_SMALL_BOLD);
-        logoutBtn.setBorder(new EmptyBorder(6, 14, 6, 14));
-        logoutBtn.setBackground(new Color(224, 228, 229));
-        logoutBtn.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(frame,
-                    "Are you sure you want to sign out?",
-                    "Confirm Sign Out",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE);
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (onLogout != null) {
-                    onLogout.run();
+            // Sign Out Button
+            ModernButton logoutBtn = new ModernButton("Sign out", ButtonStyle.SECONDARY, 8);
+            logoutBtn.setFont(FONT_SMALL_BOLD);
+            logoutBtn.setBorder(new EmptyBorder(7, 14, 7, 14));
+            logoutBtn.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(frame,
+                        "Are you sure you want to sign out?",
+                        "Confirm Sign Out",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    if (onLogout != null) {
+                        onLogout.run();
+                    }
                 }
+            });
+
+            rightBox.add(userPill);
+            rightBox.add(logoutBtn);
+
+            add(leftBox, BorderLayout.WEST);
+            add(rightBox, BorderLayout.EAST);
+        }
+
+        public void setTitle(String title) {
+            titleLabel.setText(title);
+        }
+
+        public void setSubtitle(String subtitle) {
+            subLabel.setText(subtitle);
+        }
+    }
+
+    public static JPanel buildHeader(JFrame frame, String portalTitle, String userName, String roleLabel, Runnable onLogout) {
+        return new HeaderPanel(frame, portalTitle, userName, roleLabel, onLogout);
+    }
+
+    public static class SidebarNavigation extends JPanel {
+        private final String[] navItems;
+        private int selectedIndex = 0;
+        private final java.util.function.Consumer<Integer> onSelectionChanged;
+        private final JPanel itemsContainer;
+
+        public SidebarNavigation(String portalSubtitle, String[] items, int initialIndex, java.util.function.Consumer<Integer> onSelectionChanged) {
+            this.navItems = items;
+            this.selectedIndex = initialIndex;
+            this.onSelectionChanged = onSelectionChanged;
+
+            setPreferredSize(new Dimension(225, 0));
+            setMinimumSize(new Dimension(225, 0));
+            setBackground(MAROON_SIDEBAR);
+            setLayout(new BorderLayout());
+
+            // 1. Top University Header in Sidebar
+            JPanel topBranding = new JPanel();
+            topBranding.setLayout(new BoxLayout(topBranding, BoxLayout.Y_AXIS));
+            topBranding.setOpaque(false);
+            topBranding.setBorder(new EmptyBorder(22, 20, 20, 20));
+
+            JLabel title1 = new JLabel("Faculty of");
+            title1.setFont(new Font(FONT_NAME, Font.BOLD, 17));
+            title1.setForeground(Color.WHITE);
+
+            JLabel title2 = new JLabel("Technology");
+            title2.setFont(new Font(FONT_NAME, Font.BOLD, 17));
+            title2.setForeground(Color.WHITE);
+
+            JLabel subTitle = new JLabel("University of Ruhuna");
+            subTitle.setFont(new Font(FONT_NAME, Font.PLAIN, 11));
+            subTitle.setForeground(new Color(226, 194, 186));
+            subTitle.setBorder(new EmptyBorder(3, 0, 0, 0));
+
+            topBranding.add(title1);
+            topBranding.add(title2);
+            topBranding.add(subTitle);
+
+            // Subtle divider line
+            JPanel divider = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    g.setColor(new Color(125, 30, 48));
+                    g.fillRect(20, 0, getWidth() - 40, 1);
+                }
+            };
+            divider.setPreferredSize(new Dimension(225, 1));
+            divider.setOpaque(false);
+
+            JPanel northBox = new JPanel(new BorderLayout());
+            northBox.setOpaque(false);
+            northBox.add(topBranding, BorderLayout.CENTER);
+            northBox.add(divider, BorderLayout.SOUTH);
+
+            add(northBox, BorderLayout.NORTH);
+
+            // 2. Middle Navigation Items
+            itemsContainer = new JPanel();
+            itemsContainer.setLayout(new BoxLayout(itemsContainer, BoxLayout.Y_AXIS));
+            itemsContainer.setOpaque(false);
+            itemsContainer.setBorder(new EmptyBorder(15, 12, 15, 12));
+
+            rebuildItems();
+
+            JScrollPane scrollNav = new JScrollPane(itemsContainer);
+            scrollNav.setOpaque(false);
+            scrollNav.getViewport().setOpaque(false);
+            scrollNav.setBorder(BorderFactory.createEmptyBorder());
+            scrollNav.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            scrollNav.getVerticalScrollBar().setUI(new CleanScrollBarUI());
+            scrollNav.getVerticalScrollBar().setPreferredSize(new Dimension(4, 0));
+
+            add(scrollNav, BorderLayout.CENTER);
+
+            // 3. Bottom Footer
+            JPanel bottomFooter = new JPanel(new BorderLayout());
+            bottomFooter.setOpaque(false);
+            bottomFooter.setBorder(new EmptyBorder(16, 20, 18, 20));
+
+            JLabel footerText = new JLabel("FMS v1.0 • Ruhuna");
+            footerText.setFont(new Font(FONT_NAME, Font.PLAIN, 11));
+            footerText.setForeground(new Color(209, 165, 158));
+
+            bottomFooter.add(footerText, BorderLayout.WEST);
+            add(bottomFooter, BorderLayout.SOUTH);
+        }
+
+        public void setSelectedIndex(int index) {
+            if (index >= 0 && index < navItems.length && index != selectedIndex) {
+                this.selectedIndex = index;
+                rebuildItems();
             }
-        });
+        }
 
-        userBox.add(userCard);
-        userBox.add(logoutBtn);
+        public int getSelectedIndex() {
+            return selectedIndex;
+        }
 
-        headerPanel.add(brandBox, BorderLayout.WEST);
-        headerPanel.add(userBox, BorderLayout.EAST);
+        private void rebuildItems() {
+            itemsContainer.removeAll();
+            for (int i = 0; i < navItems.length; i++) {
+                final int index = i;
+                final boolean isActive = (i == selectedIndex);
+                String itemName = navItems[i];
 
-        return headerPanel;
+                JPanel itemBtn = new JPanel(new BorderLayout(10, 0)) {
+                    private boolean isHovered = false;
+                    {
+                        addMouseListener(new MouseAdapter() {
+                            @Override
+                            public void mouseEntered(MouseEvent e) {
+                                isHovered = true;
+                                repaint();
+                            }
+                            @Override
+                            public void mouseExited(MouseEvent e) {
+                                isHovered = false;
+                                repaint();
+                            }
+                            @Override
+                            public void mouseClicked(MouseEvent e) {
+                                selectedIndex = index;
+                                rebuildItems();
+                                if (onSelectionChanged != null) {
+                                    onSelectionChanged.accept(index);
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        Graphics2D g2 = (Graphics2D) g.create();
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                        int arc = 10;
+                        if (isActive) {
+                            g2.setColor(GOLD_ACTIVE_BG);
+                            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc));
+                        } else if (isHovered) {
+                            g2.setColor(new Color(110, 26, 42));
+                            g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc));
+                        }
+                        g2.dispose();
+                        super.paintComponent(g);
+                    }
+                };
+
+                itemBtn.setOpaque(false);
+                itemBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                itemBtn.setBorder(new EmptyBorder(8, 14, 8, 14));
+                itemBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+                JLabel dot = new JLabel(isActive ? "●" : "•");
+                dot.setFont(new Font(FONT_NAME, Font.PLAIN, isActive ? 10 : 14));
+                dot.setForeground(isActive ? GOLD_ACTIVE_FG : NAV_INACTIVE_DOT);
+
+                JLabel label = new JLabel(itemName);
+                label.setFont(isActive ? FONT_BODY_BOLD : FONT_BODY);
+                label.setForeground(isActive ? GOLD_ACTIVE_FG : NAV_INACTIVE_FG);
+
+                itemBtn.add(dot, BorderLayout.WEST);
+                itemBtn.add(label, BorderLayout.CENTER);
+
+                itemsContainer.add(itemBtn);
+                itemsContainer.add(Box.createVerticalStrut(4));
+            }
+            itemsContainer.revalidate();
+            itemsContainer.repaint();
+        }
     }
 
     // =========================================================================

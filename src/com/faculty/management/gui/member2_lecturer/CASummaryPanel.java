@@ -1,5 +1,7 @@
 package com.faculty.management.gui.member2_lecturer;
 
+import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Eligibility;
 import com.faculty.management.model.Mark;
 import com.faculty.management.service.EligibilityService;
@@ -21,6 +23,7 @@ public class CASummaryPanel extends JPanel {
 
     public CASummaryPanel() {
         setLayout(new BorderLayout(15, 15));
+        setBackground(UITheme.BG_PAGE);
         setBorder(new EmptyBorder(15, 15, 15, 15));
         initUI();
     }
@@ -28,39 +31,80 @@ public class CASummaryPanel extends JPanel {
     private void initUI() {
         // Controls Header
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        inputPanel.setBackground(new Color(241, 245, 249));
+        inputPanel.setBackground(Color.WHITE);
+        inputPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
+                new EmptyBorder(6, 12, 6, 12)
+        ));
 
         txtStudentId = new JTextField(8);
-        txtCourseId = new JTextField(8);
-        txtMaxCAMarks = new JTextField("100", 5);
-        btnCalculate = new JButton("Calculate & Load CA");
-        btnCalculate.setBackground(new Color(15, 118, 110));
-        btnCalculate.setForeground(Color.WHITE);
+        txtStudentId.setFont(UITheme.FONT_BODY);
+        txtStudentId.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(4, 6, 4, 6)
+        ));
 
-        inputPanel.add(new JLabel("Student ID (Numeric):"));
+        txtCourseId = new JTextField(8);
+        txtCourseId.setFont(UITheme.FONT_BODY);
+        txtCourseId.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(4, 6, 4, 6)
+        ));
+
+        txtMaxCAMarks = new JTextField("100", 5);
+        txtMaxCAMarks.setFont(UITheme.FONT_BODY);
+        txtMaxCAMarks.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(4, 6, 4, 6)
+        ));
+
+        btnCalculate = new PrimaryButton("Calculate");
+        btnCalculate.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnCalculate.setPreferredSize(new Dimension(110, 32));
+
+        JLabel lblStd = new JLabel("Student ID:");
+        lblStd.setFont(UITheme.FONT_SMALL_BOLD);
+        lblStd.setForeground(UITheme.TEXT_BODY);
+
+        JLabel lblCrs = new JLabel("Course ID:");
+        lblCrs.setFont(UITheme.FONT_SMALL_BOLD);
+        lblCrs.setForeground(UITheme.TEXT_BODY);
+
+        JLabel lblMax = new JLabel("Max CA Marks:");
+        lblMax.setFont(UITheme.FONT_SMALL_BOLD);
+        lblMax.setForeground(UITheme.TEXT_BODY);
+
+        inputPanel.add(lblStd);
         inputPanel.add(txtStudentId);
-        inputPanel.add(new JLabel("Course ID (Numeric):"));
+        inputPanel.add(lblCrs);
         inputPanel.add(txtCourseId);
-        inputPanel.add(new JLabel("Max CA Marks:"));
+        inputPanel.add(lblMax);
         inputPanel.add(txtMaxCAMarks);
         inputPanel.add(btnCalculate);
 
         // Marks Breakdown Table
         tableModel = new DefaultTableModel(new String[]{"Evaluation ID", "Marks Obtained"}, 0);
         marksTable = new JTable(tableModel);
+        UITheme.styleTable(marksTable);
 
         // Result Summary Card
-        JPanel resultCard = new JPanel(new GridLayout(3, 1, 5, 5));
-        resultCard.setBorder(BorderFactory.createTitledBorder("CA Summary Result"));
+        JPanel resultCard = new JPanel(new GridLayout(3, 1, 6, 6));
+        resultCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
+                new EmptyBorder(14, 18, 14, 18)
+        ));
         resultCard.setBackground(Color.WHITE);
 
         lblTotalObtained = new JLabel("Total Obtained CA Marks: -");
         lblCAPercentage = new JLabel("Calculated CA Percentage: - %");
         lblStatus = new JLabel("Exam Eligibility Status: -");
 
-        lblTotalObtained.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblCAPercentage.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTotalObtained.setFont(UITheme.FONT_BODY_BOLD);
+        lblTotalObtained.setForeground(UITheme.TEXT_MAIN);
+        lblCAPercentage.setFont(UITheme.FONT_BODY_BOLD);
+        lblCAPercentage.setForeground(UITheme.TEXT_MAIN);
         lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblStatus.setForeground(UITheme.PRIMARY);
 
         resultCard.add(lblTotalObtained);
         resultCard.add(lblCAPercentage);
@@ -69,7 +113,7 @@ public class CASummaryPanel extends JPanel {
         btnCalculate.addActionListener(e -> processCACalculation());
 
         add(inputPanel, BorderLayout.NORTH);
-        add(new JScrollPane(marksTable), BorderLayout.CENTER);
+        add(UITheme.createModernScrollPane(marksTable), BorderLayout.CENTER);
         add(resultCard, BorderLayout.SOUTH);
     }
 

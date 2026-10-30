@@ -112,19 +112,19 @@ public class NoticeFormDialog extends JDialog {
         String bannerSubtitle;
 
         if (mode == FormMode.DELETE) {
-            bannerColor = new Color(220, 38, 38);
+            bannerColor = new Color(185, 28, 28);
             bannerTitle = "🗑️  Delete Faculty Notice";
             bannerSubtitle = "Permanently remove an official notice or circular from the faculty board.";
         } else if (mode == FormMode.UPDATE) {
-            bannerColor = new Color(15, 118, 110);
+            bannerColor = new Color(110, 22, 36);
             bannerTitle = "✏️  Edit Faculty Notice";
             bannerSubtitle = "Modify title, category, priority, or body content of published notices.";
         } else if (mode == FormMode.VIEW) {
-            bannerColor = new Color(71, 85, 105);
+            bannerColor = new Color(92, 18, 33);
             bannerTitle = "👁️  View Notice Details";
             bannerSubtitle = "Read-only preview of published circulars and official announcements.";
         } else {
-            bannerColor = new Color(30, 58, 138);
+            bannerColor = new Color(92, 18, 33);
             bannerTitle = "📢  Create Official Notice";
             bannerSubtitle = "Publish a new academic announcement, examination notice, or circular.";
         }
@@ -210,7 +210,7 @@ public class NoticeFormDialog extends JDialog {
         catPanel.setLayout(new BoxLayout(catPanel, BoxLayout.Y_AXIS));
         catPanel.setOpaque(false);
 
-        JLabel catLbl = new JLabel("Category: *");
+        JLabel catLbl = new JLabel("Category");
         catLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         catLbl.setForeground(new Color(51, 65, 85));
 
@@ -227,7 +227,7 @@ public class NoticeFormDialog extends JDialog {
         prioPanel.setLayout(new BoxLayout(prioPanel, BoxLayout.Y_AXIS));
         prioPanel.setOpaque(false);
 
-        JLabel prioLbl = new JLabel("Priority: *");
+        JLabel prioLbl = new JLabel("Priority");
         prioLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         prioLbl.setForeground(new Color(51, 65, 85));
 
@@ -246,7 +246,7 @@ public class NoticeFormDialog extends JDialog {
         formPanel.add(Box.createVerticalStrut(14));
 
         // Posted By
-        JLabel postedByLbl = new JLabel("Posted By (Authority / Department): *");
+        JLabel postedByLbl = new JLabel("Posted By");
         postedByLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         postedByLbl.setForeground(new Color(51, 65, 85));
         postedByLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -262,7 +262,7 @@ public class NoticeFormDialog extends JDialog {
         formPanel.add(Box.createVerticalStrut(14));
 
         // Content Area
-        JLabel contentLbl = new JLabel("Notice Content / Circular Body: *");
+        JLabel contentLbl = new JLabel("Content");
         contentLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         contentLbl.setForeground(new Color(51, 65, 85));
         contentLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -343,8 +343,8 @@ public class NoticeFormDialog extends JDialog {
         } else if (mode == FormMode.VIEW) {
             submitButton = null;
         } else {
-            submitButton = new PrimaryButton("Publish Notice");
-            submitButton.setPreferredSize(new Dimension(140, 38));
+            submitButton = new PrimaryButton("Publish");
+            submitButton.setPreferredSize(new Dimension(110, 38));
             submitButton.addActionListener(e -> executeSaveNotice());
         }
 
