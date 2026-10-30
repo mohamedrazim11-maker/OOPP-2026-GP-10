@@ -33,13 +33,18 @@ public class CASummaryPanel extends JPanel {
         txtStudentId = new JTextField(8);
         txtCourseId = new JTextField(8);
         txtMaxCAMarks = new JTextField("100", 5);
-        btnCalculate = new JButton("Calculate & Load CA");
-        btnCalculate.setBackground(new Color(15, 118, 110));
-        btnCalculate.setForeground(Color.WHITE);
+        btnCalculate = new JButton("Calculate");
+        btnCalculate.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnCalculate.setBackground(Color.WHITE);
+        btnCalculate.setFocusPainted(false);
+        btnCalculate.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(148, 163, 184), 1),
+                new EmptyBorder(5, 14, 5, 14)
+        ));
 
-        inputPanel.add(new JLabel("Student ID (Numeric):"));
+        inputPanel.add(new JLabel("Student ID:"));
         inputPanel.add(txtStudentId);
-        inputPanel.add(new JLabel("Course ID (Numeric):"));
+        inputPanel.add(new JLabel("Course ID:"));
         inputPanel.add(txtCourseId);
         inputPanel.add(new JLabel("Max CA Marks:"));
         inputPanel.add(txtMaxCAMarks);

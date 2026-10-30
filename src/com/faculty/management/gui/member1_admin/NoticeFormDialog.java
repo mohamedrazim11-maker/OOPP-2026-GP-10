@@ -210,7 +210,7 @@ public class NoticeFormDialog extends JDialog {
         catPanel.setLayout(new BoxLayout(catPanel, BoxLayout.Y_AXIS));
         catPanel.setOpaque(false);
 
-        JLabel catLbl = new JLabel("Category: *");
+        JLabel catLbl = new JLabel("Category");
         catLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         catLbl.setForeground(new Color(51, 65, 85));
 
@@ -227,7 +227,7 @@ public class NoticeFormDialog extends JDialog {
         prioPanel.setLayout(new BoxLayout(prioPanel, BoxLayout.Y_AXIS));
         prioPanel.setOpaque(false);
 
-        JLabel prioLbl = new JLabel("Priority: *");
+        JLabel prioLbl = new JLabel("Priority");
         prioLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         prioLbl.setForeground(new Color(51, 65, 85));
 
@@ -246,7 +246,7 @@ public class NoticeFormDialog extends JDialog {
         formPanel.add(Box.createVerticalStrut(14));
 
         // Posted By
-        JLabel postedByLbl = new JLabel("Posted By (Authority / Department): *");
+        JLabel postedByLbl = new JLabel("Posted By");
         postedByLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         postedByLbl.setForeground(new Color(51, 65, 85));
         postedByLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -262,7 +262,7 @@ public class NoticeFormDialog extends JDialog {
         formPanel.add(Box.createVerticalStrut(14));
 
         // Content Area
-        JLabel contentLbl = new JLabel("Notice Content / Circular Body: *");
+        JLabel contentLbl = new JLabel("Content");
         contentLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
         contentLbl.setForeground(new Color(51, 65, 85));
         contentLbl.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -343,8 +343,8 @@ public class NoticeFormDialog extends JDialog {
         } else if (mode == FormMode.VIEW) {
             submitButton = null;
         } else {
-            submitButton = new PrimaryButton("Publish Notice");
-            submitButton.setPreferredSize(new Dimension(140, 38));
+            submitButton = new PrimaryButton("Publish");
+            submitButton.setPreferredSize(new Dimension(110, 38));
             submitButton.addActionListener(e -> executeSaveNotice());
         }
 
