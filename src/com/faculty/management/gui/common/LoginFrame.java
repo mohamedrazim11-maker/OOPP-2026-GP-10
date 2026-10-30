@@ -20,22 +20,22 @@ import java.awt.geom.*;
  */
 public class LoginFrame extends JFrame {
 
-    // --- Color Palette ---
-    private static final Color MAROON_DARK = new Color(52, 8, 15);
-    private static final Color MAROON_PRIMARY = new Color(78, 14, 25);
-    private static final Color MAROON_LIGHT = new Color(98, 20, 34);
-    private static final Color MAROON_HOVER = new Color(112, 24, 40);
-    private static final Color MAROON_PRESSED = new Color(42, 6, 12);
+    // --- Color Palette (Per FMS UI PDF) ---
+    private static final Color MAROON_DARK = new Color(72, 14, 26);    // #480E1A
+    private static final Color MAROON_PRIMARY = new Color(92, 18, 33); // #5C1221 Solid University Burgundy
+    private static final Color MAROON_LIGHT = new Color(110, 22, 36);  // #6E1624 Primary Action
+    private static final Color MAROON_HOVER = new Color(132, 27, 45);  // #841B2D
+    private static final Color MAROON_PRESSED = new Color(48, 8, 16);  // #300810
 
-    private static final Color GOLD_LIGHT = new Color(240, 215, 148);
-    private static final Color GOLD_PRIMARY = new Color(205, 165, 85);
-    private static final Color GOLD_DARK = new Color(145, 105, 38);
+    private static final Color GOLD_LIGHT = new Color(245, 215, 140);
+    private static final Color GOLD_PRIMARY = new Color(232, 175, 68); // #E8AF44 Golden Accent
+    private static final Color GOLD_DARK = new Color(180, 115, 30);
 
-    private static final Color CREAM_BG = new Color(251, 249, 245);
-    private static final Color TEXT_DARK = new Color(42, 34, 30);
-    private static final Color TEXT_MUTED = new Color(122, 112, 106);
-    private static final Color BORDER_NORMAL = new Color(218, 208, 198);
-    private static final Color BORDER_ACTIVE = new Color(125, 25, 42);
+    private static final Color CREAM_BG = new Color(246, 239, 230);   // #F6EFE6 Warm Soft Ivory
+    private static final Color TEXT_DARK = new Color(24, 24, 27);      // #18181B Heading Dark
+    private static final Color TEXT_MUTED = new Color(107, 114, 128);  // #6B7280 Muted
+    private static final Color BORDER_NORMAL = new Color(213, 206, 196); // #D5CEC4 Subtle Input Border
+    private static final Color BORDER_ACTIVE = new Color(110, 22, 36); // #6E1624
 
     // --- GUI Components ---
     private JComboBox<String> roleComboBox;
@@ -843,8 +843,8 @@ public class LoginFrame extends JFrame {
             int radius = 8;
 
             if (isPrimary) {
-                // Filled Primary Button (Sign In)
-                Color bg = MAROON_PRIMARY;
+                // Filled Primary Button (Sign In - Burgundy #6E1624)
+                Color bg = MAROON_LIGHT;
                 if (getModel().isPressed()) {
                     bg = MAROON_PRESSED;
                 } else if (getModel().isRollover()) {
@@ -865,26 +865,26 @@ public class LoginFrame extends JFrame {
                 g2.drawString(getText(), tx, ty);
 
             } else {
-                // Outlined Secondary Button (Reset)
+                // Outlined Secondary Button (Reset - White with #D5CEC4 border)
                 Color bg = Color.WHITE;
                 if (getModel().isPressed()) {
-                    bg = new Color(238, 230, 224);
+                    bg = new Color(234, 227, 217);
                 } else if (getModel().isRollover()) {
-                    bg = new Color(248, 244, 240);
+                    bg = new Color(244, 239, 234);
                 }
                 g2.setColor(bg);
                 g2.fillRoundRect(0, 0, w, h, radius, radius);
 
-                // Maroon Border
-                g2.setColor(MAROON_PRIMARY);
-                g2.setStroke(new BasicStroke(1.5f));
+                // Subtle Border #D5CEC4
+                g2.setColor(BORDER_NORMAL);
+                g2.setStroke(new BasicStroke(1.2f));
                 g2.drawRoundRect(1, 1, w - 2, h - 2, radius, radius);
 
                 // Draw Reset circular arrow icon: ↻
-                drawResetIcon(g2, 30, h / 2, MAROON_PRIMARY);
+                drawResetIcon(g2, 30, h / 2, TEXT_DARK);
 
                 // Center Text
-                g2.setColor(MAROON_PRIMARY);
+                g2.setColor(TEXT_DARK);
                 g2.setFont(getFont());
                 FontMetrics fm = g2.getFontMetrics();
                 int tx = (w - fm.stringWidth(getText())) / 2 + 8;

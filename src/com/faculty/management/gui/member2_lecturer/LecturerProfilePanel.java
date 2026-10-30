@@ -22,7 +22,7 @@ public class LecturerProfilePanel extends JPanel {
     public LecturerProfilePanel(Lecturer lecturer) {
         this.currentLecturer = lecturer;
         setLayout(new BorderLayout());
-        setBackground(new Color(248, 250, 252));
+        setBackground(UITheme.BG_PAGE);
         setBorder(new EmptyBorder(20, 30, 20, 30));
         initUI();
         loadData();
@@ -82,13 +82,13 @@ public class LecturerProfilePanel extends JPanel {
 
         btnSave = new JButton("Update Profile");
         btnSave.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btnSave.setBackground(new Color(15, 23, 42)); // Dark solid per wireframe
+        btnSave.setBackground(UITheme.PRIMARY);
         btnSave.setForeground(Color.WHITE);
         btnSave.setFocusPainted(false);
         btnSave.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSave.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(15, 23, 42), 1),
-                new EmptyBorder(8, 20, 8, 20)
+                BorderFactory.createLineBorder(UITheme.PRIMARY, 1),
+                new EmptyBorder(8, 22, 8, 22)
         ));
         btnSave.addActionListener(e -> saveProfile());
         buttonPanel.add(btnSave);
@@ -111,8 +111,8 @@ public class LecturerProfilePanel extends JPanel {
         block.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        label.setForeground(new Color(71, 85, 105));
+        label.setFont(UITheme.FONT_SMALL_BOLD);
+        label.setForeground(UITheme.TEXT_BODY);
         label.setBorder(new EmptyBorder(0, 2, 4, 0));
 
         field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
@@ -131,9 +131,9 @@ public class LecturerProfilePanel extends JPanel {
             styleLockedField(tf);
         } else {
             tf.setBackground(Color.WHITE);
-            tf.setForeground(new Color(15, 23, 42));
+            tf.setForeground(UITheme.TEXT_MAIN);
             tf.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                    BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
                     new EmptyBorder(6, 10, 6, 10)
             ));
         }
@@ -141,10 +141,10 @@ public class LecturerProfilePanel extends JPanel {
     }
 
     private void styleLockedField(JComponent comp) {
-        comp.setBackground(new Color(226, 232, 240)); // Locked grey tone per wireframe
-        comp.setForeground(new Color(100, 116, 139));
+        comp.setBackground(new Color(238, 232, 225));
+        comp.setForeground(UITheme.TEXT_MUTED);
         comp.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(203, 213, 225), 1),
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
                 new EmptyBorder(6, 10, 6, 10)
         ));
     }

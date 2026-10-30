@@ -33,7 +33,7 @@ public class TechnicalOfficerProfileDialog extends JDialog {
         setLayout(new BorderLayout());
 
         JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(new Color(15, 23, 42));
+        headerPanel.setBackground(new Color(92, 18, 33)); // Solid University Burgundy #5C1221
         headerPanel.setBorder(new EmptyBorder(15, 0, 15, 0));
         JLabel titleLabel = new JLabel("My Profile");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
