@@ -20,6 +20,7 @@ public class Notice {
     private String priority; // e.g. "URGENT", "NORMAL", "INFO"
     private String postedBy; // e.g. "Dean's Office", "Examination Division", "Department of ICT"
     private LocalDate postedDate;
+    private String targetAudience = "ALL"; // e.g. "ALL", or comma-separated roles: "UNDERGRADUATE, LECTURER"
 
     /**
      * Default constructor.
@@ -29,24 +30,40 @@ public class Notice {
         this.priority = "NORMAL";
         this.postedBy = "Faculty Administration";
         this.postedDate = LocalDate.now();
+        this.targetAudience = "ALL";
     }
 
     /**
      * Overloaded constructor for creating new notices without explicit ID and date.
      */
     public Notice(String title, String content, String category, String priority, String postedBy) {
+        this(title, content, category, priority, postedBy, "ALL");
+    }
+
+    /**
+     * Overloaded constructor for creating new notices with target audience.
+     */
+    public Notice(String title, String content, String category, String priority, String postedBy, String targetAudience) {
         this.title = title;
         this.content = content;
         this.category = (category != null && !category.trim().isEmpty()) ? category : "GENERAL";
         this.priority = (priority != null && !priority.trim().isEmpty()) ? priority : "NORMAL";
         this.postedBy = (postedBy != null && !postedBy.trim().isEmpty()) ? postedBy : "Faculty Administration";
         this.postedDate = LocalDate.now();
+        this.targetAudience = (targetAudience != null && !targetAudience.trim().isEmpty()) ? targetAudience.trim() : "ALL";
     }
 
     /**
      * Full constructor for notices retrieved from database or storage.
      */
     public Notice(int noticeId, String title, String content, String category, String priority, String postedBy, LocalDate postedDate) {
+        this(noticeId, title, content, category, priority, postedBy, postedDate, "ALL");
+    }
+
+    /**
+     * Full constructor including target audience.
+     */
+    public Notice(int noticeId, String title, String content, String category, String priority, String postedBy, LocalDate postedDate, String targetAudience) {
         this.noticeId = noticeId;
         this.title = title;
         this.content = content;
@@ -54,6 +71,7 @@ public class Notice {
         this.priority = (priority != null && !priority.trim().isEmpty()) ? priority : "NORMAL";
         this.postedBy = (postedBy != null && !postedBy.trim().isEmpty()) ? postedBy : "Faculty Administration";
         this.postedDate = postedDate != null ? postedDate : LocalDate.now();
+        this.targetAudience = (targetAudience != null && !targetAudience.trim().isEmpty()) ? targetAudience.trim() : "ALL";
     }
 
     // Getters and Setters (Encapsulation)
@@ -119,6 +137,55 @@ public class Notice {
             return "N/A";
         }
         return postedDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+    }
+
+    public String getTargetAudience() {
+        return (targetAudience != null && !targetAudience.trim().isEmpty()) ? targetAudience : "ALL";
+    }
+
+    public void setTargetAudience(String targetAudience) {
+        this.targetAudience = (targetAudience != null && !targetAudience.trim().isEmpty()) ? targetAudience.trim() : "ALL";
+    }
+
+    /**
+     * Checks if this notice is targeted to a specific role.
+     *
+     * @param roleName Name of the role (e.g. UNDERGRADUATE, LECTURER, TECHNICAL_OFFICER, ADMIN)
+     * @return true if notice is sent to ALL or includes this role
+     */
+    public boolean isForRole(String roleName) {
+        if (targetAudience == null || "ALL".equalsIgnoreCase(targetAudience.trim())) {
+            return true;
+        }
+        if (roleName == null || roleName.trim().isEmpty()) {
+            return false;
+        }
+        String searchRole = roleName.trim().toUpperCase();
+        String aud = targetAudience.toUpperCase();
+        if ("STUDENT".equals(searchRole)) {
+            searchRole = "UNDERGRADUATE";
+        }
+        return aud.contains(searchRole);
+    }
+
+    /**
+     * Returns a human-friendly string representation of the target audience.
+     */
+    public String getFormattedTargetAudience() {
+        if (targetAudience == null || "ALL".equalsIgnoreCase(targetAudience.trim())) {
+            return "All Users";
+        }
+        String aud = targetAudience.toUpperCase();
+        java.util.List<String> labels = new java.util.ArrayList<>();
+        if (aud.contains("UNDERGRADUATE") || aud.contains("STUDENT")) labels.add("Undergraduates");
+        if (aud.contains("LECTURER")) labels.add("Lecturers");
+        if (aud.contains("TECHNICAL_OFFICER") || aud.contains("TO")) labels.add("Technical Officers");
+        if (aud.contains("ADMIN")) labels.add("Admins");
+
+        if (labels.isEmpty()) {
+            return targetAudience;
+        }
+        return String.join(", ", labels);
     }
 
     @Override
