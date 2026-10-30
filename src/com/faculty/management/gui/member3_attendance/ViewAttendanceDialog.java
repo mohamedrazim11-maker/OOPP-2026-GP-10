@@ -1,7 +1,6 @@
 package com.faculty.management.gui.member3_attendance;
 
-import com.faculty.management.dao.AttendanceDAO;
-import com.faculty.management.dao.CourseDAO;
+import com.faculty.management.controller.TechnicalOfficerController;
 import com.faculty.management.model.Course;
 import com.faculty.management.model.StudentAttendanceSummary;
 
@@ -22,11 +21,11 @@ import java.util.List;
 /**
  * View Attendance Dialog for viewing batch and individual student attendance percentages,
  * supporting Theory, Practical, and Combined calculations with 80% eligibility thresholds.
+ * Architecture: Interacts exclusively via TechnicalOfficerController.
  */
 public class ViewAttendanceDialog extends JDialog {
 
-    private final AttendanceDAO attendanceDAO;
-    private final CourseDAO courseDAO;
+    private final TechnicalOfficerController controller;
 
     private JComboBox<String> cmbCourse;
     private JComboBox<String> cmbComponent;
@@ -45,8 +44,7 @@ public class ViewAttendanceDialog extends JDialog {
 
     public ViewAttendanceDialog(JFrame parent) {
         super(parent, "Batch Attendance Summary & Eligibility — Technical Operations", true);
-        this.attendanceDAO = new AttendanceDAO();
-        this.courseDAO = new CourseDAO();
+        this.controller = new TechnicalOfficerController();
 
         initComponents();
         loadCourses();
@@ -245,7 +243,7 @@ public class ViewAttendanceDialog extends JDialog {
     private void loadCourses() {
         cmbCourse.removeAllItems();
         try {
-            List<Course> courses = courseDAO.getAllCourses();
+            List<Course> courses = controller.getAllCourses();
             for (Course c : courses) {
                 cmbCourse.addItem(c.getCourseCode() + " - " + c.getCourseName());
             }
@@ -271,7 +269,7 @@ public class ViewAttendanceDialog extends JDialog {
         String component = (String) cmbComponent.getSelectedItem();
         if (component == null) component = "COMBINED";
 
-        allSummaries = attendanceDAO.getBatchAttendanceSummary(courseCode, component);
+        allSummaries = controller.getBatchAttendanceSummary(courseCode, component);
         applyFilter();
     }
 

@@ -64,9 +64,13 @@ public class TechnicalOfficerDashboard extends JFrame {
         bannerText.add(welcomeLabel);
         bannerText.add(roleDescLabel);
 
-        // Hero Badges & Profile Button
+        // Hero Badges & Quick Buttons
         JPanel badgeBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         badgeBox.setOpaque(false);
+
+        UITheme.ModernButton noticesBtn = new UITheme.ModernButton("📢 Notices", UITheme.ButtonStyle.OUTLINE, 6);
+        noticesBtn.setFont(UITheme.FONT_SMALL_BOLD);
+        noticesBtn.addActionListener(e -> new NoticeViewerDialog(this).setVisible(true));
 
         UITheme.ModernButton profileBtn = new UITheme.ModernButton("👤 My Profile", UITheme.ButtonStyle.SECONDARY, 6);
         profileBtn.setFont(UITheme.FONT_SMALL_BOLD);
@@ -75,6 +79,7 @@ public class TechnicalOfficerDashboard extends JFrame {
         UITheme.PillBadge toBadge = new UITheme.PillBadge("OPERATIONS STAFF", UITheme.WARNING_LIGHT, UITheme.WARNING_DARK, UITheme.WARNING_BORDER);
         UITheme.PillBadge labBadge = new UITheme.PillBadge("LABS & SESSIONS", UITheme.SUCCESS_LIGHT, UITheme.SUCCESS_DARK, UITheme.SUCCESS_BORDER);
 
+        badgeBox.add(noticesBtn);
         badgeBox.add(profileBtn);
         badgeBox.add(toBadge);
         badgeBox.add(labBadge);
@@ -98,8 +103,8 @@ public class TechnicalOfficerDashboard extends JFrame {
         sectionTitle.setForeground(UITheme.TEXT_MAIN);
         sectionTitle.setBorder(new EmptyBorder(4, 4, 12, 4));
 
-        // 4. Modules Grid (2x2)
-        JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
+        // 4. Modules Grid (3x2)
+        JPanel modulesGrid = new JPanel(new GridLayout(3, 2, 18, 18));
         modulesGrid.setOpaque(false);
 
         // Module 1: Attendance Entry
@@ -127,9 +132,21 @@ public class TechnicalOfficerDashboard extends JFrame {
         modulesGrid.add(createModuleCard("Department Timetables",
                 "View departmental lab time slots, equipment allocation, and lecture timetable schedules.",
                 UITheme.SUCCESS_DARK, "Check Schedules", () -> {
-                    JOptionPane.showMessageDialog(this,
-                            "Departmental timetable viewer will be updated with the timetable schedules.",
-                            "Department Timetables", JOptionPane.INFORMATION_MESSAGE);
+                    new DepartmentTimetableDialog(this).setVisible(true);
+                }));
+
+        // Module 5: Faculty Notice Board
+        modulesGrid.add(createModuleCard("Faculty Notice Board",
+                "Browse official academic announcements, circulars, exam memos, and timetable notices.",
+                UITheme.ACCENT_BLUE, "Browse Notices", () -> {
+                    new NoticeViewerDialog(this).setVisible(true);
+                }));
+
+        // Module 6: Technical Officer Profile
+        modulesGrid.add(createModuleCard("Staff Profile & Account",
+                "Manage contact phone numbers, email address, and personal staff details.",
+                UITheme.PURPLE_BRIGHT, "Edit Profile", () -> {
+                    new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true);
                 }));
 
         mainContent.add(bannerCard);

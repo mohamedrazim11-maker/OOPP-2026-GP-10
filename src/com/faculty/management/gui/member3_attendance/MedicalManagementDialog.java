@@ -1,7 +1,8 @@
 package com.faculty.management.gui.member3_attendance;
 
-import com.faculty.management.dao.MedicalDAO;
+import com.faculty.management.controller.TechnicalOfficerController;
 import com.faculty.management.exception.DatabaseException;
+import com.faculty.management.exception.ValidationException;
 import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Medical;
 
@@ -21,10 +22,11 @@ import java.util.List;
  * Comprehensive Medical Management & Verification Dialog for Technical Officer.
  * Provides medical certificate submission, status verification (Approve/Reject),
  * document inspection, and filtering.
+ * Architecture: Interacts exclusively via TechnicalOfficerController.
  */
 public class MedicalManagementDialog extends JDialog {
 
-    private final MedicalDAO medicalDAO;
+    private final TechnicalOfficerController controller;
 
     // Review Tab Components
     private JComboBox<String> cmbStatusFilter;
@@ -47,7 +49,7 @@ public class MedicalManagementDialog extends JDialog {
 
     public MedicalManagementDialog(JFrame parent) {
         super(parent, "Medical Certificate Management & Verification — Technical Operations", true);
-        this.medicalDAO = new MedicalDAO();
+        this.controller = new TechnicalOfficerController();
 
         initComponents();
         loadMedicalRecords();
@@ -318,7 +320,7 @@ public class MedicalManagementDialog extends JDialog {
 
     private void loadMedicalRecords() {
         String statusFilter = (String) cmbStatusFilter.getSelectedItem();
-        List<Medical> medicals = medicalDAO.getAllMedicals(statusFilter);
+        List<Medical> medicals = controller.getAllMedicals(statusFilter);
 
         reviewTableModel.setRowCount(0);
         int pending = 0;
@@ -369,7 +371,7 @@ public class MedicalManagementDialog extends JDialog {
         if (confirm != JOptionPane.YES_OPTION) return;
 
         try {
-            boolean success = medicalDAO.updateMedicalStatus(medicalId, newStatus);
+            boolean success = controller.updateMedicalStatus(medicalId, newStatus);
             if (success) {
                 JOptionPane.showMessageDialog(this,
                         "Medical ID #" + medicalId + " status updated to " + newStatus + "!",
@@ -429,7 +431,7 @@ public class MedicalManagementDialog extends JDialog {
             LocalDate medicalDate = LocalDate.parse(dateStr);
 
             Medical medical = new Medical(0, studentId, courseId, sessionId, medicalDate, reason, initialStatus);
-            boolean success = medicalDAO.addMedical(medical);
+            boolean success = controller.addMedical(medical);
 
             if (success) {
                 JOptionPane.showMessageDialog(this, "Medical record logged successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -443,8 +445,8 @@ public class MedicalManagementDialog extends JDialog {
             JOptionPane.showMessageDialog(this, "Student ID and Session ID must be numbers.", "Format Error", JOptionPane.ERROR_MESSAGE);
         } catch (DateTimeParseException e) {
             JOptionPane.showMessageDialog(this, "Invalid Date format. Use YYYY-MM-DD.", "Date Error", JOptionPane.ERROR_MESSAGE);
-        } catch (SQLException | DatabaseException e) {
-            JOptionPane.showMessageDialog(this, "Database Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (ValidationException | DatabaseException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

@@ -1,7 +1,8 @@
 package com.faculty.management.gui.member3_attendance;
 
-import com.faculty.management.dao.UserDAO;
+import com.faculty.management.controller.TechnicalOfficerController;
 import com.faculty.management.exception.DatabaseException;
+import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
@@ -11,7 +12,7 @@ import java.awt.*;
 public class TechnicalOfficerProfileDialog extends JDialog {
 
     private User currentUser;
-    private UserDAO userDAO;
+    private TechnicalOfficerController controller;
 
     private JTextField txtFirstName;
     private JTextField txtLastName;
@@ -22,7 +23,7 @@ public class TechnicalOfficerProfileDialog extends JDialog {
     public TechnicalOfficerProfileDialog(JFrame parent, User user) {
         super(parent, "My Profile - Technical Officer", true);
         this.currentUser = user;
-        this.userDAO = new UserDAO();
+        this.controller = new TechnicalOfficerController();
         initComponents();
     }
 
@@ -108,17 +109,17 @@ public class TechnicalOfficerProfileDialog extends JDialog {
         currentUser.setContactNo(contact);
 
         try {
-            boolean success = userDAO.updateUser(currentUser);
+            boolean success = controller.updateProfile(currentUser);
             if (success) {
                 JOptionPane.showMessageDialog(this, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
-                // Optionally trigger a UI refresh on the dashboard if necessary
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to update profile.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (DatabaseException ex) {
-            JOptionPane.showMessageDialog(this, "Database error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+        } catch (ValidationException | DatabaseException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
