@@ -237,7 +237,7 @@ public class UserFormDialog extends JDialog {
         // Batch / Intake
         JLabel batchLabel = createFieldLabel("Batch / Intake");
         batchField = createStyledTextField();
-        batchField.setText("2021/2022");
+        batchField.setText("");
         gbc.gridx = 0; gbc.gridy = 11; formPanel.add(batchLabel, gbc);
         gbc.gridx = 1; gbc.gridy = 11; formPanel.add(batchField, gbc);
 

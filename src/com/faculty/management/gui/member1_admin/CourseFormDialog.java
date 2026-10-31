@@ -215,7 +215,7 @@ public class CourseFormDialog extends JDialog {
         gbc.weightx = 0.65;
         courseCodeField = new JTextField();
         courseCodeField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        courseCodeField.setToolTipText("e.g. ICT2132, BST2113, ENG2113");
+        courseCodeField.setToolTipText("Enter course code");
         formPanel.add(courseCodeField, gbc);
 
         // Course Name
@@ -229,7 +229,7 @@ public class CourseFormDialog extends JDialog {
         gbc.weightx = 0.65;
         courseNameField = new JTextField();
         courseNameField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        courseNameField.setToolTipText("e.g. Object Oriented Programming Practicum");
+        courseNameField.setToolTipText("Enter course module name");
         formPanel.add(courseNameField, gbc);
 
         // Credit Value
