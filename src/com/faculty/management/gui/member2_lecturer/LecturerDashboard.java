@@ -2,6 +2,7 @@ package com.faculty.management.gui.member2_lecturer;
 
 import com.faculty.management.controller.LoginController;
 import com.faculty.management.gui.common.UITheme;
+import com.faculty.management.gui.member3_attendance.MedicalManagementDialog;
 import com.faculty.management.gui.member3_attendance.ViewAttendanceDialog;
 import com.faculty.management.model.Lecturer;
 import com.faculty.management.model.User;
@@ -34,7 +35,8 @@ public class LecturerDashboard extends JFrame {
             "Course Materials",
             "Undergraduate Details",
             "Marks Management",
-            "CA Eligibility"
+            "CA Eligibility",
+            "Attendance & Medical"
     };
 
     public LecturerDashboard(User user) {
@@ -109,6 +111,9 @@ public class LecturerDashboard extends JFrame {
         // Tab 5: CA Summary & Eligibility (Requirement 5)
         tabbedPane.addTab("CA Eligibility", new CAEligibilityWorkspacePanel());
 
+        // Tab 6: Attendance & Medical Records (Requirement 7)
+        tabbedPane.addTab("Attendance & Medical", createAttendanceMedicalPanel());
+
         tabbedPane.addChangeListener(e -> {
             int selectedIndex = tabbedPane.getSelectedIndex();
             if (selectedIndex >= 0 && selectedIndex < NAV_TITLES.length) {
@@ -163,7 +168,7 @@ public class LecturerDashboard extends JFrame {
         bannerCard.add(badgeBox, BorderLayout.EAST);
 
         // 2. Stat Cards
-        JPanel statsGrid = new JPanel(new GridLayout(1, 4, 16, 0));
+        JPanel statsGrid = new JPanel(new GridLayout(1, 5, 14, 0));
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
 
@@ -171,6 +176,7 @@ public class LecturerDashboard extends JFrame {
         statsGrid.add(UITheme.createStatCard("", "Marks Management", "Quizzes & Finals", UITheme.ACCENT_BLUE));
         statsGrid.add(UITheme.createStatCard("", "Eligibility Status", "CA >= 40% Rule", UITheme.PURPLE));
         statsGrid.add(UITheme.createStatCard("", "Undergraduates", "Enrolled Students", UITheme.WARNING_DARK));
+        statsGrid.add(UITheme.createStatCard("", "Attendance", "& Medical Records", UITheme.TEAL));
 
         // 3. Section Title
         JLabel sectionTitle = new JLabel("Academic & Teaching Operations");
@@ -178,25 +184,38 @@ public class LecturerDashboard extends JFrame {
         sectionTitle.setForeground(UITheme.TEXT_MAIN);
         sectionTitle.setBorder(new EmptyBorder(4, 4, 12, 4));
 
-        // 4. Modules Grid (2x2)
-        JPanel modulesGrid = new JPanel(new GridLayout(2, 2, 18, 18));
+        // 4. Modules: Row 1 (3 cards), Row 2 (2 cards centred)
+        JPanel modulesGrid = new JPanel();
+        modulesGrid.setLayout(new BoxLayout(modulesGrid, BoxLayout.Y_AXIS));
         modulesGrid.setOpaque(false);
 
-        modulesGrid.add(createModuleCard("Course Materials",
+        // Row 1 — 3 cards
+        JPanel row1 = new JPanel(new GridLayout(1, 3, 18, 0));
+        row1.setOpaque(false);
+        row1.add(createModuleCard("Course Materials",
                 "View assigned courses, upload lecture slides, modify documents, and download teaching syllabus files.",
                 UITheme.TEAL, "Upload Materials", () -> tabbedPane.setSelectedIndex(2)));
-
-        modulesGrid.add(createModuleCard("Undergraduate Information",
+        row1.add(createModuleCard("Undergraduate Information",
                 "View registered undergraduate student records, search by registration number/name, and review enrolled courses.",
                 UITheme.WARNING_DARK, "View Students", () -> tabbedPane.setSelectedIndex(3)));
-
-        modulesGrid.add(createModuleCard("Assessment & Exam Marks",
+        row1.add(createModuleCard("Assessment & Exam Marks",
                 "Enter, edit, and summarize Continuous Assessment (CA) components, quizzes, midterms, and End-Semester final marks.",
                 UITheme.ACCENT_BLUE, "Enter Marks", () -> tabbedPane.setSelectedIndex(4)));
 
-        modulesGrid.add(createModuleCard("CA Eligibility & Summary",
+        // Row 2 — 2 cards centred
+        JPanel row2 = new JPanel(new GridLayout(1, 2, 18, 0));
+        row2.setOpaque(false);
+        row2.add(createModuleCard("CA Eligibility & Summary",
                 "Verify final exam eligibility based on CA >= 40% for individual students and entire batches with detailed status breakdown.",
                 UITheme.PURPLE, "Review Eligibility", () -> tabbedPane.setSelectedIndex(5)));
+        row2.add(createModuleCard("Attendance & Medical Records",
+                "View undergraduate attendance summaries and medical certificate submissions. Monitor 80% attendance eligibility thresholds.",
+                new Color(20, 184, 166), "View Attendance", () -> tabbedPane.setSelectedIndex(6)));
+
+        modulesGrid.add(row1);
+        modulesGrid.add(Box.createVerticalStrut(18));
+        modulesGrid.add(row2);
+
 
         mainContent.add(bannerCard);
         mainContent.add(statsGrid);
@@ -237,5 +256,101 @@ public class LecturerDashboard extends JFrame {
         card.add(bottomRow, BorderLayout.SOUTH);
 
         return card;
+    }
+
+    /**
+     * Tab 6: Attendance & Medical Records panel.
+     * Provides quick-launch buttons for the existing ViewAttendanceDialog and MedicalManagementDialog.
+     */
+    private JComponent createAttendanceMedicalPanel() {
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
+        wrapper.setOpaque(false);
+        wrapper.setBorder(new EmptyBorder(28, 32, 28, 32));
+
+        // Section header
+        JLabel title = new JLabel("Attendance & Medical Records");
+        title.setFont(UITheme.FONT_PAGE_TITLE);
+        title.setForeground(UITheme.TEXT_MAIN);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel subtitle = new JLabel("View undergraduate attendance summaries and manage medical certificate records.");
+        subtitle.setFont(UITheme.FONT_BODY);
+        subtitle.setForeground(UITheme.TEXT_MUTED);
+        subtitle.setBorder(new EmptyBorder(4, 0, 24, 0));
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Card grid
+        JPanel cardGrid = new JPanel(new GridLayout(1, 2, 24, 0));
+        cardGrid.setOpaque(false);
+        cardGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
+        cardGrid.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // --- Attendance Card ---
+        UITheme.ModernCard attendCard = new UITheme.ModernCard(12);
+        attendCard.setLayout(new BorderLayout(12, 12));
+        attendCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(20, 184, 166)),
+                new EmptyBorder(20, 20, 20, 20)
+        ));
+
+        JLabel attendTitle = new JLabel("Undergraduate Attendance");
+        attendTitle.setFont(UITheme.FONT_CARD_TITLE);
+        attendTitle.setForeground(UITheme.TEXT_MAIN);
+
+        JLabel attendDesc = new JLabel("<html><p style='width:260px;color:#64748B;'>View batch and individual student attendance percentages across Theory and Practical sessions. Highlights students below the 80% eligibility threshold.</p></html>");
+        attendDesc.setFont(UITheme.FONT_BODY);
+
+        JPanel attendBtn = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        attendBtn.setOpaque(false);
+        UITheme.ModernButton btnAttend = new UITheme.ModernButton("View Attendance", UITheme.ButtonStyle.OUTLINE, 4);
+        btnAttend.setFont(UITheme.FONT_SMALL_BOLD);
+        btnAttend.addActionListener(e -> {
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(wrapper);
+            new ViewAttendanceDialog(topFrame).setVisible(true);
+        });
+        attendBtn.add(btnAttend);
+
+        attendCard.add(attendTitle, BorderLayout.NORTH);
+        attendCard.add(attendDesc, BorderLayout.CENTER);
+        attendCard.add(attendBtn, BorderLayout.SOUTH);
+
+        // --- Medical Records Card ---
+        UITheme.ModernCard medCard = new UITheme.ModernCard(12);
+        medCard.setLayout(new BorderLayout(12, 12));
+        medCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(239, 68, 68)),
+                new EmptyBorder(20, 20, 20, 20)
+        ));
+
+        JLabel medTitle = new JLabel("Medical Certificate Records");
+        medTitle.setFont(UITheme.FONT_CARD_TITLE);
+        medTitle.setForeground(UITheme.TEXT_MAIN);
+
+        JLabel medDesc = new JLabel("<html><p style='width:260px;color:#64748B;'>View, approve, or review student medical certificate submissions. Approved medicals count towards the effective attendance percentage.</p></html>");
+        medDesc.setFont(UITheme.FONT_BODY);
+
+        JPanel medBtn = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        medBtn.setOpaque(false);
+        UITheme.ModernButton btnMed = new UITheme.ModernButton("View Medical Records", UITheme.ButtonStyle.OUTLINE, 4);
+        btnMed.setFont(UITheme.FONT_SMALL_BOLD);
+        btnMed.addActionListener(e -> {
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(wrapper);
+            new MedicalManagementDialog(topFrame).setVisible(true);
+        });
+        medBtn.add(btnMed);
+
+        medCard.add(medTitle, BorderLayout.NORTH);
+        medCard.add(medDesc, BorderLayout.CENTER);
+        medCard.add(medBtn, BorderLayout.SOUTH);
+
+        cardGrid.add(attendCard);
+        cardGrid.add(medCard);
+
+        wrapper.add(title);
+        wrapper.add(subtitle);
+        wrapper.add(cardGrid);
+
+        return UITheme.createModernScrollPane(wrapper);
     }
 }

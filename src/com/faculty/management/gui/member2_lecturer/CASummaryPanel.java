@@ -132,15 +132,20 @@ public class CASummaryPanel extends JPanel {
             int courseId = Integer.parseInt(courseIdStr);
             double maxMarks = Double.parseDouble(maxStr);
 
-            List<Mark> studentMarks = eligibilityService.getStudentMarks(studentIdStr);
+            List<Mark> studentMarks = eligibilityService.getStudentMarks(studentIdStr, courseIdStr);
 
             tableModel.setRowCount(0);
-            double totalObtained = 0.0;
+            double sum = 0.0;
+            int count = 0;
 
             for (Mark m : studentMarks) {
                 tableModel.addRow(new Object[]{m.getEvaluationId(), m.getMarksObtained()});
-                totalObtained += m.getMarksObtained();
+                sum += m.getMarksObtained();
+                count++;
             }
+
+            // Average of all evaluation components, scaled to maxMarks
+            double totalObtained = (count == 0) ? 0.0 : (sum / count) * (maxMarks / 100.0);
 
             // Calls updated service accepting (int, int, double, double)
             Eligibility result = eligibilityService.calculateAndSaveEligibility(studentId, courseId, totalObtained, maxMarks);

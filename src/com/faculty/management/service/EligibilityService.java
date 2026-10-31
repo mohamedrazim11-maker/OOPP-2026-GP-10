@@ -44,4 +44,15 @@ public class EligibilityService {
     public List<Mark> getStudentMarks(String studentId) throws DatabaseException, SQLException, InvalidMarkException {
         return markDAO.getMarksByStudent(studentId);
     }
+
+    public List<Mark> getStudentMarks(String studentId, String courseId) throws DatabaseException, SQLException, InvalidMarkException {
+        try {
+            int cId = Integer.parseInt(courseId);
+            List<Mark> marks = markDAO.getMarksByStudentAndCourse(studentId, cId);
+            if (!marks.isEmpty()) return marks;
+        } catch (NumberFormatException ignored) {
+        }
+        // Fall back to all marks if courseId is invalid or no course-specific marks found
+        return markDAO.getMarksByStudent(studentId);
+    }
 }
