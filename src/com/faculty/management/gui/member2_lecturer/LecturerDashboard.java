@@ -11,8 +11,14 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
- * Modern Lecturer Dashboard GUI.
- * Redirect frame for Lecturer role supporting Overview, Profile, Material Management, Marks Entry, and CA Eligibility.
+ * Modern Lecturer Dashboard GUI (Member 2 — Lecturer & Academic Management).
+ * Supports:
+ * 1. Lecturer Profile Management (locked credentials, editable contact & profile pic)
+ * 2. Course Materials (Assigned courses, Add, Modify, View materials)
+ * 3. Undergraduate Details (View information, Search students, View student details)
+ * 4. Marks Management (Upload Quiz, Assessment, Mid-term, Practical, Theory, Final marks; all out of 100)
+ * 5. CA Eligibility (CA >= 40% calculation, Eligible / Not Eligible for Individual & Whole-batch)
+ * 6. Marks Summary (Screens for Individual marks, Whole-batch marks, Marks by subject, CA summary, Final marks)
  */
 public class LecturerDashboard extends JFrame {
 
@@ -26,7 +32,8 @@ public class LecturerDashboard extends JFrame {
             "Home Overview",
             "My Profile",
             "Course Materials",
-            "Marks Entry",
+            "Undergraduate Details",
+            "Marks Management",
             "CA Eligibility"
     };
 
@@ -45,6 +52,7 @@ public class LecturerDashboard extends JFrame {
             this.currentLecturer.setEmail(user.getEmail());
             this.currentLecturer.setContactNo(user.getContactNo());
             this.currentLecturer.setProfilePic(user.getProfilePic());
+            this.currentLecturer.setStatus(user.getStatus());
         }
 
         initComponents();
@@ -52,14 +60,14 @@ public class LecturerDashboard extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Lecturer Portal");
-        setSize(1180, 750);
-        setMinimumSize(new Dimension(980, 620));
+        setSize(1220, 780);
+        setMinimumSize(new Dimension(1020, 650));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         getContentPane().setBackground(UITheme.BG_PAGE);
 
-        // 1. Left Sidebar Navigation (Per FMS UI PDF - Solid Burgundy #5C1221, Gold Active Pill)
+        // 1. Left Sidebar Navigation
         sidebarNav = new UITheme.SidebarNavigation("Lecturer Portal", NAV_TITLES, 0, idx -> {
             if (tabbedPane != null && tabbedPane.getSelectedIndex() != idx) {
                 tabbedPane.setSelectedIndex(idx);
@@ -73,7 +81,7 @@ public class LecturerDashboard extends JFrame {
         JPanel mainContentContainer = new JPanel(new BorderLayout());
         mainContentContainer.setOpaque(false);
 
-        // Standardized Modern Header (Sand / Beige Header per PDF)
+        // Standardized Header
         headerPanel = new UITheme.HeaderPanel(this, NAV_TITLES[0], currentUser.getFullName(), "Lecturer", () -> {
             dispose();
             LoginController.showLogin();
@@ -86,17 +94,20 @@ public class LecturerDashboard extends JFrame {
         // Tab 0: Welcome Overview
         tabbedPane.addTab("Home Overview", createHomeOverviewPanel());
 
-        // Tab 1: Profile Management (Week 2 Requirement)
+        // Tab 1: Profile Management (Requirement 1)
         tabbedPane.addTab("My Profile", new LecturerProfilePanel(currentLecturer));
 
-        // Tab 2: Course Materials (Week 2 Requirement)
-        tabbedPane.addTab("Course Materials", new CourseMaterialsPanel());
+        // Tab 2: Course Materials (Requirement 2)
+        tabbedPane.addTab("Course Materials", new CourseMaterialsPanel(currentLecturer.getUserId()));
 
-        // Tab 3: Marks Management Engine (Week 3 Requirement)
-        tabbedPane.addTab("Marks Entry", new MarkManagementPanel());
+        // Tab 3: Undergraduate Details (Requirement 3)
+        tabbedPane.addTab("Undergraduate Details", new UndergraduateDetailsPanel());
 
-        // Tab 4: CA Summary & Eligibility
-        tabbedPane.addTab("CA Eligibility", new CASummaryPanel());
+        // Tab 4: Marks Management & Summary (Requirements 4 & 6)
+        tabbedPane.addTab("Marks Management", new MarkManagementPanel());
+
+        // Tab 5: CA Summary & Eligibility (Requirement 5)
+        tabbedPane.addTab("CA Eligibility", new CAEligibilityWorkspacePanel());
 
         tabbedPane.addChangeListener(e -> {
             int selectedIndex = tabbedPane.getSelectedIndex();
@@ -114,7 +125,6 @@ public class LecturerDashboard extends JFrame {
     }
 
     private JComponent createHomeOverviewPanel() {
-        // Main Content Container
         JPanel mainContent = new JPanel();
         mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
         mainContent.setOpaque(false);
@@ -134,7 +144,7 @@ public class LecturerDashboard extends JFrame {
         welcomeLabel.setFont(UITheme.FONT_PAGE_TITLE);
         welcomeLabel.setForeground(UITheme.TEXT_MAIN);
 
-        JLabel roleDescLabel = new JLabel("Academic Access: Course Materials, Mark Management, Student Eligibility, and Attendance Review.");
+        JLabel roleDescLabel = new JLabel("Academic Access: Course Materials, Undergraduate Tracking, Mark Upload, and CA Eligibility Analysis.");
         roleDescLabel.setFont(UITheme.FONT_BODY);
         roleDescLabel.setForeground(UITheme.TEXT_MUTED);
         roleDescLabel.setBorder(new EmptyBorder(4, 0, 0, 0));
@@ -157,10 +167,10 @@ public class LecturerDashboard extends JFrame {
         statsGrid.setOpaque(false);
         statsGrid.setBorder(new EmptyBorder(18, 0, 18, 0));
 
-        statsGrid.add(UITheme.createStatCard("", "Assigned Courses", "3 Modules", UITheme.TEAL));
-        statsGrid.add(UITheme.createStatCard("", "Marks Submitted", "Continuous Assess.", UITheme.ACCENT_BLUE));
-        statsGrid.add(UITheme.createStatCard("", "Eligibility Status", "40% CA Threshold", UITheme.PURPLE));
-        statsGrid.add(UITheme.createStatCard("", "Attendance Ratio", "80% Required", UITheme.WARNING_DARK));
+        statsGrid.add(UITheme.createStatCard("", "Assigned Courses", "Assigned Modules", UITheme.TEAL));
+        statsGrid.add(UITheme.createStatCard("", "Marks Management", "Quizzes & Finals", UITheme.ACCENT_BLUE));
+        statsGrid.add(UITheme.createStatCard("", "Eligibility Status", "CA >= 40% Rule", UITheme.PURPLE));
+        statsGrid.add(UITheme.createStatCard("", "Undergraduates", "Enrolled Students", UITheme.WARNING_DARK));
 
         // 3. Section Title
         JLabel sectionTitle = new JLabel("Academic & Teaching Operations");
@@ -173,24 +183,20 @@ public class LecturerDashboard extends JFrame {
         modulesGrid.setOpaque(false);
 
         modulesGrid.add(createModuleCard("Course Materials",
-                "Upload lecture slides, tutorial sheets, assignment specifications, and syllabus guidelines for assigned courses.",
+                "View assigned courses, upload lecture slides, modify documents, and download teaching syllabus files.",
                 UITheme.TEAL, "Upload Materials", () -> tabbedPane.setSelectedIndex(2)));
 
+        modulesGrid.add(createModuleCard("Undergraduate Information",
+                "View registered undergraduate student records, search by registration number/name, and review enrolled courses.",
+                UITheme.WARNING_DARK, "View Students", () -> tabbedPane.setSelectedIndex(3)));
+
         modulesGrid.add(createModuleCard("Assessment & Exam Marks",
-                "Enter, edit, and calculate Continuous Assessment (CA) components, quizzes, midterms, and End-Semester final marks.",
-                UITheme.ACCENT_BLUE, "Enter Marks", () -> tabbedPane.setSelectedIndex(3)));
+                "Enter, edit, and summarize Continuous Assessment (CA) components, quizzes, midterms, and End-Semester final marks.",
+                UITheme.ACCENT_BLUE, "Enter Marks", () -> tabbedPane.setSelectedIndex(4)));
 
-        modulesGrid.add(createModuleCard("Student Eligibility & GPA",
-                "Verify exam eligibility based on CA >= 40% and 80% attendance. Review automated UGC circular grade points and SGPA.",
-                UITheme.PURPLE, "Review Eligibility", () -> tabbedPane.setSelectedIndex(4)));
-
-        modulesGrid.add(createModuleCard("Attendance & Medical Records",
-                "Audit undergraduate student attendance percentages and inspect approved medical certificates for missed sessions.",
-                UITheme.WARNING_DARK, "View Attendance", () -> {
-                    // Open Member 3's actual attendance view dialog
-                    ViewAttendanceDialog attendanceDialog = new ViewAttendanceDialog(this);
-                    attendanceDialog.setVisible(true);
-                }));
+        modulesGrid.add(createModuleCard("CA Eligibility & Summary",
+                "Verify final exam eligibility based on CA >= 40% for individual students and entire batches with detailed status breakdown.",
+                UITheme.PURPLE, "Review Eligibility", () -> tabbedPane.setSelectedIndex(5)));
 
         mainContent.add(bannerCard);
         mainContent.add(statsGrid);

@@ -87,4 +87,8 @@ public class Enrollment {
     public String toString() {
         return course == null ? "All modules" : course.getCourseCode() + " — " + course.getCourseName();
     }
+
+    public String getCourseId() {
+        return "";
+    }
 }

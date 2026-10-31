@@ -6,6 +6,7 @@ import com.faculty.management.exception.InvalidMarkException;
  * Represents student evaluation marks and component scores.
  * Unifies Member 2 evaluation-based mark entries and Continuous Assessment
  * component marks used across grading and calculation modules.
+ * Demonstrates Classes & Objects, Encapsulation, and Domain Validation.
  */
 public class Mark {
 
@@ -14,13 +15,50 @@ public class Mark {
     private int evaluationId;
     private double marksObtained; // Out of 100
 
-    // Component marks for course CA & Final calculations
+    // Component marks for course CA & Final calculations (Requirement 4)
     private int courseId;
+    private String courseCode;
+    private String evaluationTitle;
+    private String evaluationType;
+    private double maxMarks = 100.0;
     private Double quizMarks;
     private Double assignmentMarks;
     private Double midSemMarks;
     private Double practicalMarks;
+    private Double theoryMarks;
     private Double finalExamMarks;
+
+    public boolean isCA() {
+        if (evaluationType == null || evaluationType.trim().isEmpty()) {
+            return true;
+        }
+        String t = evaluationType.trim().toUpperCase();
+        return !t.contains("FINAL");
+    }
+
+    public String getEvaluationTitle() {
+        return evaluationTitle;
+    }
+
+    public void setEvaluationTitle(String evaluationTitle) {
+        this.evaluationTitle = evaluationTitle;
+    }
+
+    public String getEvaluationType() {
+        return evaluationType;
+    }
+
+    public void setEvaluationType(String evaluationType) {
+        this.evaluationType = evaluationType;
+    }
+
+    public double getMaxMarks() {
+        return maxMarks > 0 ? maxMarks : 100.0;
+    }
+
+    public void setMaxMarks(double maxMarks) {
+        this.maxMarks = maxMarks;
+    }
 
     public Mark() {
     }
@@ -49,9 +87,17 @@ public class Mark {
     }
 
     /**
-     * Computes the Continuous Assessment percentage as the average of
-     * whichever CA components (quiz / assignment / mid-semester / practical)
-     * were recorded for this student-course pair.
+     * Validates that any entered mark strictly falls within [0, 100].
+     */
+    public static void validateRange(Double value, String componentName) throws InvalidMarkException {
+        if (value != null && (value < 0.0 || value > 100.0)) {
+            throw new InvalidMarkException("Invalid " + componentName + " mark: " + value + ". All marks must be between 0 and 100.");
+        }
+    }
+
+    /**
+     * Computes Continuous Assessment percentage as the average of whichever CA components
+     * (quiz / assignment / mid-semester / practical / theory) were recorded.
      */
     public double computeCaMarks() {
         double sum = 0;
@@ -70,6 +116,10 @@ public class Mark {
         }
         if (practicalMarks != null) {
             sum += practicalMarks;
+            count++;
+        }
+        if (theoryMarks != null) {
+            sum += theoryMarks;
             count++;
         }
         return count == 0 ? 0.0 : sum / count;
@@ -119,9 +169,9 @@ public class Mark {
         return marksObtained;
     }
 
-    // Encapsulation with domain rule validation
+    // Encapsulation with domain rule validation (Requirement 4: Out of 100)
     public void setMarksObtained(double marksObtained) throws InvalidMarkException {
-        if (marksObtained < 0 || marksObtained > 100) {
+        if (marksObtained < 0.0 || marksObtained > 100.0) {
             throw new InvalidMarkException("Invalid Mark: " + marksObtained + ". Marks must be between 0 and 100.");
         }
         this.marksObtained = marksObtained;
@@ -133,6 +183,14 @@ public class Mark {
 
     public void setCourseId(int courseId) {
         this.courseId = courseId;
+    }
+
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
     }
 
     public Double getQuizMarks() {
@@ -165,6 +223,14 @@ public class Mark {
 
     public void setPracticalMarks(Double practicalMarks) {
         this.practicalMarks = practicalMarks;
+    }
+
+    public Double getTheoryMarks() {
+        return theoryMarks;
+    }
+
+    public void setTheoryMarks(Double theoryMarks) {
+        this.theoryMarks = theoryMarks;
     }
 
     public Double getFinalExamMarks() {
