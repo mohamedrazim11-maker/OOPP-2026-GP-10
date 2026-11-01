@@ -2,40 +2,43 @@ package com.faculty.management.gui.common;
 
 import com.faculty.management.controller.LoginController;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.net.URL;
 
 /**
- * Modern University Login GUI for Faculty Management System (FMS).
- * Built with pure Java Swing and Java2D - No external libraries.
- * Features:
- * - Two-column responsive layout (Burgundy Branding Panel + Cream Form Panel)
- * - Academic branding with neoclassical building art and golden ribbon accents
- * - Sleek rounded input cards with vector icons and focus glow
- * - Password visibility eye-toggle & checkbox synchronization
- * - Full backward compatibility with LoginController and existing APIs
+ * Modern University Login Frame for Faculty Management System (FMS).
+ * Faithfully implements the University of Ruhuna Faculty of Technology
+ * sunset lake presentation layout:
+ * - Left 50%: University lake photo (uni_image.jpeg) with smooth horizontal fade blend into ivory canvas
+ * - Bottom-left: Golden & burgundy curve swoosh with motto "Learn • Innovate • Build the Future"
+ * - Top-right: Elegant burgundy and gold swoosh ribbons
+ * - Bottom-right: Soft botanical leaf watermark motif
+ * - Center-right: Two-line title "Faculty Management System", diamond divider,
+ *   "University of Ruhuna / Faculty of Technology", "Welcome Back",
+ *   rounded input fields with outline vector icons, custom burgundy arrow sign-in button,
+ *   and white reset button with reload icon.
  */
 public class LoginFrame extends JFrame {
 
-    // --- Color Palette (Per FMS UI PDF) ---
-    private static final Color MAROON_DARK = new Color(72, 14, 26);    // #480E1A
-    private static final Color MAROON_PRIMARY = new Color(92, 18, 33); // #5C1221 Solid University Burgundy
-    private static final Color MAROON_LIGHT = new Color(110, 22, 36);  // #6E1624 Primary Action
-    private static final Color MAROON_HOVER = new Color(132, 27, 45);  // #841B2D
-    private static final Color MAROON_PRESSED = new Color(48, 8, 16);  // #300810
-
-    private static final Color GOLD_LIGHT = new Color(245, 215, 140);
-    private static final Color GOLD_PRIMARY = new Color(232, 175, 68); // #E8AF44 Golden Accent
-    private static final Color GOLD_DARK = new Color(180, 115, 30);
-
-    private static final Color CREAM_BG = new Color(246, 239, 230);   // #F6EFE6 Warm Soft Ivory
-    private static final Color TEXT_DARK = new Color(24, 24, 27);      // #18181B Heading Dark
-    private static final Color TEXT_MUTED = new Color(107, 114, 128);  // #6B7280 Muted
-    private static final Color BORDER_NORMAL = new Color(213, 206, 196); // #D5CEC4 Subtle Input Border
-    private static final Color BORDER_ACTIVE = new Color(110, 22, 36); // #6E1624
+    // --- Color Palette matching UI Design ---
+    private static final Color MAROON_PRIMARY = new Color(90, 16, 32);   // #5A1020 Deep University Burgundy
+    private static final Color MAROON_HOVER   = new Color(112, 22, 40);  // #701628
+    private static final Color MAROON_PRESSED = new Color(68, 10, 22);   // #440A16
+    private static final Color GOLD_ACCENT    = new Color(218, 165, 62);  // #DAA53E Rich Gold
+    private static final Color GOLD_LIGHT     = new Color(245, 215, 140); // Soft Champagne Gold
+    private static final Color GOLD_DARK      = new Color(180, 125, 35);
+    private static final Color CREAM_BG       = new Color(250, 245, 237); // #FAF5ED Warm Soft Ivory
+    private static final Color BORDER_IDLE    = new Color(218, 206, 194); // #DACEBE
+    private static final Color BORDER_FOCUS   = new Color(110, 22, 36);   // Burgundy focus
+    private static final Color TEXT_DARK      = new Color(32, 18, 22);
+    private static final Color PLACEHOLDER_COLOR = new Color(165, 155, 145);
 
     // --- GUI Components ---
     private JComboBox<String> roleComboBox;
@@ -43,50 +46,541 @@ public class LoginFrame extends JFrame {
     private JPasswordField passwordField;
     private JCheckBox showPasswordCheckBox;
     private JButton eyeToggleButton;
-    private JLabel errorLabel;
     private JButton loginButton;
     private JButton resetButton;
+    private JLabel errorLabel;
 
     private boolean isPasswordVisible = false;
+    private BufferedImage universityImage;
     private final LoginController loginController;
 
+    public LoginFrame() {
+        this(new LoginController());
+    }
+
     public LoginFrame(LoginController controller) {
-        this.loginController = controller;
+        this.loginController = (controller != null) ? controller : new LoginController();
+        this.universityImage = loadUniversityImage();
         initComponents();
     }
 
+    /**
+     * Loads the university lake photo (uni_image.jpeg) from working directory, resources, or classpath.
+     */
+    private BufferedImage loadUniversityImage() {
+        // 1. Working directory
+        File file1 = new File("uni_image.jpeg");
+        if (file1.exists()) {
+            try { return ImageIO.read(file1); } catch (Exception ignored) {}
+        }
+        // 2. Resources directory
+        File file2 = new File("resources/images/uni_image.jpeg");
+        if (file2.exists()) {
+            try { return ImageIO.read(file2); } catch (Exception ignored) {}
+        }
+        File file3 = new File("resources/uni_image.jpeg");
+        if (file3.exists()) {
+            try { return ImageIO.read(file3); } catch (Exception ignored) {}
+        }
+        // 3. Classloader classpath
+        try {
+            URL url = getClass().getResource("/images/uni_image.jpeg");
+            if (url != null) return ImageIO.read(url);
+            url = getClass().getResource("/uni_image.jpeg");
+            if (url != null) return ImageIO.read(url);
+        } catch (Exception ignored) {}
+        return null;
+    }
+
     private void initComponents() {
-        setTitle("Faculty Management System — Login");
-        setSize(960, 620);
-        setMinimumSize(new Dimension(880, 580));
+        setTitle("Faculty Management System — University of Ruhuna");
+        setSize(1060, 640);
+        setMinimumSize(new Dimension(960, 580));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // Window Icon (Academic Crest)
         setIconImage(createWindowIcon());
 
-        // Main Container with 2 Columns: Left (Branding 45%) and Right (Login Form 55%)
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(CREAM_BG);
+        // Master Background Canvas Panel
+        BackgroundCanvasPanel canvas = new BackgroundCanvasPanel();
+        canvas.setLayout(new GridBagLayout());
+        setContentPane(canvas);
 
-        LeftBrandingPanel leftPanel = new LeftBrandingPanel();
-        leftPanel.setPreferredSize(new Dimension(420, 0));
-        mainPanel.add(leftPanel, BorderLayout.WEST);
+        // Two-column layout container: Left filler (44%) + Right form card (56%)
+        JPanel rootContainer = new JPanel(new GridBagLayout());
+        rootContainer.setOpaque(false);
 
-        RightFormPanel rightPanel = new RightFormPanel();
-        mainPanel.add(rightPanel, BorderLayout.CENTER);
+        GridBagConstraints leftGbc = new GridBagConstraints();
+        leftGbc.gridx = 0;
+        leftGbc.gridy = 0;
+        leftGbc.weightx = 0.44;
+        leftGbc.weighty = 1.0;
+        leftGbc.fill = GridBagConstraints.BOTH;
+        JPanel leftSpacer = new JPanel();
+        leftSpacer.setOpaque(false);
+        rootContainer.add(leftSpacer, leftGbc);
 
-        setContentPane(mainPanel);
+        GridBagConstraints rightGbc = new GridBagConstraints();
+        rightGbc.gridx = 1;
+        rightGbc.gridy = 0;
+        rightGbc.weightx = 0.56;
+        rightGbc.weighty = 1.0;
+        rightGbc.fill = GridBagConstraints.BOTH;
+        rightGbc.insets = new Insets(10, 10, 10, 30);
+
+        JPanel formWrapper = buildFormWrapper();
+        rootContainer.add(formWrapper, rightGbc);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        canvas.add(rootContainer, gbc);
+    }
+
+    /**
+     * Builds the right-side form card containing titles, inputs, buttons, and security footer.
+     */
+    private JPanel buildFormWrapper() {
+        JPanel formPanel = new JPanel();
+        formPanel.setOpaque(false);
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        formPanel.setBorder(new EmptyBorder(10, 20, 10, 25));
+
+        // 1. Main Header Title: "Faculty Management System"
+        JLabel titleLine1 = new JLabel("Faculty Management");
+        titleLine1.setFont(new Font("Georgia", Font.BOLD, 28));
+        titleLine1.setForeground(MAROON_PRIMARY);
+        titleLine1.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel titleLine2 = new JLabel("System");
+        titleLine2.setFont(new Font("Georgia", Font.BOLD, 28));
+        titleLine2.setForeground(MAROON_PRIMARY);
+        titleLine2.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // 2. Decorative Golden Divider Line with Diamond
+        DiamondDividerPanel divider = new DiamondDividerPanel();
+        divider.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // 3. Subtitles
+        JLabel uniLabel = new JLabel("University of Ruhuna");
+        uniLabel.setFont(new Font("Georgia", Font.BOLD, 16));
+        uniLabel.setForeground(MAROON_PRIMARY);
+        uniLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel facLabel = new JLabel("Faculty of Technology");
+        facLabel.setFont(new Font("Georgia", Font.ITALIC, 14));
+        facLabel.setForeground(new Color(110, 26, 42));
+        facLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // 4. "Welcome Back" Heading
+        JLabel welcomeBack = new JLabel("Welcome Back");
+        welcomeBack.setFont(new Font("Georgia", Font.BOLD, 26));
+        welcomeBack.setForeground(MAROON_PRIMARY);
+        welcomeBack.setAlignmentX(Component.CENTER_ALIGNMENT);
+        welcomeBack.setBorder(new EmptyBorder(12, 0, 8, 0));
+
+        // Error message banner
+        errorLabel = new JLabel(" ");
+        errorLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        errorLabel.setForeground(new Color(185, 28, 28));
+        errorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Form Fields (fixed comfortable width of 370px)
+        int formWidth = 370;
+
+        // Field 1: Select Role
+        JPanel roleCard = createRoleCard(formWidth);
+        roleCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Field 2: Username
+        JPanel userCard = createUsernameCard(formWidth);
+        userCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Field 3: Password
+        JPanel passCard = createPasswordCard(formWidth);
+        passCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Show Password Checkbox
+        JPanel checkPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        checkPanel.setOpaque(false);
+        checkPanel.setMaximumSize(new Dimension(formWidth, 22));
+        checkPanel.setPreferredSize(new Dimension(formWidth, 22));
+        checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        showPasswordCheckBox = new JCheckBox("Show Password");
+        showPasswordCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        showPasswordCheckBox.setForeground(TEXT_DARK);
+        showPasswordCheckBox.setOpaque(false);
+        showPasswordCheckBox.setFocusPainted(false);
+        showPasswordCheckBox.addActionListener(e -> setPasswordVisibility(showPasswordCheckBox.isSelected()));
+        checkPanel.add(showPasswordCheckBox);
+
+        // Buttons Row: Login (Arrow) + Reset
+        JPanel buttonRow = createButtonRow(formWidth);
+        buttonRow.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Footer: Golden diamond + Secure Access
+        JPanel footerPanel = createFooterPanel(formWidth);
+        footerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Assembly
+        formPanel.add(Box.createVerticalGlue());
+        formPanel.add(titleLine1);
+        formPanel.add(titleLine2);
+        formPanel.add(Box.createVerticalStrut(4));
+        formPanel.add(divider);
+        formPanel.add(Box.createVerticalStrut(4));
+        formPanel.add(uniLabel);
+        formPanel.add(facLabel);
+        formPanel.add(welcomeBack);
+        formPanel.add(errorLabel);
+        formPanel.add(Box.createVerticalStrut(2));
+        formPanel.add(roleCard);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(userCard);
+        formPanel.add(Box.createVerticalStrut(10));
+        formPanel.add(passCard);
+        formPanel.add(Box.createVerticalStrut(6));
+        formPanel.add(checkPanel);
+        formPanel.add(Box.createVerticalStrut(12));
+        formPanel.add(buttonRow);
+        formPanel.add(Box.createVerticalStrut(14));
+        formPanel.add(footerPanel);
+        formPanel.add(Box.createVerticalGlue());
+
+        return formPanel;
     }
 
     // =========================================================================
-    // 1. LEFT BRANDING PANEL (Burgundy Gradient, Gold Ribbons, Building Art)
+    // FIELD CARDS (Rounded white input containers with outline vector icons)
     // =========================================================================
-    private class LeftBrandingPanel extends JPanel {
 
-        public LeftBrandingPanel() {
-            setOpaque(false);
-            setLayout(new BorderLayout());
+    private JPanel createRoleCard(int width) {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setOpaque(false);
+        container.setMaximumSize(new Dimension(width, 68));
+        container.setPreferredSize(new Dimension(width, 68));
+
+        JLabel label = new JLabel("Select Role");
+        label.setFont(new Font("Georgia", Font.BOLD, 13));
+        label.setForeground(MAROON_PRIMARY);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label.setPreferredSize(new Dimension(width, 20));
+        label.setMaximumSize(new Dimension(width, 20));
+        label.setBorder(new EmptyBorder(0, 2, 4, 0));
+        container.add(label);
+
+        RoundedBoxPanel box = new RoundedBoxPanel(width, 42);
+        box.setLayout(new BorderLayout(8, 0));
+        box.setBorder(new EmptyBorder(2, 10, 2, 8));
+        box.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel iconLabel = new JLabel(new UserOutlineIcon(MAROON_PRIMARY));
+        box.add(iconLabel, BorderLayout.WEST);
+
+        String[] roles = {"Admin", "Lecturer", "Technical Officer", "Undergraduate"};
+        roleComboBox = new JComboBox<>(roles);
+        roleComboBox.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        roleComboBox.setForeground(TEXT_DARK);
+        roleComboBox.setOpaque(false);
+        roleComboBox.setBackground(Color.WHITE);
+        roleComboBox.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+        roleComboBox.setFocusable(false);
+
+        // Custom UI for clean Chevron arrow
+        roleComboBox.setUI(new javax.swing.plaf.basic.BasicComboBoxUI() {
+            @Override
+            protected JButton createArrowButton() {
+                JButton btn = new JButton() {
+                    @Override
+                    protected void paintComponent(Graphics g) {
+                        Graphics2D g2 = (Graphics2D) g.create();
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        g2.setColor(TEXT_DARK);
+                        g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                        int cx = getWidth() / 2;
+                        int cy = getHeight() / 2;
+                        g2.drawLine(cx - 5, cy - 2, cx, cy + 3);
+                        g2.drawLine(cx, cy + 3, cx + 5, cy - 2);
+                        g2.dispose();
+                    }
+                };
+                btn.setBorder(BorderFactory.createEmptyBorder());
+                btn.setContentAreaFilled(false);
+                btn.setFocusPainted(false);
+                btn.setOpaque(false);
+                btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                return btn;
+            }
+
+            @Override
+            public void paintCurrentValueBackground(Graphics g, Rectangle bounds, boolean hasFocus) {
+                // Keep clean transparent/white background
+            }
+        });
+
+        roleComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                lbl.setBorder(new EmptyBorder(6, 10, 6, 10));
+                if (isSelected) {
+                    lbl.setBackground(MAROON_PRIMARY);
+                    lbl.setForeground(Color.WHITE);
+                } else {
+                    lbl.setBackground(Color.WHITE);
+                    lbl.setForeground(TEXT_DARK);
+                }
+                return lbl;
+            }
+        });
+
+        box.add(roleComboBox, BorderLayout.CENTER);
+        container.add(box);
+        return container;
+    }
+
+    private JPanel createUsernameCard(int width) {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setOpaque(false);
+        container.setMaximumSize(new Dimension(width, 68));
+        container.setPreferredSize(new Dimension(width, 68));
+
+        JLabel label = new JLabel("Username");
+        label.setFont(new Font("Georgia", Font.BOLD, 13));
+        label.setForeground(MAROON_PRIMARY);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label.setPreferredSize(new Dimension(width, 20));
+        label.setMaximumSize(new Dimension(width, 20));
+        label.setBorder(new EmptyBorder(0, 2, 4, 0));
+        container.add(label);
+
+        RoundedBoxPanel box = new RoundedBoxPanel(width, 42);
+        box.setLayout(new BorderLayout(8, 0));
+        box.setBorder(new EmptyBorder(2, 10, 2, 10));
+        box.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel iconLabel = new JLabel(new UserOutlineIcon(MAROON_PRIMARY));
+        box.add(iconLabel, BorderLayout.WEST);
+
+        usernameField = new JTextField();
+        usernameField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        usernameField.setForeground(TEXT_DARK);
+        usernameField.setCaretColor(MAROON_PRIMARY);
+        usernameField.setBorder(BorderFactory.createEmptyBorder(6, 4, 6, 4));
+        usernameField.setOpaque(false);
+        installPlaceholder(usernameField, "adm");
+
+        usernameField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) { box.setFocused(true); }
+            @Override
+            public void focusLost(FocusEvent e) { box.setFocused(false); }
+        });
+
+        usernameField.addActionListener(e -> performLogin());
+
+        box.add(usernameField, BorderLayout.CENTER);
+        container.add(box);
+        return container;
+    }
+
+    private JPanel createPasswordCard(int width) {
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setOpaque(false);
+        container.setMaximumSize(new Dimension(width, 68));
+        container.setPreferredSize(new Dimension(width, 68));
+
+        JLabel label = new JLabel("Password");
+        label.setFont(new Font("Georgia", Font.BOLD, 13));
+        label.setForeground(MAROON_PRIMARY);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label.setPreferredSize(new Dimension(width, 20));
+        label.setMaximumSize(new Dimension(width, 20));
+        label.setBorder(new EmptyBorder(0, 2, 4, 0));
+        container.add(label);
+
+        RoundedBoxPanel box = new RoundedBoxPanel(width, 42);
+        box.setLayout(new BorderLayout(8, 0));
+        box.setBorder(new EmptyBorder(2, 10, 2, 6));
+        box.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel iconLabel = new JLabel(new LockOutlineIcon(MAROON_PRIMARY));
+        box.add(iconLabel, BorderLayout.WEST);
+
+        passwordField = new JPasswordField();
+        passwordField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        passwordField.setForeground(TEXT_DARK);
+        passwordField.setCaretColor(MAROON_PRIMARY);
+        passwordField.setBorder(BorderFactory.createEmptyBorder(6, 4, 6, 4));
+        passwordField.setOpaque(false);
+        passwordField.setEchoChar('•');
+        installPasswordPlaceholder(passwordField, "Enter your password");
+
+        passwordField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) { box.setFocused(true); }
+            @Override
+            public void focusLost(FocusEvent e) { box.setFocused(false); }
+        });
+
+        passwordField.addActionListener(e -> performLogin());
+        box.add(passwordField, BorderLayout.CENTER);
+
+        eyeToggleButton = new JButton(new EyeToggleIcon(false));
+        eyeToggleButton.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
+        eyeToggleButton.setContentAreaFilled(false);
+        eyeToggleButton.setFocusPainted(false);
+        eyeToggleButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        eyeToggleButton.setToolTipText("Toggle password visibility");
+        eyeToggleButton.addActionListener(e -> togglePasswordVisibility());
+        box.add(eyeToggleButton, BorderLayout.EAST);
+
+        container.add(box);
+        return container;
+    }
+
+    private JPanel createButtonRow(int width) {
+        JPanel row = new JPanel(new BorderLayout(12, 0));
+        row.setOpaque(false);
+        row.setMaximumSize(new Dimension(width, 42));
+        row.setPreferredSize(new Dimension(width, 42));
+
+        // 1. Login Button with Sign-In Arrow: [ →| ]
+        loginButton = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                Color bg = MAROON_PRIMARY;
+                if (getModel().isPressed()) {
+                    bg = MAROON_PRESSED;
+                } else if (getModel().isRollover()) {
+                    bg = MAROON_HOVER;
+                }
+                g2.setColor(bg);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+                // Draw crisp Sign-In Arrow Glyphs (→|) in white/gold
+                int cx = getWidth() / 2;
+                int cy = getHeight() / 2;
+
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                // Horizontal line
+                g2.drawLine(cx - 10, cy, cx + 5, cy);
+                // Arrow head
+                g2.drawLine(cx + 1, cy - 5, cx + 6, cy);
+                g2.drawLine(cx + 1, cy + 5, cx + 6, cy);
+                // Vertical stop bar
+                g2.drawLine(cx + 10, cy - 7, cx + 10, cy + 7);
+
+                g2.dispose();
+            }
+        };
+        loginButton.setPreferredSize(new Dimension((int) (width * 0.60), 42));
+        loginButton.setBorder(BorderFactory.createEmptyBorder());
+        loginButton.setContentAreaFilled(false);
+        loginButton.setFocusPainted(false);
+        loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        loginButton.setToolTipText("Sign In to Portal");
+        loginButton.addActionListener(e -> performLogin());
+
+        // 2. Reset Button with circular reload icon: [ ↻  Reset ]
+        resetButton = new JButton("Reset") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Background
+                Color bg = getModel().isRollover() ? new Color(245, 238, 230) : Color.WHITE;
+                g2.setColor(bg);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+
+                // Border
+                g2.setColor(MAROON_PRIMARY);
+                g2.setStroke(new BasicStroke(1.4f));
+                g2.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 9, 9);
+
+                // Reload icon (circular arrow ↻)
+                int iconX = 22;
+                int iconY = getHeight() / 2;
+                g2.setColor(MAROON_PRIMARY);
+                g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                // 270 degree arc
+                g2.drawArc(iconX - 7, iconY - 7, 14, 14, 45, 280);
+                // Arrow tip at top
+                g2.drawLine(iconX + 3, iconY - 7, iconX + 8, iconY - 7);
+                g2.drawLine(iconX + 8, iconY - 7, iconX + 8, iconY - 2);
+
+                // Label Text
+                g2.setFont(new Font("Georgia", Font.BOLD, 13));
+                FontMetrics fm = g2.getFontMetrics();
+                int textX = iconX + 16;
+                int textY = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                g2.drawString(getText(), textX, textY);
+
+                g2.dispose();
+            }
+        };
+        resetButton.setPreferredSize(new Dimension((int) (width * 0.38), 42));
+        resetButton.setBorder(BorderFactory.createEmptyBorder());
+        resetButton.setContentAreaFilled(false);
+        resetButton.setFocusPainted(false);
+        resetButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        resetButton.setToolTipText("Clear all fields");
+        resetButton.addActionListener(e -> resetFields());
+
+        row.add(loginButton, BorderLayout.WEST);
+        row.add(resetButton, BorderLayout.EAST);
+        return row;
+    }
+
+    private JPanel createFooterPanel(int width) {
+        JPanel footer = new JPanel();
+        footer.setLayout(new BoxLayout(footer, BoxLayout.Y_AXIS));
+        footer.setOpaque(false);
+        footer.setMaximumSize(new Dimension(width, 36));
+        footer.setPreferredSize(new Dimension(width, 36));
+
+        // Tiny golden diamond
+        JLabel diamondLabel = new JLabel("◆");
+        diamondLabel.setFont(new Font("Segoe UI", Font.PLAIN, 8));
+        diamondLabel.setForeground(GOLD_ACCENT);
+        diamondLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Security row with vector lock icon
+        JPanel lockRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 0));
+        lockRow.setOpaque(false);
+        JLabel lockIcon = new JLabel(new LockOutlineIcon(new Color(110, 100, 95)));
+        JLabel secureLabel = new JLabel("Secure access for authorized users");
+        secureLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        secureLabel.setForeground(new Color(110, 100, 95));
+
+        lockRow.add(lockIcon);
+        lockRow.add(secureLabel);
+
+        footer.add(diamondLabel);
+        footer.add(Box.createVerticalStrut(2));
+        footer.add(lockRow);
+        return footer;
+    }
+
+    // =========================================================================
+    // BACKGROUND CANVAS PANEL (Paints Lake Photo, Fade Gradient & Flourishes)
+    // =========================================================================
+    private class BackgroundCanvasPanel extends JPanel {
+
+        public BackgroundCanvasPanel() {
+            setOpaque(true);
+            setBackground(CREAM_BG);
         }
 
         @Override
@@ -99,635 +593,198 @@ public class LoginFrame extends JFrame {
             int w = getWidth();
             int h = getHeight();
 
-            // 1. Deep Burgundy Background Gradient
-            GradientPaint bgGradient = new GradientPaint(
-                    0, 0, MAROON_DARK,
-                    w, h, MAROON_PRIMARY
-            );
-            g2.setPaint(bgGradient);
-            g2.fillRect(0, 0, w, h);
-
-            // 2. Neoclassical Building & Driveway Art (Drawn in subtle monochrome burgundy)
-            drawUniversityFacade(g2, w, h);
-
-            // 3. Top-Left Elegant Golden Swirl Ribbon
-            drawTopGoldenRibbon(g2, w, h);
-
-            // 4. Bottom-Right Elegant Golden Swirl Ribbon
-            drawBottomGoldenRibbon(g2, w, h);
-
-            // 5. Central Branding Texts & Badges
-            drawBrandingText(g2, w, h);
-
-            g2.dispose();
-        }
-
-        private void drawTopGoldenRibbon(Graphics2D g2, int w, int h) {
-            // Main Top Ribbon
-            Path2D.Double path = new Path2D.Double();
-            path.moveTo(0, 0);
-            path.curveTo(w * 0.15, h * 0.01, w * 0.45, h * 0.05, 0, h * 0.22);
-            path.closePath();
-
-            GradientPaint goldGrad = new GradientPaint(
-                    0, 0, GOLD_LIGHT,
-                    w * 0.35f, h * 0.15f, GOLD_DARK
-            );
-            g2.setPaint(goldGrad);
-            g2.fill(path);
-
-            // Thinner highlight ribbon alongside
-            Path2D.Double path2 = new Path2D.Double();
-            path2.moveTo(0, h * 0.04);
-            path2.curveTo(w * 0.25, h * 0.04, w * 0.52, h * 0.11, 0, h * 0.25);
-            path2.curveTo(w * 0.45, h * 0.08, w * 0.20, h * 0.03, 0, h * 0.02);
-            path2.closePath();
-
-            g2.setColor(new Color(250, 230, 175, 120));
-            g2.fill(path2);
-        }
-
-        private void drawBottomGoldenRibbon(Graphics2D g2, int w, int h) {
-            // Bottom-Right sweeping gold ribbon
-            Path2D.Double path = new Path2D.Double();
-            path.moveTo(w * 0.35, h);
-            path.curveTo(w * 0.65, h * 0.96, w * 0.90, h * 0.88, w, h * 0.75);
-            path.lineTo(w, h);
-            path.closePath();
-
-            GradientPaint goldGrad = new GradientPaint(
-                    w * 0.35f, h, GOLD_DARK,
-                    w, h * 0.75f, GOLD_LIGHT
-            );
-            g2.setPaint(goldGrad);
-            g2.fill(path);
-
-            // Thinner inner accent wave
-            Path2D.Double accent = new Path2D.Double();
-            accent.moveTo(w * 0.25, h);
-            accent.curveTo(w * 0.55, h * 0.94, w * 0.85, h * 0.84, w, h * 0.70);
-            accent.curveTo(w * 0.88, h * 0.86, w * 0.58, h * 0.96, w * 0.32, h);
-            accent.closePath();
-
-            g2.setColor(new Color(250, 230, 175, 130));
-            g2.fill(accent);
-        }
-
-        private void drawUniversityFacade(Graphics2D g2, int w, int h) {
-            int baseY = (int) (h * 0.78);
-            int buildingW = (int) (w * 0.86);
-            int buildingH = (int) (h * 0.26);
-            int buildingX = (w - buildingW) / 2;
-            int buildingY = baseY - buildingH;
-
-            // Soft building shadow & silhouette
-            g2.setColor(new Color(40, 6, 12, 190));
-            g2.fillRect(buildingX, buildingY, buildingW, buildingH);
-
-            // Architectural horizontal floor tiers
-            g2.setColor(new Color(95, 22, 34, 180));
-            for (int i = 1; i <= 3; i++) {
-                int tierY = buildingY + (buildingH / 4) * i;
-                g2.fillRect(buildingX, tierY, buildingW, 3);
-            }
-
-            // Window grids (Soft warm glow in windows)
-            Color windowDark = new Color(28, 4, 8);
-            Color windowGlow = new Color(225, 180, 120, 25);
-            int cols = 12;
-            int rows = 3;
-            int winW = buildingW / (cols * 2);
-            int winH = (buildingH / rows) - 12;
-
-            for (int r = 0; r < rows; r++) {
-                int wy = buildingY + 8 + r * (winH + 8);
-                for (int c = 0; c < cols; c++) {
-                    int wx = buildingX + 10 + c * (winW + 12);
-                    g2.setColor(windowDark);
-                    g2.fillRect(wx, wy, winW, winH);
-                    g2.setColor(windowGlow);
-                    g2.fillRect(wx + 1, wy + 1, winW - 2, winH - 2);
-                }
-            }
-
-            // Central Pediment (Triangular portico with columns)
-            int porticoW = (int) (buildingW * 0.28);
-            int porticoX = buildingX + (buildingW - porticoW) / 2;
-            int pedimentH = 22;
-
-            Path2D.Double pediment = new Path2D.Double();
-            pediment.moveTo(porticoX - 4, buildingY);
-            pediment.lineTo(porticoX + porticoW / 2, buildingY - pedimentH);
-            pediment.lineTo(porticoX + porticoW + 4, buildingY);
-            pediment.closePath();
-
-            g2.setColor(new Color(60, 10, 18));
-            g2.fill(pediment);
-            g2.setColor(new Color(190, 145, 75, 160));
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.draw(pediment);
-
-            // Columns under pediment
-            g2.setColor(new Color(110, 26, 40));
-            int colCount = 4;
-            int colGap = porticoW / (colCount + 1);
-            for (int c = 1; c <= colCount; c++) {
-                int cx = porticoX + c * colGap - 3;
-                g2.fillRect(cx, buildingY, 6, buildingH);
-            }
-
-            // Foreground Driveway / Pathway leading to the entrance
-            Path2D.Double road = new Path2D.Double();
-            road.moveTo(w * 0.15, h);
-            road.curveTo(w * 0.32, h * 0.88, w * 0.44, h * 0.82, w * 0.48, baseY);
-            road.lineTo(w * 0.52, baseY);
-            road.curveTo(w * 0.56, h * 0.82, w * 0.68, h * 0.88, w * 0.85, h);
-            road.closePath();
-
-            GradientPaint roadGrad = new GradientPaint(
-                    w * 0.5f, baseY, new Color(48, 7, 14),
-                    w * 0.5f, h, new Color(30, 4, 8)
-            );
-            g2.setPaint(roadGrad);
-            g2.fill(road);
-
-            // Flanking lush foliage / trees on left & right
-            drawFoliage(g2, buildingX - 15, baseY + 10, 48, 60);
-            drawFoliage(g2, buildingX + buildingW - 35, baseY + 10, 48, 60);
-        }
-
-        private void drawFoliage(Graphics2D g2, int x, int y, int fw, int fh) {
-            g2.setColor(new Color(25, 4, 7, 210));
-            g2.fillOval(x, y - fh, fw, fh);
-            g2.fillOval(x - 10, y - (int) (fh * 0.8), (int) (fw * 0.9), (int) (fh * 0.9));
-            g2.fillOval(x + 12, y - (int) (fh * 0.85), (int) (fw * 0.85), (int) (fh * 0.9));
-        }
-
-        private void drawBrandingText(Graphics2D g2, int w, int h) {
-            Font serifFont = new Font("Georgia", Font.BOLD, 24);
-            Font smallSerif = new Font("Georgia", Font.BOLD, 17);
-            Font subSerif = new Font("Georgia", Font.PLAIN, 14);
-            Font italicMotto = new Font("Georgia", Font.ITALIC, 12);
-
-            // 1. "Faculty Management System (FMS)"
-            g2.setFont(serifFont);
-            g2.setColor(Color.WHITE);
-            FontMetrics fm = g2.getFontMetrics();
-
-            String line1 = "Faculty Management";
-            String line2 = "System (FMS)";
-            int startY = (int) (h * 0.23);
-
-            g2.drawString(line1, (w - fm.stringWidth(line1)) / 2, startY);
-            g2.drawString(line2, (w - fm.stringWidth(line2)) / 2, startY + 30);
-
-            // 2. Golden Diamond Divider Line: --- ⬥ ---
-            int dividerY = startY + 48;
-            int centerX = w / 2;
-            int lineLen = 70;
-
-            g2.setColor(GOLD_PRIMARY);
-            g2.setStroke(new BasicStroke(1.2f));
-            g2.drawLine(centerX - lineLen, dividerY, centerX - 12, dividerY);
-            g2.drawLine(centerX + 12, dividerY, centerX + lineLen, dividerY);
-
-            // Central Diamond
-            Path2D.Double diamond = new Path2D.Double();
-            diamond.moveTo(centerX, dividerY - 5);
-            diamond.lineTo(centerX + 5, dividerY);
-            diamond.lineTo(centerX, dividerY + 5);
-            diamond.lineTo(centerX - 5, dividerY);
-            diamond.closePath();
-            g2.fill(diamond);
-
-            // 3. "University of Ruhuna"
-            g2.setFont(smallSerif);
-            g2.setColor(GOLD_LIGHT);
-            fm = g2.getFontMetrics();
-            String uni = "University of Ruhuna";
-            g2.drawString(uni, (w - fm.stringWidth(uni)) / 2, dividerY + 32);
-
-            // 4. "Faculty of Technology"
-            g2.setFont(subSerif);
-            g2.setColor(new Color(245, 235, 225));
-            fm = g2.getFontMetrics();
-            String fac = "Faculty of Technology";
-            g2.drawString(fac, (w - fm.stringWidth(fac)) / 2, dividerY + 54);
-
-            // 5. Bottom Motto: "Learn  •  Innovate  •  Build the Future"
-            g2.setFont(italicMotto);
-            g2.setColor(new Color(225, 195, 150));
-            fm = g2.getFontMetrics();
-            String motto = "Learn  •  Innovate  •  Build the Future";
-            g2.drawString(motto, (w - fm.stringWidth(motto)) / 2, (int) (h * 0.88));
-        }
-    }
-
-    // =========================================================================
-    // 2. RIGHT LOGIN FORM PANEL (Warm Cream, Botanical Motif, Modern Form Cards)
-    // =========================================================================
-    private class RightFormPanel extends JPanel {
-
-        public RightFormPanel() {
-            setOpaque(false);
-            setLayout(new GridBagLayout());
-            buildFormLayout();
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            int w = getWidth();
-            int h = getHeight();
-
-            // Background Fill
+            // 1. Base Ivory Background
             g2.setColor(CREAM_BG);
             g2.fillRect(0, 0, w, h);
 
-            // Top-Right Floral/Leaf Motif Watermark
-            drawBotanicalMotif(g2, w - 20, 20);
+            // 2. Draw Lake Photo (uni_image.jpeg) on Left ~48%
+            int photoWidth = (int) (w * 0.48);
+            if (universityImage != null) {
+                int imgW = universityImage.getWidth();
+                int imgH = universityImage.getHeight();
+                double scale = Math.max((double) photoWidth / imgW, (double) h / imgH);
+                int scaledW = (int) (imgW * scale);
+                int scaledH = (int) (imgH * scale);
+                int drawX = 0;
+                int drawY = (h - scaledH) / 2;
 
-            // Bottom-Right Soft Swirl Curve
-            Path2D.Double bottomCurve = new Path2D.Double();
-            bottomCurve.moveTo(w * 0.70, h);
-            bottomCurve.curveTo(w * 0.85, h * 0.94, w * 0.95, h * 0.88, w, h * 0.78);
-            bottomCurve.lineTo(w, h);
-            bottomCurve.closePath();
-            g2.setColor(new Color(215, 195, 165, 45));
-            g2.fill(bottomCurve);
+                Shape oldClip = g2.getClip();
+                g2.clipRect(0, 0, photoWidth, h);
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2.drawImage(universityImage, drawX, drawY, scaledW, scaledH, null);
+                g2.setClip(oldClip);
+
+                // 3. Smooth Fade Transition from Lake Photo to Ivory Canvas
+                int blendStart = (int) (w * 0.32);
+                int blendLen = photoWidth - blendStart + 6;
+                LinearGradientPaint blendGrad = new LinearGradientPaint(
+                        blendStart, 0, blendStart + blendLen, 0,
+                        new float[]{0.0f, 0.35f, 0.70f, 1.0f},
+                        new Color[]{
+                                new Color(CREAM_BG.getRed(), CREAM_BG.getGreen(), CREAM_BG.getBlue(), 0),
+                                new Color(CREAM_BG.getRed(), CREAM_BG.getGreen(), CREAM_BG.getBlue(), 100),
+                                new Color(CREAM_BG.getRed(), CREAM_BG.getGreen(), CREAM_BG.getBlue(), 220),
+                                CREAM_BG
+                        }
+                );
+                g2.setPaint(blendGrad);
+                g2.fillRect(blendStart, 0, blendLen, h);
+            }
+
+            // 4. Bottom-Left Golden & Burgundy Ribbon Waves
+            drawBottomLeftRibbons(g2, w, h);
+
+            // 5. Motto under Photo: "─── Learn • Innovate • Build the Future ───"
+            drawMottoLine(g2, photoWidth, h);
+
+            // 6. Top-Right Burgundy & Gold Swirl Curve
+            drawTopRightSwirl(g2, w, h);
+
+            // 7. Bottom-Right Delicate Botanical Leaf Watermark
+            drawBotanicalWatermark(g2, w - 15, h - 15);
 
             g2.dispose();
         }
 
-        /**
-         * Draws delicate botanical vines and leaves in the top right corner.
-         */
-        private void drawBotanicalMotif(Graphics2D g2, int originX, int originY) {
-            g2.setColor(new Color(195, 165, 125, 60));
-            g2.setStroke(new BasicStroke(1.5f));
+        private void drawBottomLeftRibbons(Graphics2D g2, int w, int h) {
+            // Dark burgundy corner wave
+            Path2D.Double maroonWave = new Path2D.Double();
+            maroonWave.moveTo(0, h * 0.88);
+            maroonWave.curveTo(w * 0.08, h * 0.89, w * 0.16, h * 0.95, w * 0.22, h);
+            maroonWave.lineTo(0, h);
+            maroonWave.closePath();
+            g2.setColor(new Color(90, 16, 32));
+            g2.fill(maroonWave);
 
-            // Main Vine Branch
-            Path2D.Double vine = new Path2D.Double();
-            vine.moveTo(originX, originY + 5);
-            vine.curveTo(originX - 40, originY + 25, originX - 60, originY + 70, originX - 85, originY + 120);
-            g2.draw(vine);
+            // Elegant sweeping gold ribbon
+            Path2D.Double goldRibbon = new Path2D.Double();
+            goldRibbon.moveTo(0, h * 0.83);
+            goldRibbon.curveTo(w * 0.08, h * 0.84, w * 0.17, h * 0.93, w * 0.25, h);
+            goldRibbon.lineTo(w * 0.21, h);
+            goldRibbon.curveTo(w * 0.14, h * 0.93, w * 0.06, h * 0.86, 0, h * 0.86);
+            goldRibbon.closePath();
 
-            // Leaves along the vine
-            drawLeaf(g2, originX - 25, originY + 20, -35, 18, 9);
-            drawLeaf(g2, originX - 50, originY + 45, 45, 20, 10);
-            drawLeaf(g2, originX - 58, originY + 75, -25, 22, 10);
-            drawLeaf(g2, originX - 75, originY + 100, 30, 20, 9);
-            drawLeaf(g2, originX - 88, originY + 125, -15, 18, 8);
+            GradientPaint goldGrad = new GradientPaint(
+                    0, (float) (h * 0.83), GOLD_LIGHT,
+                    (float) (w * 0.25), (float) h, GOLD_DARK
+            );
+            g2.setPaint(goldGrad);
+            g2.fill(goldRibbon);
         }
 
-        private void drawLeaf(Graphics2D g2, int x, int y, double angleDeg, int length, int width) {
+        private void drawMottoLine(Graphics2D g2, int photoWidth, int h) {
+            int lineY = (int) (h * 0.93);
+            int centerX = (int) (photoWidth * 0.45);
+
+            String motto = "Learn  •  Innovate  •  Build the Future";
+            Font font = new Font("Georgia", Font.ITALIC, 13);
+            g2.setFont(font);
+            FontMetrics fm = g2.getFontMetrics();
+            int strW = fm.stringWidth(motto);
+
+            int textX = centerX - strW / 2;
+            int textY = lineY + fm.getAscent() / 2 - 2;
+
+            // Flanking golden lines
+            g2.setColor(new Color(230, 195, 120, 190));
+            g2.setStroke(new BasicStroke(1.0f));
+            int gap = 14;
+            int lineLen = 38;
+            g2.drawLine(textX - gap - lineLen, lineY, textX - gap, lineY);
+            g2.drawLine(textX + strW + gap, lineY, textX + strW + gap + lineLen, lineY);
+
+            // Shadow & Motto text in crisp white with subtle golden tint
+            g2.setColor(new Color(10, 5, 5, 180));
+            g2.drawString(motto, textX + 1, textY + 1);
+            g2.setColor(Color.WHITE);
+            g2.drawString(motto, textX, textY);
+        }
+
+        private void drawTopRightSwirl(Graphics2D g2, int w, int h) {
+            // Main Burgundy Curve from top to right
+            Path2D.Double maroonWave = new Path2D.Double();
+            maroonWave.moveTo(w * 0.84, 0);
+            maroonWave.curveTo(w * 0.87, h * 0.08, w * 0.93, h * 0.15, w, h * 0.18);
+            maroonWave.lineTo(w, 0);
+            maroonWave.closePath();
+
+            g2.setColor(new Color(90, 16, 32));
+            g2.fill(maroonWave);
+
+            // Golden Accent Ribbon
+            Path2D.Double goldWave = new Path2D.Double();
+            goldWave.moveTo(w * 0.82, 0);
+            goldWave.curveTo(w * 0.85, h * 0.10, w * 0.92, h * 0.18, w, h * 0.22);
+            goldWave.lineTo(w, h * 0.19);
+            goldWave.curveTo(w * 0.93, h * 0.16, w * 0.87, h * 0.08, w * 0.84, 0);
+            goldWave.closePath();
+
+            GradientPaint goldGrad = new GradientPaint(
+                    (float) (w * 0.82), 0, GOLD_LIGHT,
+                    (float) w, (float) (h * 0.22), GOLD_DARK
+            );
+            g2.setPaint(goldGrad);
+            g2.fill(goldWave);
+        }
+
+        private void drawBotanicalWatermark(Graphics2D g2, int originX, int originY) {
+            g2.setColor(new Color(215, 195, 165, 75));
+            g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            // Main Vine Branch arching up and to the left
+            Path2D.Double stem = new Path2D.Double();
+            stem.moveTo(originX, originY);
+            stem.curveTo(originX - 35, originY - 45, originX - 65, originY - 110, originX - 70, originY - 180);
+            g2.draw(stem);
+
+            // Alternating Leaves
+            drawWatermarkLeaf(g2, originX - 18, originY - 30, -35, 24, 11);
+            drawWatermarkLeaf(g2, originX - 38, originY - 65, 30, 26, 12);
+            drawWatermarkLeaf(g2, originX - 52, originY - 105, -25, 28, 13);
+            drawWatermarkLeaf(g2, originX - 64, originY - 145, 25, 26, 12);
+            drawWatermarkLeaf(g2, originX - 70, originY - 180, -10, 22, 10);
+        }
+
+        private void drawWatermarkLeaf(Graphics2D g2, int x, int y, double angleDeg, int length, int width) {
             AffineTransform old = g2.getTransform();
             g2.translate(x, y);
             g2.rotate(Math.toRadians(angleDeg));
 
             Path2D.Double leaf = new Path2D.Double();
             leaf.moveTo(0, 0);
-            leaf.curveTo(length * 0.4, -width, length * 0.8, -width * 0.5, length, 0);
-            leaf.curveTo(length * 0.8, width * 0.5, length * 0.4, width, 0, 0);
+            leaf.curveTo(length * 0.35, -width, length * 0.75, -width * 0.6, length, 0);
+            leaf.curveTo(length * 0.75, width * 0.6, length * 0.35, width, 0, 0);
             leaf.closePath();
 
-            g2.setColor(new Color(205, 175, 135, 75));
+            g2.setColor(new Color(225, 205, 175, 55));
             g2.fill(leaf);
-            g2.setColor(new Color(185, 150, 110, 90));
+            g2.setColor(new Color(205, 180, 145, 95));
             g2.draw(leaf);
 
             g2.setTransform(old);
         }
-
-        private void buildFormLayout() {
-            // Inner content panel fixed to comfortable form width (~420px)
-            JPanel content = new JPanel();
-            content.setOpaque(false);
-            content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-            content.setBorder(new EmptyBorder(10, 10, 10, 10));
-            content.setPreferredSize(new Dimension(430, 530));
-            content.setMaximumSize(new Dimension(430, 530));
-
-            // 1. "Welcome Back" Header
-            JLabel welcomeLabel = new JLabel("Welcome Back");
-            welcomeLabel.setFont(new Font("Georgia", Font.BOLD, 30));
-            welcomeLabel.setForeground(MAROON_PRIMARY);
-            welcomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-            // Subtitle
-            JLabel subLabel = new JLabel("Please sign in to access your faculty portal");
-            subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-            subLabel.setForeground(TEXT_MUTED);
-            subLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-            subLabel.setPreferredSize(new Dimension(410, 20));
-            subLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
-
-            // Gold underline bar
-            JPanel goldBar = new JPanel() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    g2.setColor(GOLD_PRIMARY);
-                    g2.fillRoundRect(0, 1, 52, 3, 2, 2);
-                    g2.dispose();
-                }
-            };
-            goldBar.setOpaque(false);
-            goldBar.setPreferredSize(new Dimension(55, 6));
-            goldBar.setMaximumSize(new Dimension(55, 6));
-            goldBar.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-            // Error Label
-            errorLabel = new JLabel(" ");
-            errorLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-            errorLabel.setForeground(new Color(185, 28, 28));
-            errorLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-            // 2. Select Role Field
-            JLabel roleTitle = createFieldLabel("Select Role");
-            String[] roles = {"-- Select Role --", "Admin", "Lecturer", "Technical Officer", "Undergraduate"};
-            roleComboBox = new JComboBox<>(roles);
-            roleComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            roleComboBox.setBackground(Color.WHITE);
-            roleComboBox.setForeground(TEXT_DARK);
-            roleComboBox.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
-            roleComboBox.setOpaque(false);
-            roleComboBox.setFocusable(false);
-            roleComboBox.setUI(new javax.swing.plaf.basic.BasicComboBoxUI() {
-                @Override
-                protected JButton createArrowButton() {
-                    JButton btn = new JButton() {
-                        @Override
-                        protected void paintComponent(Graphics g) {
-                            Graphics2D g2 = (Graphics2D) g.create();
-                            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                            g2.setColor(new Color(90, 80, 75));
-                            g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-                            int cx = getWidth() / 2;
-                            int cy = getHeight() / 2;
-                            // Clean down chevron: ⌵
-                            g2.drawLine(cx - 5, cy - 2, cx, cy + 3);
-                            g2.drawLine(cx, cy + 3, cx + 5, cy - 2);
-                            g2.dispose();
-                        }
-                    };
-                    btn.setBorder(BorderFactory.createEmptyBorder());
-                    btn.setContentAreaFilled(false);
-                    btn.setFocusPainted(false);
-                    btn.setOpaque(false);
-                    btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    return btn;
-                }
-
-                @Override
-                public void paintCurrentValueBackground(Graphics g, Rectangle bounds, boolean hasFocus) {
-                    // Keep clean white background
-                }
-            });
-            roleComboBox.setRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                    lbl.setBorder(new EmptyBorder(6, 10, 6, 10));
-                    if (isSelected) {
-                        lbl.setBackground(MAROON_PRIMARY);
-                        lbl.setForeground(Color.WHITE);
-                    } else {
-                        lbl.setBackground(Color.WHITE);
-                        lbl.setForeground(TEXT_DARK);
-                    }
-                    return lbl;
-                }
-            });
-
-            InputCard roleCard = new InputCard(new RoleIcon(), roleComboBox, null);
-
-            // 3. Username Field
-            JLabel usernameTitle = createFieldLabel("Username");
-            usernameField = new PlaceholderTextField("Enter your username");
-            InputCard usernameCard = new InputCard(new UserIcon(), usernameField, null);
-
-            // 4. Password Field with Eye Toggle
-            JLabel passwordTitle = createFieldLabel("Password");
-            passwordField = new PlaceholderPasswordField("Enter your password");
-
-            eyeToggleButton = new JButton();
-            eyeToggleButton.setOpaque(false);
-            eyeToggleButton.setContentAreaFilled(false);
-            eyeToggleButton.setBorderPainted(false);
-            eyeToggleButton.setFocusPainted(false);
-            eyeToggleButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            eyeToggleButton.setPreferredSize(new Dimension(28, 28));
-            eyeToggleButton.setIcon(new EyeIcon(false));
-            eyeToggleButton.addActionListener(e -> togglePasswordVisibility());
-
-            InputCard passwordCard = new InputCard(new LockIcon(), passwordField, eyeToggleButton);
-
-            // 5. "Show Password" Checkbox
-            showPasswordCheckBox = new JCheckBox("Show Password");
-            showPasswordCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-            showPasswordCheckBox.setForeground(TEXT_DARK);
-            showPasswordCheckBox.setOpaque(false);
-            showPasswordCheckBox.setFocusPainted(false);
-            showPasswordCheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
-            showPasswordCheckBox.addActionListener(e -> {
-                setPasswordVisibility(showPasswordCheckBox.isSelected());
-            });
-
-            // 6. Action Buttons: "Sign In" (Filled Maroon) & "Reset" (Outlined Maroon)
-            JPanel buttonsRow = new JPanel(new GridLayout(1, 2, 12, 0));
-            buttonsRow.setOpaque(false);
-            buttonsRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
-            buttonsRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-            loginButton = new ModernButton("Sign In", true);
-            loginButton.addActionListener(e -> performLogin());
-
-            resetButton = new ModernButton("Reset", false);
-            resetButton.addActionListener(e -> resetFields());
-
-            buttonsRow.add(loginButton);
-            buttonsRow.add(resetButton);
-
-            // Enter Key Listener to trigger Login
-            KeyAdapter enterListener = new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        performLogin();
-                    }
-                }
-            };
-            roleComboBox.addKeyListener(enterListener);
-            usernameField.addKeyListener(enterListener);
-            passwordField.addKeyListener(enterListener);
-
-            // 7. Golden Diamond Divider: ────── ⬥ ──────
-            JPanel footerDivider = new JPanel() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                    int w = getWidth();
-                    int cy = getHeight() / 2;
-                    int cx = w / 2;
-                    int halfLen = 110;
-
-                    g2.setColor(new Color(225, 212, 195));
-                    g2.drawLine(cx - halfLen, cy, cx - 10, cy);
-                    g2.drawLine(cx + 10, cy, cx + halfLen, cy);
-
-                    // Diamond
-                    g2.setColor(GOLD_PRIMARY);
-                    Path2D.Double d = new Path2D.Double();
-                    d.moveTo(cx, cy - 4);
-                    d.lineTo(cx + 4, cy);
-                    d.lineTo(cx, cy + 4);
-                    d.lineTo(cx - 4, cy);
-                    d.closePath();
-                    g2.fill(d);
-
-                    g2.dispose();
-                }
-            };
-            footerDivider.setOpaque(false);
-            footerDivider.setPreferredSize(new Dimension(410, 16));
-            footerDivider.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
-            footerDivider.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-            // 8. Security Badge: 🔒 Secure access for authorized users
-            JPanel securityBadge = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
-            securityBadge.setOpaque(false);
-            securityBadge.setAlignmentX(Component.LEFT_ALIGNMENT);
-            securityBadge.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-
-            JLabel lockIconBadge = new JLabel() {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    g2.setColor(MAROON_PRIMARY);
-                    g2.fillRoundRect(2, 6, 10, 8, 2, 2);
-                    g2.setStroke(new BasicStroke(1.4f));
-                    g2.drawArc(4, 2, 6, 7, 0, 180);
-                    g2.dispose();
-                }
-
-                @Override
-                public Dimension getPreferredSize() {
-                    return new Dimension(14, 16);
-                }
-            };
-
-            JLabel securityText = new JLabel("Secure access for authorized users");
-            securityText.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-            securityText.setForeground(TEXT_MUTED);
-            securityText.setPreferredSize(new Dimension(220, 18));
-
-            securityBadge.add(lockIconBadge);
-            securityBadge.add(securityText);
-
-            // Assemble into Form Container with harmonious vertical spacing
-            content.add(welcomeLabel);
-            content.add(Box.createVerticalStrut(4));
-            content.add(subLabel);
-            content.add(Box.createVerticalStrut(8));
-            content.add(goldBar);
-            content.add(Box.createVerticalStrut(4));
-            content.add(errorLabel);
-            content.add(Box.createVerticalStrut(4));
-
-            content.add(roleTitle);
-            content.add(Box.createVerticalStrut(4));
-            content.add(roleCard);
-            content.add(Box.createVerticalStrut(10));
-
-            content.add(usernameTitle);
-            content.add(Box.createVerticalStrut(4));
-            content.add(usernameCard);
-            content.add(Box.createVerticalStrut(10));
-
-            content.add(passwordTitle);
-            content.add(Box.createVerticalStrut(4));
-            content.add(passwordCard);
-            content.add(Box.createVerticalStrut(6));
-
-            content.add(showPasswordCheckBox);
-            content.add(Box.createVerticalStrut(14));
-
-            content.add(buttonsRow);
-            content.add(Box.createVerticalStrut(18));
-
-            content.add(footerDivider);
-            content.add(Box.createVerticalStrut(8));
-            content.add(securityBadge);
-
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
-            gbc.anchor = GridBagConstraints.CENTER;
-            add(content, gbc);
-        }
-
-        private JLabel createFieldLabel(String text) {
-            JLabel label = new JLabel(text);
-            label.setFont(new Font("Segoe UI", Font.BOLD, 13));
-            label.setForeground(TEXT_DARK);
-            label.setAlignmentX(Component.LEFT_ALIGNMENT);
-            return label;
-        }
     }
 
     // =========================================================================
-    // 3. REUSABLE CUSTOM UI CONTROLS & CARDS (Simple, Clean, Pure Swing)
+    // UI HELPER PANELS & CUSTOM VECTOR ICONS
     // =========================================================================
 
     /**
-     * Card container with rounded border and focus-highlight for input fields.
+     * White container box with rounded corners and focus-tracking outline border.
      */
-    private static class InputCard extends JPanel {
+    private static class RoundedBoxPanel extends JPanel {
         private boolean isFocused = false;
 
-        public InputCard(JComponent leadingIcon, JComponent inputComp, JComponent trailingComp) {
-            setLayout(new BorderLayout(10, 0));
+        public RoundedBoxPanel(int width, int height) {
             setOpaque(false);
-            setBorder(new EmptyBorder(6, 14, 6, 14));
-            setPreferredSize(new Dimension(410, 44));
-            setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
-            setAlignmentX(Component.LEFT_ALIGNMENT);
+            setPreferredSize(new Dimension(width, height));
+            setMaximumSize(new Dimension(width, height));
+            setMinimumSize(new Dimension(280, height));
+        }
 
-            if (leadingIcon != null) {
-                add(leadingIcon, BorderLayout.WEST);
-            }
-            if (inputComp != null) {
-                add(inputComp, BorderLayout.CENTER);
-                inputComp.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusGained(FocusEvent e) {
-                        isFocused = true;
-                        repaint();
-                    }
-
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        isFocused = false;
-                        repaint();
-                    }
-                });
-            }
-            if (trailingComp != null) {
-                add(trailingComp, BorderLayout.EAST);
-            }
+        public void setFocused(boolean focused) {
+            this.isFocused = focused;
+            repaint();
         }
 
         @Override
@@ -738,13 +795,18 @@ public class LoginFrame extends JFrame {
             int w = getWidth();
             int h = getHeight();
 
-            // White rounded background
+            // Background White Pill
             g2.setColor(Color.WHITE);
             g2.fillRoundRect(1, 1, w - 2, h - 2, 10, 10);
 
-            // Subtle border (Maroon on focus, soft slate when idle)
-            g2.setColor(isFocused ? BORDER_ACTIVE : BORDER_NORMAL);
-            g2.setStroke(new BasicStroke(isFocused ? 1.5f : 1.0f));
+            // Border (Burgundy on focus, soft beige idle)
+            if (isFocused) {
+                g2.setColor(BORDER_FOCUS);
+                g2.setStroke(new BasicStroke(1.8f));
+            } else {
+                g2.setColor(BORDER_IDLE);
+                g2.setStroke(new BasicStroke(1.2f));
+            }
             g2.drawRoundRect(1, 1, w - 3, h - 3, 10, 10);
 
             g2.dispose();
@@ -753,181 +815,13 @@ public class LoginFrame extends JFrame {
     }
 
     /**
-     * Clean TextField with built-in placeholder support.
+     * Decorative Golden Divider with Center Diamond: ──── ◆ ────
      */
-    private static class PlaceholderTextField extends JTextField {
-        private final String placeholder;
-
-        public PlaceholderTextField(String placeholder) {
-            this.placeholder = placeholder;
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            setForeground(TEXT_DARK);
-            setCaretColor(TEXT_DARK);
-            setBorder(null);
+    private static class DiamondDividerPanel extends JPanel {
+        public DiamondDividerPanel() {
             setOpaque(false);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (getText().isEmpty() && !isFocusOwner()) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                g2.setColor(new Color(165, 155, 148));
-                g2.setFont(getFont());
-                FontMetrics fm = g2.getFontMetrics();
-                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-                g2.drawString(placeholder, getInsets().left, y);
-                g2.dispose();
-            }
-        }
-    }
-
-    /**
-     * Clean JPasswordField with built-in placeholder support.
-     */
-    private static class PlaceholderPasswordField extends JPasswordField {
-        private final String placeholder;
-
-        public PlaceholderPasswordField(String placeholder) {
-            this.placeholder = placeholder;
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            setForeground(TEXT_DARK);
-            setCaretColor(TEXT_DARK);
-            setEchoChar('•');
-            setBorder(null);
-            setOpaque(false);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (getPassword().length == 0 && !isFocusOwner()) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                g2.setColor(new Color(165, 155, 148));
-                g2.setFont(getFont());
-                FontMetrics fm = g2.getFontMetrics();
-                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-                g2.drawString(placeholder, getInsets().left, y);
-                g2.dispose();
-            }
-        }
-    }
-
-    /**
-     * Modern custom button supporting filled primary (Maroon) and outlined secondary (Reset).
-     */
-    private static class ModernButton extends JButton {
-        private final boolean isPrimary;
-
-        public ModernButton(String text, boolean isPrimary) {
-            super(text);
-            this.isPrimary = isPrimary;
-            setFont(new Font("Segoe UI", Font.BOLD, 14));
-            setFocusPainted(false);
-            setBorderPainted(false);
-            setContentAreaFilled(false);
-            setOpaque(false);
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-            int w = getWidth();
-            int h = getHeight();
-            int radius = 8;
-
-            if (isPrimary) {
-                // Filled Primary Button (Sign In - Burgundy #6E1624)
-                Color bg = MAROON_LIGHT;
-                if (getModel().isPressed()) {
-                    bg = MAROON_PRESSED;
-                } else if (getModel().isRollover()) {
-                    bg = MAROON_HOVER;
-                }
-                g2.setColor(bg);
-                g2.fillRoundRect(0, 0, w, h, radius, radius);
-
-                // Draw leading Sign-In Arrow icon: →]
-                drawSignInIcon(g2, 28, h / 2, Color.WHITE);
-
-                // Center Text
-                g2.setColor(Color.WHITE);
-                g2.setFont(getFont());
-                FontMetrics fm = g2.getFontMetrics();
-                int tx = (w - fm.stringWidth(getText())) / 2 + 8;
-                int ty = (h - fm.getHeight()) / 2 + fm.getAscent();
-                g2.drawString(getText(), tx, ty);
-
-            } else {
-                // Outlined Secondary Button (Reset - White with #D5CEC4 border)
-                Color bg = Color.WHITE;
-                if (getModel().isPressed()) {
-                    bg = new Color(234, 227, 217);
-                } else if (getModel().isRollover()) {
-                    bg = new Color(244, 239, 234);
-                }
-                g2.setColor(bg);
-                g2.fillRoundRect(0, 0, w, h, radius, radius);
-
-                // Subtle Border #D5CEC4
-                g2.setColor(BORDER_NORMAL);
-                g2.setStroke(new BasicStroke(1.2f));
-                g2.drawRoundRect(1, 1, w - 2, h - 2, radius, radius);
-
-                // Draw Reset circular arrow icon: ↻
-                drawResetIcon(g2, 30, h / 2, TEXT_DARK);
-
-                // Center Text
-                g2.setColor(TEXT_DARK);
-                g2.setFont(getFont());
-                FontMetrics fm = g2.getFontMetrics();
-                int tx = (w - fm.stringWidth(getText())) / 2 + 8;
-                int ty = (h - fm.getHeight()) / 2 + fm.getAscent();
-                g2.drawString(getText(), tx, ty);
-            }
-
-            g2.dispose();
-        }
-
-        private void drawSignInIcon(Graphics2D g2, int cx, int cy, Color color) {
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            // Arrow line & head pointing into door
-            g2.drawLine(cx - 8, cy, cx + 2, cy);
-            g2.drawLine(cx - 1, cy - 4, cx + 3, cy);
-            g2.drawLine(cx - 1, cy + 4, cx + 3, cy);
-            // Right door bracket
-            g2.drawLine(cx + 6, cy - 7, cx + 6, cy + 7);
-        }
-
-        private void drawResetIcon(Graphics2D g2, int cx, int cy, Color color) {
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(1.8f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            // 270 degree circular arc
-            g2.drawArc(cx - 7, cy - 7, 14, 14, 45, 270);
-            // Arrowhead at the end
-            g2.drawLine(cx + 1, cy - 8, cx + 6, cy - 7);
-            g2.drawLine(cx + 4, cy - 3, cx + 6, cy - 7);
-        }
-    }
-
-    // =========================================================================
-    // 4. VECTOR ICONS (Sharp, High-DPI, No External Images Needed)
-    // =========================================================================
-
-    /**
-     * Vector icon for "Select Role" field.
-     */
-    private static class RoleIcon extends JComponent {
-        @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(20, 20);
+            setPreferredSize(new Dimension(240, 16));
+            setMaximumSize(new Dimension(240, 16));
         }
 
         @Override
@@ -935,85 +829,105 @@ public class LoginFrame extends JFrame {
             super.paintComponent(g);
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(110, 95, 88));
-            g2.setStroke(new BasicStroke(1.5f));
 
-            // Head
-            g2.drawOval(6, 2, 8, 8);
-            // Shoulders
-            g2.drawArc(2, 11, 16, 9, 0, 180);
+            int cx = getWidth() / 2;
+            int cy = getHeight() / 2;
+            int lineLen = 70;
+
+            g2.setColor(GOLD_ACCENT);
+            g2.setStroke(new BasicStroke(1.2f));
+            g2.drawLine(cx - lineLen, cy, cx - 10, cy);
+            g2.drawLine(cx + 10, cy, cx + lineLen, cy);
+
+            // Diamond
+            Path2D.Double diamond = new Path2D.Double();
+            diamond.moveTo(cx, cy - 4);
+            diamond.lineTo(cx + 4, cy);
+            diamond.lineTo(cx, cy + 4);
+            diamond.lineTo(cx - 4, cy);
+            diamond.closePath();
+            g2.fill(diamond);
+
             g2.dispose();
         }
     }
 
     /**
-     * Vector icon for "Username" field.
+     * Vector icon for outline user silhouette: 👤
      */
-    private static class UserIcon extends JComponent {
-        @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(20, 20);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(110, 95, 88));
-            g2.setStroke(new BasicStroke(1.5f));
-
-            // Head
-            g2.drawOval(6, 2, 8, 8);
-            // Torso curve
-            g2.drawArc(3, 11, 14, 8, 0, 180);
-            g2.dispose();
-        }
-    }
-
-    /**
-     * Vector icon for "Password" field.
-     */
-    private static class LockIcon extends JComponent {
-        @Override
-        public Dimension getPreferredSize() {
-            return new Dimension(20, 20);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(110, 95, 88));
-            g2.setStroke(new BasicStroke(1.5f));
-
-            // Shackle
-            g2.drawArc(5, 2, 10, 10, 0, 180);
-            // Padlock Body
-            g2.drawRoundRect(3, 7, 14, 10, 3, 3);
-            // Keyhole
-            g2.fillOval(9, 10, 2, 2);
-            g2.drawLine(10, 11, 10, 14);
-            g2.dispose();
-        }
-    }
-
-    /**
-     * Vector icon for Eye Toggle Button.
-     */
-    private static class EyeIcon implements Icon {
-        private final boolean isVisible;
-
-        public EyeIcon(boolean isVisible) {
-            this.isVisible = isVisible;
-        }
+    private static class UserOutlineIcon implements Icon {
+        private final Color color;
+        public UserOutlineIcon(Color color) { this.color = color; }
 
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(new Color(125, 110, 102));
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            // Head
+            g2.drawOval(x + 5, y + 2, 10, 10);
+
+            // Shoulders
+            Path2D.Double shoulders = new Path2D.Double();
+            shoulders.moveTo(x + 2, y + 18);
+            shoulders.curveTo(x + 4, y + 14, x + 7, y + 13, x + 10, y + 13);
+            shoulders.curveTo(x + 13, y + 13, x + 16, y + 14, x + 18, y + 18);
+            g2.draw(shoulders);
+
+            g2.dispose();
+        }
+
+        @Override public int getIconWidth() { return 20; }
+        @Override public int getIconHeight() { return 20; }
+    }
+
+    /**
+     * Vector icon for outline padlock: 🔒
+     */
+    private static class LockOutlineIcon implements Icon {
+        private final Color color;
+        public LockOutlineIcon(Color color) { this.color = color; }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+            // Shackle
+            g2.drawArc(x + 4, y + 2, 8, 8, 0, 180);
+            g2.drawLine(x + 4, y + 6, x + 4, y + 8);
+            g2.drawLine(x + 12, y + 6, x + 12, y + 8);
+
+            // Body
+            g2.drawRoundRect(x + 2, y + 8, 12, 9, 2, 2);
+
+            // Keyhole
+            g2.fillOval(x + 7, y + 10, 2, 2);
+            g2.drawLine(x + 8, y + 12, x + 8, y + 14);
+
+            g2.dispose();
+        }
+
+        @Override public int getIconWidth() { return 18; }
+        @Override public int getIconHeight() { return 18; }
+    }
+
+    /**
+     * Vector icon for password visibility toggle eye: 👁 / ⊘
+     */
+    private static class EyeToggleIcon implements Icon {
+        private final boolean isVisible;
+        public EyeToggleIcon(boolean isVisible) { this.isVisible = isVisible; }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(110, 95, 85));
             g2.setStroke(new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
             // Almond eye outline
@@ -1027,7 +941,7 @@ public class LoginFrame extends JFrame {
             // Pupil
             g2.fillOval(x + 7, y + 7, 4, 4);
 
-            // Diagonal strike-through line if password is hidden
+            // Slash line if hidden
             if (!isVisible) {
                 g2.drawLine(x + 3, y + 3, x + 15, y + 15);
             }
@@ -1035,42 +949,30 @@ public class LoginFrame extends JFrame {
             g2.dispose();
         }
 
-        @Override
-        public int getIconWidth() {
-            return 18;
-        }
-
-        @Override
-        public int getIconHeight() {
-            return 18;
-        }
+        @Override public int getIconWidth() { return 18; }
+        @Override public int getIconHeight() { return 18; }
     }
 
     /**
-     * Generates an academic crest image for the window icon.
+     * Creates an academic crest image for the window icon.
      */
     private Image createWindowIcon() {
         int s = 32;
-        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(s, s, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        BufferedImage img = new BufferedImage(s, s, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = img.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Maroon rounded background
         g2.setColor(MAROON_PRIMARY);
         g2.fillRoundRect(0, 0, s, s, 8, 8);
 
-        // Golden crest / pillars
-        g2.setColor(GOLD_PRIMARY);
+        g2.setColor(GOLD_ACCENT);
         g2.setStroke(new BasicStroke(1.5f));
-        // Pediment
         g2.drawLine(6, 12, 16, 6);
         g2.drawLine(16, 6, 26, 12);
         g2.drawLine(6, 12, 26, 12);
-        // Pillars
         g2.drawLine(9, 13, 9, 23);
         g2.drawLine(16, 13, 16, 23);
         g2.drawLine(23, 13, 23, 23);
-        // Base
         g2.drawLine(6, 24, 26, 24);
 
         g2.dispose();
@@ -1078,8 +980,61 @@ public class LoginFrame extends JFrame {
     }
 
     // =========================================================================
-    // 5. EVENT HANDLERS & BACKWARD COMPATIBLE API
+    // PLACEHOLDER HANDLERS & INTERACTIONS
     // =========================================================================
+
+    private void installPlaceholder(JTextField field, String placeholder) {
+        field.setText(placeholder);
+        field.setForeground(PLACEHOLDER_COLOR);
+
+        field.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (field.getText().equals(placeholder)) {
+                    field.setText("");
+                    field.setForeground(TEXT_DARK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (field.getText().trim().isEmpty()) {
+                    field.setText(placeholder);
+                    field.setForeground(PLACEHOLDER_COLOR);
+                }
+            }
+        });
+    }
+
+    private void installPasswordPlaceholder(JPasswordField field, String placeholder) {
+        field.setEchoChar((char) 0);
+        field.setText(placeholder);
+        field.setForeground(PLACEHOLDER_COLOR);
+
+        field.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                String pwd = new String(field.getPassword());
+                if (pwd.equals(placeholder)) {
+                    field.setText("");
+                    field.setForeground(TEXT_DARK);
+                    if (!isPasswordVisible) {
+                        field.setEchoChar('•');
+                    }
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                String pwd = new String(field.getPassword());
+                if (pwd.trim().isEmpty()) {
+                    field.setEchoChar((char) 0);
+                    field.setText(placeholder);
+                    field.setForeground(PLACEHOLDER_COLOR);
+                }
+            }
+        });
+    }
 
     private void togglePasswordVisibility() {
         setPasswordVisibility(!isPasswordVisible);
@@ -1087,25 +1042,34 @@ public class LoginFrame extends JFrame {
 
     private void setPasswordVisibility(boolean visible) {
         this.isPasswordVisible = visible;
-        if (visible) {
-            passwordField.setEchoChar((char) 0);
-        } else {
-            passwordField.setEchoChar('•');
+        String current = new String(passwordField.getPassword());
+        if (!current.equals("Enter your password")) {
+            if (visible) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
         }
         showPasswordCheckBox.setSelected(visible);
-        eyeToggleButton.setIcon(new EyeIcon(visible));
+        eyeToggleButton.setIcon(new EyeToggleIcon(visible));
     }
 
     private void performLogin() {
         clearErrorMessage();
         String selectedRole = (String) roleComboBox.getSelectedItem();
         String username = usernameField.getText().trim();
+        if (username.equals("adm") && usernameField.getForeground().equals(PLACEHOLDER_COLOR)) {
+            username = "";
+        }
         String password = new String(passwordField.getPassword());
+        if (password.equals("Enter your password") && passwordField.getForeground().equals(PLACEHOLDER_COLOR)) {
+            password = "";
+        }
         loginController.handleLogin(this, username, password, selectedRole);
     }
 
     public void showErrorMessage(String message) {
-        errorLabel.setText("<html><body style='width: 320px; color: #B91C1C;'>⚠️ " + message + "</body></html>");
+        errorLabel.setText("<html><body style='text-align: center; width: 340px; color: #B91C1C;'>⚠️ " + message + "</body></html>");
     }
 
     public void clearErrorMessage() {
@@ -1114,14 +1078,20 @@ public class LoginFrame extends JFrame {
 
     public void resetFields() {
         roleComboBox.setSelectedIndex(0);
-        usernameField.setText("");
-        passwordField.setText("");
+        usernameField.setText("adm");
+        usernameField.setForeground(PLACEHOLDER_COLOR);
+        passwordField.setEchoChar((char) 0);
+        passwordField.setText("Enter your password");
+        passwordField.setForeground(PLACEHOLDER_COLOR);
         setPasswordVisibility(false);
         clearErrorMessage();
-        roleComboBox.requestFocus();
+        usernameField.requestFocus();
     }
 
-    // Encapsulation: Getters and Setters
+    // =========================================================================
+    // ENCAPSULATION ACCESSORS (Preserves 100% backward compatibility)
+    // =========================================================================
+
     public String getSelectedRole() {
         return (String) roleComboBox.getSelectedItem();
     }
@@ -1131,14 +1101,28 @@ public class LoginFrame extends JFrame {
     }
 
     public String getUsername() {
-        return usernameField.getText();
+        String u = usernameField.getText().trim();
+        return u.equals("adm") && usernameField.getForeground().equals(PLACEHOLDER_COLOR) ? "" : u;
     }
 
     public void setUsername(String username) {
         usernameField.setText(username);
+        usernameField.setForeground(TEXT_DARK);
     }
 
     public void setPassword(String password) {
         passwordField.setText(password);
+        passwordField.setForeground(TEXT_DARK);
+        if (!isPasswordVisible) {
+            passwordField.setEchoChar('•');
+        }
     }
+
+    public JComboBox<String> getRoleComboBox() { return roleComboBox; }
+    public JTextField getUsernameField() { return usernameField; }
+    public JPasswordField getPasswordField() { return passwordField; }
+    public JButton getLoginButton() { return loginButton; }
+    public JButton getResetButton() { return resetButton; }
+    public JLabel getErrorLabel() { return errorLabel; }
+    public JCheckBox getShowPasswordCheckBox() { return showPasswordCheckBox; }
 }
