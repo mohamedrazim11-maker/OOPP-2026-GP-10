@@ -10,13 +10,27 @@ import java.awt.*;
 
 /**
  * Modern Technical Officer Dashboard GUI.
- * Integrates unified UI theme with Attendance Entry, Medical Management, and Batch Summary dialogs.
+ * Integrates all 6 technical officer modules inside a unified, tabbed interface:
+ * 1. Attendance Entry
+ * 2. Medical Certificates
+ * 3. Batch Summary
+ * 4. Dept Timetables
+ * 5. Notice Board
+ * 6. My Profile
  */
 public class TechnicalOfficerDashboard extends JFrame {
 
     private final User currentUser;
+    private JTabbedPane tabbedPane;
     private UITheme.SidebarNavigation sidebarNav;
     private UITheme.HeaderPanel headerPanel;
+
+    private AttendanceEntryPanel attendanceEntryPanel;
+    private MedicalManagementPanel medicalManagementPanel;
+    private ViewAttendancePanel viewAttendancePanel;
+    private DepartmentTimetablePanel departmentTimetablePanel;
+    private NoticeViewerPanel noticeViewerPanel;
+    private TechnicalOfficerProfilePanel profilePanel;
 
     private static final String[] TO_NAV_TITLES = {
             "Home Overview",
@@ -35,8 +49,8 @@ public class TechnicalOfficerDashboard extends JFrame {
 
     private void initComponents() {
         setTitle("Faculty Management System — Technical Officer Portal");
-        setSize(1180, 740);
-        setMinimumSize(new Dimension(980, 620));
+        setSize(1220, 780);
+        setMinimumSize(new Dimension(1020, 660));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -44,26 +58,11 @@ public class TechnicalOfficerDashboard extends JFrame {
 
         // 1. Left Sidebar Navigation (Per FMS UI PDF - Solid Burgundy #5C1221, Gold Active Pill)
         sidebarNav = new UITheme.SidebarNavigation("Tech Officer Portal", TO_NAV_TITLES, 0, idx -> {
-            headerPanel.setTitle(TO_NAV_TITLES[idx]);
-            switch (idx) {
-                case 1:
-                    new AttendanceEntryDialog(this, currentUser).setVisible(true);
-                    break;
-                case 2:
-                    new MedicalManagementDialog(this).setVisible(true);
-                    break;
-                case 3:
-                    new ViewAttendanceDialog(this).setVisible(true);
-                    break;
-                case 4:
-                    new DepartmentTimetableDialog(this).setVisible(true);
-                    break;
-                case 5:
-                    new NoticeViewerDialog(this).setVisible(true);
-                    break;
-                case 6:
-                    new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true);
-                    break;
+            if (tabbedPane != null && tabbedPane.getSelectedIndex() != idx) {
+                tabbedPane.setSelectedIndex(idx);
+            }
+            if (headerPanel != null) {
+                headerPanel.setTitle(TO_NAV_TITLES[idx]);
             }
         });
 
@@ -76,8 +75,55 @@ public class TechnicalOfficerDashboard extends JFrame {
             dispose();
             LoginController.showLogin();
         });
-        mainContentContainer.add(headerPanel, BorderLayout.NORTH);
 
+        // --- Tabbed Content Area ---
+        tabbedPane = new JTabbedPane();
+        UITheme.styleTabbedPane(tabbedPane);
+
+        // Tab 0: Welcome Overview
+        tabbedPane.addTab("Home Overview", createHomeOverviewPanel());
+
+        // Tab 1: Attendance Entry & Daily Logs
+        attendanceEntryPanel = new AttendanceEntryPanel(currentUser);
+        tabbedPane.addTab("Attendance Entry", attendanceEntryPanel);
+
+        // Tab 2: Medical Certificates & Verification
+        medicalManagementPanel = new MedicalManagementPanel();
+        tabbedPane.addTab("Medical Certificates", medicalManagementPanel);
+
+        // Tab 3: Batch Summary & 80% Eligibility
+        viewAttendancePanel = new ViewAttendancePanel();
+        tabbedPane.addTab("Batch Summary", viewAttendancePanel);
+
+        // Tab 4: Department Timetables & Laboratory Schedules
+        departmentTimetablePanel = new DepartmentTimetablePanel();
+        tabbedPane.addTab("Dept Timetables", departmentTimetablePanel);
+
+        // Tab 5: Faculty Notice Board & Circulars
+        noticeViewerPanel = new NoticeViewerPanel();
+        tabbedPane.addTab("Notice Board", noticeViewerPanel);
+
+        // Tab 6: Staff Profile & Account Settings
+        profilePanel = new TechnicalOfficerProfilePanel(currentUser);
+        tabbedPane.addTab("My Profile", profilePanel);
+
+        // Synchronize tabbed pane selection with sidebar and header
+        tabbedPane.addChangeListener(e -> {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < TO_NAV_TITLES.length) {
+                sidebarNav.setSelectedIndex(selectedIndex);
+                headerPanel.setTitle(TO_NAV_TITLES[selectedIndex]);
+            }
+        });
+
+        mainContentContainer.add(headerPanel, BorderLayout.NORTH);
+        mainContentContainer.add(tabbedPane, BorderLayout.CENTER);
+
+        add(sidebarNav, BorderLayout.WEST);
+        add(mainContentContainer, BorderLayout.CENTER);
+    }
+
+    private JComponent createHomeOverviewPanel() {
         // Main Content Container
         JPanel mainContent = new JPanel();
         mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
@@ -106,17 +152,17 @@ public class TechnicalOfficerDashboard extends JFrame {
         bannerText.add(welcomeLabel);
         bannerText.add(roleDescLabel);
 
-        // Hero Badges & Quick Buttons
+        // Hero Badges & Quick Action Buttons
         JPanel badgeBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         badgeBox.setOpaque(false);
 
         UITheme.ModernButton noticesBtn = new UITheme.ModernButton("📢 Notices", UITheme.ButtonStyle.OUTLINE, 6);
         noticesBtn.setFont(UITheme.FONT_SMALL_BOLD);
-        noticesBtn.addActionListener(e -> new NoticeViewerDialog(this).setVisible(true));
+        noticesBtn.addActionListener(e -> tabbedPane.setSelectedIndex(5));
 
         UITheme.ModernButton profileBtn = new UITheme.ModernButton("👤 My Profile", UITheme.ButtonStyle.SECONDARY, 6);
         profileBtn.setFont(UITheme.FONT_SMALL_BOLD);
-        profileBtn.addActionListener(e -> new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true));
+        profileBtn.addActionListener(e -> tabbedPane.setSelectedIndex(6));
 
         UITheme.PillBadge toBadge = new UITheme.PillBadge("OPERATIONS STAFF", UITheme.WARNING_LIGHT, UITheme.WARNING_DARK, UITheme.WARNING_BORDER);
         UITheme.PillBadge labBadge = new UITheme.PillBadge("LABS & SESSIONS", UITheme.SUCCESS_LIGHT, UITheme.SUCCESS_DARK, UITheme.SUCCESS_BORDER);
@@ -152,56 +198,39 @@ public class TechnicalOfficerDashboard extends JFrame {
         // Module 1: Attendance Entry
         modulesGrid.add(createModuleCard("Attendance Entry",
                 "Record and update daily undergraduate attendance for theory lectures and laboratory practical sessions.",
-                UITheme.WARNING_DARK, "Log Attendance", () -> {
-                    new AttendanceEntryDialog(this, currentUser).setVisible(true);
-                }));
+                UITheme.WARNING_DARK, "Log Attendance", () -> tabbedPane.setSelectedIndex(1)));
 
         // Module 2: Medical Certificates
         modulesGrid.add(createModuleCard("Medical Certificates",
                 "Log medical submissions, inspect doctor certs, and update verification/approval status for excused absences.",
-                UITheme.DANGER, "Review Medicals", () -> {
-                    new MedicalManagementDialog(this).setVisible(true);
-                }));
+                UITheme.DANGER, "Review Medicals", () -> tabbedPane.setSelectedIndex(2)));
 
         // Module 3: Batch Attendance Summary
         modulesGrid.add(createModuleCard("Batch Attendance Summary",
                 "View and compute aggregate semester attendance percentages by course, batch, and academic specialization.",
-                UITheme.PRIMARY, "View Summaries", () -> {
-                    new ViewAttendanceDialog(this).setVisible(true);
-                }));
+                UITheme.PRIMARY, "View Summaries", () -> tabbedPane.setSelectedIndex(3)));
 
         // Module 4: Department Timetables
         modulesGrid.add(createModuleCard("Department Timetables",
                 "View departmental lab time slots, equipment allocation, and lecture timetable schedules.",
-                UITheme.SUCCESS_DARK, "Check Schedules", () -> {
-                    new DepartmentTimetableDialog(this).setVisible(true);
-                }));
+                UITheme.SUCCESS_DARK, "Check Schedules", () -> tabbedPane.setSelectedIndex(4)));
 
         // Module 5: Faculty Notice Board
         modulesGrid.add(createModuleCard("Faculty Notice Board",
                 "Browse official academic announcements, circulars, exam memos, and timetable notices.",
-                UITheme.ACCENT_BLUE, "Browse Notices", () -> {
-                    new NoticeViewerDialog(this).setVisible(true);
-                }));
+                UITheme.ACCENT_BLUE, "Browse Notices", () -> tabbedPane.setSelectedIndex(5)));
 
         // Module 6: Technical Officer Profile
         modulesGrid.add(createModuleCard("Staff Profile & Account",
                 "Manage contact phone numbers, email address, and personal staff details.",
-                UITheme.PRIMARY, "Edit Profile", () -> {
-                    new TechnicalOfficerProfileDialog(this, currentUser).setVisible(true);
-                }));
+                UITheme.PRIMARY, "Edit Profile", () -> tabbedPane.setSelectedIndex(6)));
 
         mainContent.add(bannerCard);
         mainContent.add(statsGrid);
         mainContent.add(sectionTitle);
         mainContent.add(modulesGrid);
 
-        JScrollPane scrollContent = UITheme.createModernScrollPane(mainContent);
-        scrollContent.getViewport().setBackground(UITheme.BG_PAGE);
-        mainContentContainer.add(scrollContent, BorderLayout.CENTER);
-
-        add(sidebarNav, BorderLayout.WEST);
-        add(mainContentContainer, BorderLayout.CENTER);
+        return UITheme.createModernScrollPane(mainContent);
     }
 
     private JPanel createModuleCard(String title, String desc, Color accentColor, String actionText, Runnable onClick) {
