@@ -166,7 +166,7 @@ public class CourseManagementPanel extends JPanel {
                 new EmptyBorder(4, 10, 4, 10)
         ));
 
-        lastActionCourseLabel = new JLabel("Results area / operation help text");
+        lastActionCourseLabel = new JLabel("");
         lastActionCourseLabel.setFont(UITheme.FONT_SMALL);
         lastActionCourseLabel.setForeground(UITheme.TEXT_MUTED);
         statusPanel.add(lastActionCourseLabel);
@@ -198,8 +198,8 @@ public class CourseManagementPanel extends JPanel {
                             c.getSemester() != null ? c.getSemester() : "Semester 1"
                     });
                 }
-                lastActionCourseLabel.setText("Loaded " + currentCoursesList.size() + " academic course module(s) from database.");
-                lastActionCourseLabel.setForeground(new Color(51, 65, 85));
+                lastActionCourseLabel.setText("");
+                // Reset on load
             }
         } catch (DatabaseException ex) {
             lastActionCourseLabel.setText("Error loading courses: " + ex.getMessage());

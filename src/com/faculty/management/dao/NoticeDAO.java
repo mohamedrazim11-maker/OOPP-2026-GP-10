@@ -41,8 +41,8 @@ public class NoticeDAO {
             }
             return notices;
         } catch (SQLException e) {
-            // Safe fallback if database is currently unavailable
-            return getFallbackNotices();
+            // Throws exception when database is unavailable
+            throw new DatabaseException("Error retrieving notices from database: " + e.getMessage(), e);
         }
     }
 
@@ -68,12 +68,6 @@ public class NoticeDAO {
             }
             return null;
         } catch (SQLException e) {
-            // Check fallback
-            for (Notice n : getFallbackNotices()) {
-                if (n.getNoticeId() == noticeId) {
-                    return n;
-                }
-            }
             throw new DatabaseException("Error retrieving notice by ID: " + e.getMessage(), e);
         }
     }
@@ -103,12 +97,6 @@ public class NoticeDAO {
             }
             return null;
         } catch (SQLException e) {
-            String lower = title.toLowerCase().trim();
-            for (Notice n : getFallbackNotices()) {
-                if (n.getTitle() != null && n.getTitle().toLowerCase().trim().equals(lower)) {
-                    return n;
-                }
-            }
             throw new DatabaseException("Error retrieving notice by title: " + e.getMessage(), e);
         }
     }
@@ -140,14 +128,8 @@ public class NoticeDAO {
             }
             return notices;
         } catch (SQLException e) {
-            List<Notice> fallback = new ArrayList<>();
-            for (Notice n : getFallbackNotices()) {
-                if (category.equalsIgnoreCase(n.getCategory())) {
-                    fallback.add(n);
-                }
-            }
-            return fallback;
-        }
+            throw new DatabaseException("Error retrieving notices by category: " + e.getMessage(), e);
+ }
     }
 
     /**
@@ -183,17 +165,8 @@ public class NoticeDAO {
             }
             return notices;
         } catch (SQLException e) {
-            String lower = keyword.toLowerCase().trim();
-            List<Notice> fallback = new ArrayList<>();
-            for (Notice n : getFallbackNotices()) {
-                if ((n.getTitle() != null && n.getTitle().toLowerCase().contains(lower)) ||
-                    (n.getContent() != null && n.getContent().toLowerCase().contains(lower)) ||
-                    (n.getCategory() != null && n.getCategory().toLowerCase().contains(lower))) {
-                    fallback.add(n);
-                }
-            }
-            return fallback;
-        }
+            throw new DatabaseException("Error searching notices: " + e.getMessage(), e);
+ }
     }
 
     /**
@@ -390,7 +363,7 @@ public class NoticeDAO {
             }
             return 0;
         } catch (SQLException e) {
-            return getFallbackNotices().size();
+            return 0;
         }
     }
 
@@ -423,7 +396,7 @@ public class NoticeDAO {
             try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM notices")) {
                 tableExists = true;
                 if (rs.next() && rs.getInt(1) == 0) {
-                    insertSeedNotices(conn);
+                    // Table exists
                 }
             } catch (SQLException e) {
                 tableExists = false;
@@ -456,83 +429,17 @@ public class NoticeDAO {
                             ") ENGINE=InnoDB;";
                 }
                 stmt.executeUpdate(createSql);
-                insertSeedNotices(conn);
+                // Table created without seed notices
             }
         } catch (Exception ignored) {
         }
     }
 
     private void insertSeedNotices(Connection conn) {
-        String insertSql = "INSERT INTO notices (title, content, category, priority, posted_by, posted_date) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
-            for (Notice n : getFallbackNotices()) {
-                stmt.setString(1, n.getTitle());
-                stmt.setString(2, n.getContent());
-                stmt.setString(3, n.getCategory());
-                stmt.setString(4, n.getPriority());
-                stmt.setString(5, n.getPostedBy());
-                stmt.setDate(6, Date.valueOf(n.getPostedDate()));
-                stmt.addBatch();
-            }
-            stmt.executeBatch();
-        } catch (SQLException ignored) {
-        }
+        // No-op: mock seed notices removed
     }
 
     public static List<Notice> getFallbackNotices() {
-        List<Notice> list = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-
-        list.add(new Notice(
-                1,
-                "Mandatory 80% Attendance Requirement for Semester 2 Examinations",
-                "All undergraduates of the Faculty of Technology are hereby reminded that an overall attendance of at least 80% in both theory lectures and laboratory sessions is mandatory to be deemed eligible to sit for the upcoming semester final examinations. Students falling below 80% must immediately verify that all medical certificates have been formally lodged with the Technical Officer.",
-                "ACADEMIC",
-                "URGENT",
-                "Department of Information and Communication Technology",
-                today.minusDays(1)
-        ));
-
-        list.add(new Notice(
-                2,
-                "Continuous Assessment (CA >= 40%) Eligibility Lists Published",
-                "The provisional Continuous Assessment (CA) scores and eligibility statuses for Level II Semester I modules (CS201, CS202, CS203, CS204, MA201) have been compiled. In accordance with university curriculum criteria, students must achieve a minimum CA score of 40% out of 100 to sit for the respective end-semester exam. Please check your individual grade transcript.",
-                "EXAMINATION",
-                "URGENT",
-                "Examination Division & Course Coordinators",
-                today.minusDays(3)
-        ));
-
-        list.add(new Notice(
-                3,
-                "Laboratory Session Venue Adjustment — Computer Lab 1 & 2",
-                "Commencing Monday next week, practical laboratory sessions for Object Oriented Programming (CS202) and Database Management Systems (CS203) will be conducted in Computer Lab 2 (Level 2, Technology Complex). Please refer to the updated class timetable on your student dashboard.",
-                "TIMETABLE",
-                "NORMAL",
-                "Technical Officer in Charge",
-                today.minusDays(5)
-        ));
-
-        list.add(new Notice(
-                4,
-                "Submission Deadline for Outstanding Medical Certificates",
-                "Undergraduates with excused absences between Week 1 and Week 10 must lodge certified medical certificates within 7 days of this announcement. Certificates must be issued by a registered Government Medical Officer (GMO) and uploaded as a PDF via the student portal Medical tab.",
-                "GENERAL",
-                "NORMAL",
-                "Senior Assistant Registrar / Academic",
-                today.minusDays(7)
-        ));
-
-        list.add(new Notice(
-                5,
-                "UGC Circular No. 12-2024 Grading System Implementation Guidelines",
-                "Official notification regarding the standard Sri Lankan University Grants Commission (UGC) Circular No. 12-2024 grading criteria. Letter grades (A+ to E) and corresponding Grade Point Values (4.00 to 0.00) are mapped based on 40% CA + 60% Final Examination weighting. Cumulative CGPA classifications are available on the CGPA breakdown tab.",
-                "ACADEMIC",
-                "INFO",
-                "Dean's Office, Faculty of Technology",
-                today.minusDays(10)
-        ));
-
-        return list;
+        return new ArrayList<>();
     }
 }
