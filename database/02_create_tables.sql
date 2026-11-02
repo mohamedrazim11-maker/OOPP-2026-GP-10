@@ -45,7 +45,6 @@ CREATE TABLE IF NOT EXISTS courses (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-<<<<<<< HEAD
 -- =======================================================
 -- Member 3: Attendance & Medical Records Module
 -- =======================================================
@@ -148,8 +147,9 @@ CREATE TABLE IF NOT EXISTS eligibility (
       CONSTRAINT fk_eligibility_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
       CONSTRAINT fk_eligibility_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
       UNIQUE KEY unique_student_course_eligibility (student_id, course_id)
-=======
--- 4. Notices Table
+) ENGINE=InnoDB;
+
+-- 12. Notices Table
 CREATE TABLE IF NOT EXISTS notices (
     notice_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
@@ -159,5 +159,4 @@ CREATE TABLE IF NOT EXISTS notices (
     posted_by VARCHAR(100) NOT NULL DEFAULT 'Faculty Administration',
     posted_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
->>>>>>> Razim
 ) ENGINE=InnoDB;
