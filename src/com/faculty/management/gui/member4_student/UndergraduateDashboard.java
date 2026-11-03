@@ -7,6 +7,7 @@ import com.faculty.management.model.User;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+<<<<<<< HEAD
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.util.ArrayList;
@@ -30,6 +31,22 @@ public class UndergraduateDashboard extends JFrame {
     private CardLayout contentLayout;
     private JPanel contentCards;
 >>>>>>> Stashed changes
+=======
+import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+/**
+ * Modern Undergraduate Dashboard GUI — Member 4 (Undergraduate, Timetable & Results).
+ * High-performance tabbed self-service student portal connecting Profiles,
+ * Enrolled Courses, Class Timetables, Attendance Monitoring, Medical Excuses,
+ * Faculty Notice Board, UGC Letter Grades, Transcripts, SGPA & CGPA.
+ */
+public class UndergraduateDashboard extends JFrame {
+
+    private final User currentUser;
+    private final UndergraduateController controller = new UndergraduateController();
+>>>>>>> 0e1998714d14ec7f484e61fcf8a63342891c13a1
 
     public UndergraduateDashboard(User user) {
         this.currentUser = user;
@@ -37,15 +54,24 @@ public class UndergraduateDashboard extends JFrame {
     }
 
     private void initComponents() {
+<<<<<<< HEAD
         setTitle("Faculty Management System — Undergraduate Portal");
         setSize(1360, 860);
         setMinimumSize(new Dimension(1050, 700));
+=======
+        setTitle("Faculty Management System — Student Portal (" + currentUser.getUsername() + ")");
+        setSize(1240, 800);
+        setMinimumSize(new Dimension(980, 640));
+>>>>>>> 0e1998714d14ec7f484e61fcf8a63342891c13a1
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         getContentPane().setBackground(UITheme.BG_PAGE);
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+>>>>>>> 0e1998714d14ec7f484e61fcf8a63342891c13a1
         JPanel topContainer = new JPanel();
         topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.Y_AXIS));
 
@@ -118,6 +144,7 @@ public class UndergraduateDashboard extends JFrame {
 
         add(topContainer, BorderLayout.NORTH);
         add(buildTabs(), BorderLayout.CENTER);
+<<<<<<< HEAD
 =======
         add(buildBrandHeader(), BorderLayout.NORTH);
 
@@ -304,5 +331,27 @@ public class UndergraduateDashboard extends JFrame {
             }
             super.paintComponent(g);
         }
+=======
+    }
+
+    private JTabbedPane buildTabs() {
+        JTabbedPane tabs = new JTabbedPane();
+        UITheme.styleTabbedPane(tabs);
+
+        int studentId = currentUser.getUserId();
+
+        tabs.addTab("Profile", new StudentProfilePanel(controller, studentId));
+        tabs.addTab("Courses", new StudentCoursePanel(controller, studentId));
+        tabs.addTab("Timetable", new TimetablePanel(controller, studentId));
+        tabs.addTab("Attendance", new AttendancePanel(controller, studentId));
+        tabs.addTab("Medical", new MedicalPanel(controller, studentId));
+        tabs.addTab("Notices", new StudentNoticePanel(controller, studentId));
+        tabs.addTab("Grades", new GradePanel(controller, studentId));
+        tabs.addTab("Results", new ResultPanel(controller, studentId));
+        tabs.addTab("SGPA", new SGPA_Panel(controller, studentId));
+        tabs.addTab("CGPA", new CGPA_Panel(controller, studentId));
+
+        return tabs;
+>>>>>>> 0e1998714d14ec7f484e61fcf8a63342891c13a1
     }
 }

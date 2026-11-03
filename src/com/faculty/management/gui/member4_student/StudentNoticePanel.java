@@ -192,8 +192,15 @@ public class StudentNoticePanel extends JPanel {
         btn.setFont(UITheme.FONT_SMALL_BOLD);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+<<<<<<< HEAD
         btn.setOpaque(true);
         btn.setContentAreaFilled(true);
+=======
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
+                new EmptyBorder(6, 14, 6, 14)
+        ));
+>>>>>>> 0e1998714d14ec7f484e61fcf8a63342891c13a1
 
         updateCategoryButtonAppearance(btn, categoryKey.equalsIgnoreCase(selectedCategory));
 
@@ -213,10 +220,13 @@ public class StudentNoticePanel extends JPanel {
     }
 
     private void updateCategoryButtonAppearance(JButton btn, boolean isSelected) {
+<<<<<<< HEAD
         btn.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(isSelected ? UITheme.PRIMARY : UITheme.BORDER_LIGHT, 1),
                 new EmptyBorder(6, 14, 6, 14)
         ));
+=======
+>>>>>>> 0e1998714d14ec7f484e61fcf8a63342891c13a1
         if (isSelected) {
             btn.setBackground(UITheme.PRIMARY);
             btn.setForeground(Color.WHITE);
