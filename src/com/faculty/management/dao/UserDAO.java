@@ -496,8 +496,11 @@ public class UserDAO {
             user = new Lecturer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         } else if (Role.TECHNICAL_OFFICER.equalsIgnoreCase(roleName)) {
             user = new TechnicalOfficer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+<<<<<<< HEAD
         } else if (Role.UNDERGRADUATE.equalsIgnoreCase(roleName) || "STUDENT".equalsIgnoreCase(roleName)) {
             user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+=======
+>>>>>>> Aysha
         } else {
             // Default to Undergraduate / Student
             user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);

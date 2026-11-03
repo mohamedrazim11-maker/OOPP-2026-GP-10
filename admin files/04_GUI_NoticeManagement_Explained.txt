@@ -1,0 +1,96 @@
+====================================================================================================
+MEMBER 1: ADMINISTRATOR MODULE — LINE-BY-LINE CODE EXPLANATION
+FILES:
+  1. src/com/faculty/management/gui/member1_admin/NoticeManagementPanel.java
+  2. src/com/faculty/management/gui/member1_admin/NoticeFormDialog.java
+====================================================================================================
+
+PART 1: NoticeManagementPanel.java
+----------------------------------------------------------------------------------------------------
+ROLE & PURPOSE:
+- Represents the official Notice Board Management section inside the Admin Dashboard.
+- Strictly provides the options: "Post Notice", "Edit Notice", "Delete Notice", and "View Notice".
+- Provides real-time category filtering (`ACADEMIC`, `EXAMINATION`, `TIMETABLE`, `GENERAL`), keyword search,
+  and dynamic table loading directly from the database without any hardcoded mock data.
+
+DETAILED LINE-BY-LINE EXPLANATION:
+- Lines 1-39: Package, Imports, and Architectural Description
+  - Package: `com.faculty.management.gui.member1_admin`.
+  - Imports: `AdminController`, exceptions (`DatabaseException`, `ValidationException`), UI helpers, and `Notice` model.
+  - Documents OOP principles: Inheritance (JPanel), Abstraction (through controller/service), Encapsulation.
+- Lines 40-58: Instance Fields
+  - `private final AdminController adminController`: Controller instance.
+  - Buttons: `createNoticeButton` ("+ Post Notice"), `editNoticeButton`, `deleteNoticeButton`, `viewNoticeButton`, `refreshButton`.
+  - Filter/Search: `JTextField searchField`, `JComboBox<String> categoryFilterBox`.
+  - Table: `JTable noticeTable`, `DefaultTableModel tableModel`, `List<Notice> currentNoticeList`.
+  - Badges/Status: `totalNoticesCountLabel`, `lastActionNoticeLabel`.
+- Lines 59-70: Constructors
+  - `public NoticeManagementPanel()` and overloaded constructor.
+  - Calls `initComponents()` and then `loadNotices()`.
+- Lines 71-255: `initComponents()`
+  - Sets background and padding.
+  - Header: Main title `"Notice Board Management"` and subtitle `"Publish and maintain official announcements"`.
+  - Action Toolbar:
+    - `+ Post Notice`: Primary burgundy button. Opens dialog to publish a new circular.
+    - `Edit Notice`: Custom button. Modifies an existing selected announcement.
+    - `Delete Notice`: Danger crimson button. Permanently removes outdated notice from DB.
+    - `View Notice`: Custom button. Inspects complete announcement body and metadata.
+  - Filter Bar:
+    - Search text field with dynamic key-release listener triggering search.
+    - Category filter dropdown with options: `ALL`, `ACADEMIC`, `EXAMINATION`, `TIMETABLE`, `GENERAL`.
+    - Refresh button to reload live notices from database.
+  - Notices Table:
+    - Columns: `{"ID", "Title", "Category", "Priority", "Posted By", "Date"}`.
+    - Cells made read-only via `isCellEditable = false`.
+    - Priority column renderer: Displays color-coded pills (Red for `URGENT`, Blue for `NORMAL`, Gray for `INFO`).
+    - Double-click mouse listener on a row opens `handleViewNoticeAction()`.
+- Lines 258-305: `loadNotices()`
+  - Invokes `adminController.loadAllNotices()`.
+  - Clears `tableModel` and iterates through notices adding rows.
+  - Updates total notice counter label.
+  - Handles `DatabaseException` by showing error message in red on the status label.
+- Lines 308-360: Filter & Search Logic
+  - `handleSearchAction()`: Calls `adminController.searchNotices(keyword)` and updates table.
+  - `handleFilterAction()`: Calls `adminController.filterNoticesByCategory(category)` and updates table.
+- Lines 365-475: CRUD Action Handlers
+  - `handleCreateNoticeAction()`: Opens `NoticeFormDialog` in `ADD` mode; refreshes table upon save.
+  - `handleEditNoticeAction()`: Ensures row is selected, opens `NoticeFormDialog` in `EDIT` mode.
+  - `handleDeleteNoticeAction()`: Confirms with user, calls `adminController.handleDeleteNotice(id)`.
+  - `handleViewNoticeAction()`: Opens `NoticeFormDialog` in `VIEW` mode for detailed reading.
+
+----------------------------------------------------------------------------------------------------
+PART 2: NoticeFormDialog.java
+----------------------------------------------------------------------------------------------------
+ROLE & PURPOSE:
+- Modal dialog (JDialog) for authoring, editing, and reading faculty announcements.
+- Supports 3 modes: `ADD`, `EDIT`, and `VIEW`.
+- Validates notice title length, content body, and target category.
+
+DETAILED LINE-BY-LINE EXPLANATION:
+- Lines 1-45: FormMode Enum & Fields
+  - `public enum FormMode { ADD, EDIT, VIEW }`
+  - Input widgets: `titleField`, `categoryComboBox`, `priorityComboBox`, `postedByField`, `contentArea`, `dateLabel`.
+  - Action buttons: `saveButton`, `cancelButton`.
+- Lines 48-85: Constructors
+  - Supports multiple constructors for creating new notices or passing an existing `Notice` instance.
+  - Sets modal true and title according to mode.
+- Lines 87-285: `initComponents()`
+  - Constructs header banner with burgundy background.
+  - Builds form inputs with GridBagLayout:
+    1. Title field with length validation.
+    2. Category dropdown (`GENERAL`, `ACADEMIC`, `EXAMINATION`, `TIMETABLE`).
+    3. Priority dropdown (`NORMAL`, `URGENT`, `INFO`).
+    4. Posted By field (defaults to `"Faculty Administration"`).
+    5. Content text area with scrolling and word-wrapping.
+    6. Date display label.
+  - In `VIEW` mode: All text fields and combo boxes are set non-editable.
+- Lines 390-420: `populateFormWithNotice(Notice n)`
+  - Reads properties from `Notice` entity and populates form fields.
+- Lines 425-485: `handleSave()`
+  - Performs validation: Checks non-empty title and content.
+  - In `ADD` mode: Constructs new `Notice` entity and calls `adminController.handleCreateNotice(notice)`.
+  - In `EDIT` mode: Modifies existing notice fields and calls `adminController.handleUpdateNotice(notice)`.
+  - Sets `isSaved = true` and closes dialog.
+  - Catches `ValidationException` and `DatabaseException` displaying error text on `errorLabel`.
+====================================================================================================
+

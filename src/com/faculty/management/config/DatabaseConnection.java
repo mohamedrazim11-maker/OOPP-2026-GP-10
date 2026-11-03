@@ -1,6 +1,7 @@
 package com.faculty.management.config;
 
 import com.faculty.management.exception.DatabaseException;
+<<<<<<< HEAD
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Connection;
@@ -35,11 +36,27 @@ public class DatabaseConnection {
     private static String activeUser = mysqlUser;
     private static String activePassword = mysqlPassword;
     private static String activeDatabaseType = "None"; // "MySQL", "SQL Server", or "None"
+=======
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+/**
+ * Singleton Database Connection Manager for Faculty Management System.
+ * Connects to MySQL using pure JDBC.
+ */
+public class DatabaseConnection {
+
+    private static final String URL = "jdbc:mysql://localhost:3306/faculty_management_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "";
+>>>>>>> Aysha
 
     private static DatabaseConnection instance;
     private Connection connection;
 
     private DatabaseConnection() {
+<<<<<<< HEAD
         loadConfiguration();
         loadDrivers();
     }
@@ -103,6 +120,12 @@ public class DatabaseConnection {
             } catch (Exception e) {
                 System.err.println("Note: Could not read database/local.properties: " + e.getMessage());
             }
+=======
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("MySQL Driver not found in classpath: " + e.getMessage());
+>>>>>>> Aysha
         }
     }
 
@@ -119,6 +142,7 @@ public class DatabaseConnection {
     /**
      * Gets an active database connection.
      * Reconnects automatically if the previous connection is closed or null.
+<<<<<<< HEAD
      */
     public synchronized Connection getConnection() throws DatabaseException {
         try {
@@ -184,15 +208,37 @@ public class DatabaseConnection {
                         "• For SQL Server: Ensure SQL Server service is running.\n" +
                         "Make sure 'faculty_management_db' exists.", mysqlEx);
             }
+=======
+     *
+     * @return Active SQL Connection
+     * @throws DatabaseException If unable to connect to the database
+     */
+    public Connection getConnection() throws DatabaseException {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            }
+            return connection;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to connect to MySQL database: " + e.getMessage(), e);
+>>>>>>> Aysha
         }
     }
 
     /**
      * Checks if the database connection can be established.
+<<<<<<< HEAD
      */
     public boolean isConnected() {
         try {
             Connection conn = getConnection();
+=======
+     *
+     * @return true if database is reachable, false otherwise
+     */
+    public boolean isConnected() {
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD)) {
+>>>>>>> Aysha
             return conn != null && !conn.isClosed();
         } catch (Exception e) {
             return false;
@@ -202,16 +248,24 @@ public class DatabaseConnection {
     /**
      * Closes the connection cleanly.
      */
+<<<<<<< HEAD
     public synchronized void closeConnection() {
         if (connection != null) {
             try {
                 connection.close();
                 connection = null;
+=======
+    public void closeConnection() {
+        if (connection != null) {
+            try {
+                connection.close();
+>>>>>>> Aysha
             } catch (SQLException e) {
                 System.err.println("Error closing database connection: " + e.getMessage());
             }
         }
     }
+<<<<<<< HEAD
 
     public synchronized String getActiveDatabaseType() {
         if ("None".equals(activeDatabaseType)) {
@@ -231,4 +285,6 @@ public class DatabaseConnection {
     public static String getUsername() {
         return activeUser;
     }
+=======
+>>>>>>> Aysha
 }

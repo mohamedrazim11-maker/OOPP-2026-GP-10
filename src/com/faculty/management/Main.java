@@ -5,7 +5,12 @@ import com.faculty.management.controller.LoginController;
 import javax.swing.*;
 
 /**
+<<<<<<< HEAD
  * Entry point for the Faculty Management System application.
+=======
+ - Entry point for the Faculty Management System application.
+
+>>>>>>> Aysha
  */
 public class Main {
 
@@ -22,4 +27,8 @@ public class Main {
             LoginController.showLogin();
         });
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> Aysha

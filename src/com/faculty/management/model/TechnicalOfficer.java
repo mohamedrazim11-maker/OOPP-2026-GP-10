@@ -1,6 +1,13 @@
 package com.faculty.management.model;
 
+<<<<<<< HEAD
 
+=======
+/**
+ * Represents a Technical Officer user.
+ * Demonstrates Inheritance from User.
+ */
+>>>>>>> Aysha
 public class TechnicalOfficer extends User {
 
     private String department;

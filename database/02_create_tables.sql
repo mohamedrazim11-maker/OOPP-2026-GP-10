@@ -46,51 +46,9 @@ CREATE TABLE IF NOT EXISTS courses (
 ) ENGINE=InnoDB;
 
 -- =======================================================
--- Member 3: Attendance & Medical Records Module
--- =======================================================
-
--- 4. Table of attendance sessions (Theory or Practical sessions)
-CREATE TABLE IF NOT EXISTS attendance_sessions (
-    session_id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id VARCHAR(20) NOT NULL,
-    session_type ENUM('THEORY', 'PRACTICAL') NOT NULL,
-    session_number INT DEFAULT 1,
-    session_date DATE NOT NULL,
-    hours DECIMAL(3,1) DEFAULT 2.0,
-    created_by INT,
-    FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
-) ENGINE=InnoDB;
-
--- 5. Attendance record table for each student
-CREATE TABLE IF NOT EXISTS attendance_records (
-    record_id INT AUTO_INCREMENT PRIMARY KEY,
-    session_id INT NOT NULL,
-    student_id INT NOT NULL,
-    status ENUM('PRESENT', 'ABSENT') NOT NULL DEFAULT 'ABSENT',
-    FOREIGN KEY (session_id) REFERENCES attendance_sessions(session_id) ON DELETE CASCADE,
-    FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    UNIQUE KEY unique_session_student (session_id, student_id)
-) ENGINE=InnoDB;
-
--- 6. Medical certificate record table
-CREATE TABLE IF NOT EXISTS medical_records (
-    medical_id INT AUTO_INCREMENT PRIMARY KEY,
-    student_id INT NOT NULL,
-    course_id VARCHAR(20) NOT NULL,
-    session_id INT NULL,
-    medical_date DATE NOT NULL,
-    reason TEXT NOT NULL,
-    status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (session_id) REFERENCES attendance_sessions(session_id) ON DELETE SET NULL
-) ENGINE=InnoDB;
-
--- =======================================================
 -- Member 2: Lecturer & Academic Management Module
 -- =======================================================
 
--- 7. Course Materials Table
 CREATE TABLE IF NOT EXISTS course_materials (
      material_id INT AUTO_INCREMENT PRIMARY KEY,
      course_id INT NOT NULL,
@@ -102,7 +60,6 @@ CREATE TABLE IF NOT EXISTS course_materials (
      CONSTRAINT fk_materials_lecturer FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 8. Course Lecturers Mapping Table (Which lecturer teaches which course)
 CREATE TABLE IF NOT EXISTS course_lecturers (
       course_id INT NOT NULL,
       lecturer_id INT NOT NULL,
@@ -111,7 +68,6 @@ CREATE TABLE IF NOT EXISTS course_lecturers (
       CONSTRAINT fk_cl_lecturer FOREIGN KEY (lecturer_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 9. Evaluations Table (Quizzes, Assessments, Mid-term, Practical, Final)
 CREATE TABLE IF NOT EXISTS evaluations (
       evaluation_id INT AUTO_INCREMENT PRIMARY KEY,
       course_id INT NOT NULL,
@@ -123,7 +79,6 @@ CREATE TABLE IF NOT EXISTS evaluations (
       CONSTRAINT fk_evaluations_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 10. Marks Table (Marks obtained per student per evaluation, mandatory out of 100)
 CREATE TABLE IF NOT EXISTS marks (
       mark_id INT AUTO_INCREMENT PRIMARY KEY,
       student_id INT NOT NULL, -- user_id of the student
@@ -136,7 +91,6 @@ CREATE TABLE IF NOT EXISTS marks (
       UNIQUE KEY unique_student_evaluation (student_id, evaluation_id)
 ) ENGINE=InnoDB;
 
--- 11. CA Eligibility Table
 CREATE TABLE IF NOT EXISTS eligibility (
       eligibility_id INT AUTO_INCREMENT PRIMARY KEY,
       student_id INT NOT NULL,
@@ -147,16 +101,4 @@ CREATE TABLE IF NOT EXISTS eligibility (
       CONSTRAINT fk_eligibility_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
       CONSTRAINT fk_eligibility_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
       UNIQUE KEY unique_student_course_eligibility (student_id, course_id)
-) ENGINE=InnoDB;
-
--- 12. Notices Table
-CREATE TABLE IF NOT EXISTS notices (
-    notice_id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    content TEXT NOT NULL,
-    category VARCHAR(50) NOT NULL DEFAULT 'GENERAL',
-    priority VARCHAR(20) NOT NULL DEFAULT 'NORMAL',
-    posted_by VARCHAR(100) NOT NULL DEFAULT 'Faculty Administration',
-    posted_date DATE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;

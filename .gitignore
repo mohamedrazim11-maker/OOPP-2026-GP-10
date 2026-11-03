@@ -3,7 +3,6 @@
 
 # Log files
 *.log
-/database/local.properties
 
 # Package Files
 *.jar
@@ -44,14 +43,3 @@ bin/
 # OS generated files
 .DS_Store
 Thumbs.db
-
-# Project notes & prompt files
-impl.txt
-my.txt
-mockdata.txt
-admin files/
-University Faculty Login Portal.png
-
-# OOP Lecture notes & materials
-OOP/
-*.pdf

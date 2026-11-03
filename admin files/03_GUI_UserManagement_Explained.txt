@@ -1,0 +1,115 @@
+====================================================================================================
+MEMBER 1: ADMINISTRATOR MODULE — LINE-BY-LINE CODE EXPLANATION
+FILES:
+  1. src/com/faculty/management/gui/member1_admin/UserManagementPanel.java
+  2. src/com/faculty/management/gui/member1_admin/UserFormDialog.java
+====================================================================================================
+
+PART 1: UserManagementPanel.java
+----------------------------------------------------------------------------------------------------
+ROLE & PURPOSE:
+- Provides user profile and account administration capabilities for Member 1.
+- Allows viewing users, creating accounts, updating profiles, assigning user roles, maintaining
+  usernames and passwords, and deactivating or deleting users.
+- Connects directly to the backend database through `AdminController` and `UserService`.
+
+DETAILED LINE-BY-LINE EXPLANATION:
+- Lines 1-38: Package, Imports, and Architectural Description
+  - Package: `com.faculty.management.gui.member1_admin`.
+  - Imports: `AdminController`, exceptions (`DatabaseException`, `ValidationException`), UI helpers, and `User` model.
+  - Explains OOP principles implemented: Inheritance (JPanel), Abstraction, Polymorphism, and Encapsulation.
+- Lines 40-57: Encapsulated Fields
+  - `private final AdminController adminController`: Controller dispatch instance.
+  - Table components: `JTable userTable`, `DefaultTableModel tableModel`, `TableRowSorter<DefaultTableModel> rowSorter`.
+  - Filter and search components: `JTextField searchField`, `JComboBox<String> roleFilterComboBox`.
+  - Action buttons: `viewButton`, `createButton`, `updateButton`, `assignRoleButton`, `maintainCredsButton`, `deleteButton`, `refreshButton`.
+- Lines 58-63: Constructor
+  - `public UserManagementPanel()`: Instantiates controller, builds UI components via `initComponents()`,
+    and retrieves user data from DB via `loadUserDataFromBackend()`.
+- Lines 64-180: `initComponents()` Layout Assembly
+  - Sets page background and empty padding.
+  - Header Panel: Main title `"User Profile & Access Management"` and descriptive subtitle.
+  - Controls Panel:
+    - Row 1: Action toolbar containing View, Create (+ Create User in burgundy), Update, Assign Role,
+      Maintain Credentials, Delete (crimson), and Refresh buttons.
+    - Row 2: Search and filtering bar:
+      - Role filter dropdown (`All Roles`, `Admin`, `Lecturer`, `Technical Officer`, `Undergraduate`).
+      - Real-time search field with key listener triggering `applyFilter()`.
+  - Table Setup:
+    - Columns: `{"ID", "Username", "First Name", "Last Name", "Role", "Email", "Contact No", "Status"}`.
+    - Custom table model with `isCellEditable = false`.
+    - Integrates `TableRowSorter` enabling sorting and live regex filtering.
+    - Custom status column cell renderer: Green tag for `ACTIVE`, Gray tag for `INACTIVE`.
+    - Double-click mouse listener on rows automatically triggers `handleViewUser()`.
+- Lines 182-245: `loadUserDataFromBackend()`
+  - Calls `adminController.loadAllUsers()`.
+  - Populates the table model with rows from the returned `List<User>`.
+  - Clears previous rows to maintain fresh view.
+- Lines 250-280: `applyFilter()`
+  - Combines role dropdown selection and search text into a compound regex `RowFilter`.
+  - Applies filter dynamically to `rowSorter` without requiring database re-query.
+- Lines 290-340: `handleViewUser()` & `handleCreateUser()`
+  - `handleViewUser()`: Verifies a table row is selected, extracts user object, and opens `UserFormDialog` in `VIEW` mode.
+  - `handleCreateUser()`: Opens `UserFormDialog` in `CREATE` mode. On save, reloads user table.
+- Lines 342-415: `handleUpdateUser()`, `handleAssignRole()`, `handleMaintainCredentials()`
+  - `handleUpdateUser()`: Opens dialog in `UPDATE` mode for editing contact and name fields.
+  - `handleAssignRole()`: Opens dialog in `ASSIGN_ROLE` mode specifically focusing on role transition.
+  - `handleMaintainCredentials()`: Opens dialog in `MAINTAIN_CREDS` mode for changing username and password.
+- Lines 420-465: `handleDeleteUser()`
+  - Prompts administrator with confirmation dialog.
+  - Calls `adminController.handleDeleteUser(userId)`.
+  - Refreshes table upon deletion.
+
+----------------------------------------------------------------------------------------------------
+PART 2: UserFormDialog.java
+----------------------------------------------------------------------------------------------------
+ROLE & PURPOSE:
+- Modal dialog for user administration supporting 5 distinct operating modes:
+  `CREATE`, `UPDATE`, `VIEW`, `ASSIGN_ROLE`, `MAINTAIN_CREDS`.
+- Validates user input, formats telephone numbers, enforces password constraints, and instantiates
+  the proper polymorphic subclass (`Admin`, `Lecturer`, `TechnicalOfficer`, `Undergraduate`).
+
+DETAILED LINE-BY-LINE EXPLANATION:
+- Lines 1-35: FormMode Enum & Class Declaration
+  - `public enum FormMode { CREATE, UPDATE, VIEW, ASSIGN_ROLE, MAINTAIN_CREDS }`
+  - `public class UserFormDialog extends JDialog`
+- Lines 37-66: Encapsulated Input Components
+  - Text fields: `usernameField`, `firstNameField`, `lastNameField`, `emailField`, `contactField`, `batchField`.
+  - Password fields: `passwordField`, `confirmPasswordField`.
+  - Dropdowns: `roleComboBox`, `departmentComboBox`, `statusComboBox`.
+  - Buttons: `saveButton`, `cancelButton`.
+  - Feedback: `JLabel errorLabel`.
+- Lines 67-117: Overloaded Constructors
+  - Constructors accept either raw data array `Object[]` or domain entity `User`.
+  - Invokes `super(parent, title, true)` for modal behavior.
+  - Initializes components, populates existing fields, and applies mode-specific field restrictions.
+- Lines 118-260: `initComponents()`
+  - Builds scrollable form with GridBagLayout.
+  - Form Fields:
+    1. Role selector (`Admin`, `Lecturer`, `Technical Officer`, `Undergraduate`).
+    2. Username text field.
+    3. Password & Confirm Password fields.
+    4. First Name & Last Name fields.
+    5. Email and Contact Number fields.
+    6. Department and Batch Intake fields.
+    7. Account Status dropdown (`ACTIVE`, `INACTIVE`).
+- Lines 275-345: `applyModeRestrictions()`
+  - Enforces strict field accessibility based on operating mode:
+    - `VIEW`: All fields are non-editable; shows `"Close"` button.
+    - `ASSIGN_ROLE`: Only `roleComboBox` is enabled; credentials and names are locked.
+    - `MAINTAIN_CREDS`: Only `usernameField`, `passwordField`, and `confirmPasswordField` are editable.
+    - `UPDATE`: Credentials cannot be edited here (must use Maintain Credentials mode).
+    - `CREATE`: All relevant fields are open for registration.
+- Lines 385-435: `populateFieldsFromUser(User user)`
+  - Reads properties from the supplied `User` instance and populates the text fields.
+  - Resolves role name into the role combo box selection.
+- Lines 440-520: `handleSave()`
+  - Validates required inputs (non-empty fields, valid email format, matching password confirmation).
+  - In `MAINTAIN_CREDS` mode: Validates new password length and calls `adminController.handleMaintainCredentials(...)`.
+  - In `CREATE` mode: Calls `adminController.handleCreateUser(...)`.
+  - In `UPDATE` mode: Calls `adminController.handleUpdateUser(...)`.
+  - In `ASSIGN_ROLE` mode: Calls `adminController.handleAssignRole(...)`.
+  - Upon success: Sets `isSaved = true` and disposes dialog.
+  - Catches `ValidationException` and `DatabaseException` displaying messages on `errorLabel`.
+====================================================================================================
+

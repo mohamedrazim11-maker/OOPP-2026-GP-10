@@ -1,0 +1,213 @@
+====================================================================================================
+FACULTY MANAGEMENT SYSTEM — MEMBER 1: ADMINISTRATOR MODULE
+FILE LOCATION DIRECTORY & ARCHITECTURAL MAPPING
+====================================================================================================
+
+Generated for: Member 1 (Administrator Portal)
+Project: Faculty Management System (FMS) — ICT2132 Object Oriented Programming Practicum
+
+----------------------------------------------------------------------------------------------------
+1. OVERVIEW OF MEMBER 1 (ADMIN) RESPONSIBILITIES
+----------------------------------------------------------------------------------------------------
+Member 1 is responsible for the full Administrative subsystem:
+  1. User Profile & Access Management (Create, View, Update, Delete, Assign Roles, Maintain Credentials)
+  2. Academic Course Module Management (Add Course, Update Course, Delete Course, View Course, Assign Course Info)
+  3. Official Faculty Notice Board Management (Post Notice, Edit Notice, Delete Notice, View Notice)
+  4. Role-Based Admin Dashboard Navigation Shell (Responsive Left Sidebar + Header + Quick Action Cards)
+  5. Integration with Relational Database (CRUD Operations across MySQL and Microsoft SQL Server)
+
+====================================================================================================
+2. COMPLETE FILE INVENTORY & EXACT LOCATIONS
+====================================================================================================
+
+----------------------------------------------------------------------------------------------------
+A. GUI / USER INTERFACE LAYER (Swing Front-End)
+----------------------------------------------------------------------------------------------------
+1. Admin Dashboard Main Frame:
+   - Relative Path: src/com/faculty/management/gui/member1_admin/AdminDashboard.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\member1_admin\AdminDashboard.java
+   - Description: Main JFrame for Administrator. Contains the custom burgundy sidebar navigation,
+     top bar user info, overview cards (User, Course, Notice, Timetable), and tabbed pane switching.
+
+2. Course Management Panel:
+   - Relative Path: src/com/faculty/management/gui/member1_admin/CourseManagementPanel.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\member1_admin\CourseManagementPanel.java
+   - Description: JPanel containing the courses JTable, action buttons (+ Add Course, Update Course,
+     Delete Course, View Courses, Assign Course Info), and dynamic table loading from DB.
+
+3. Course Form Dialog:
+   - Relative Path: src/com/faculty/management/gui/member1_admin/CourseFormDialog.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\member1_admin\CourseFormDialog.java
+   - Description: Modal JDialog supporting 4 modes (ADD, UPDATE, DELETE, VIEW, ASSIGN_INFO).
+     Validates user inputs, manages spinners, dropdowns, and coordinates course persistence.
+
+4. User Management Panel:
+   - Relative Path: src/com/faculty/management/gui/member1_admin/UserManagementPanel.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\member1_admin\UserManagementPanel.java
+   - Description: JPanel displaying all system users in a styled table with real-time role filtering,
+     search filtering, and action buttons (View, Create, Update, Assign Role, Maintain Creds, Delete).
+
+5. User Form Dialog:
+   - Relative Path: src/com/faculty/management/gui/member1_admin/UserFormDialog.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\member1_admin\UserFormDialog.java
+   - Description: Modal JDialog supporting polymorphic creation/updating of Admin, Lecturer,
+     Technical Officer, and Undergraduate accounts with password confirmation and status handling.
+
+6. Notice Management Panel:
+   - Relative Path: src/com/faculty/management/gui/member1_admin/NoticeManagementPanel.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\member1_admin\NoticeManagementPanel.java
+   - Description: JPanel managing faculty-wide notices with category filtering (Academic, Exam,
+     Timetable, General), keyword searching, and action buttons (Post, Edit, Delete, View).
+
+7. Notice Form Dialog:
+   - Relative Path: src/com/faculty/management/gui/member1_admin/NoticeFormDialog.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\member1_admin\NoticeFormDialog.java
+   - Description: Modal JDialog for drafting, editing, and inspecting announcements with category,
+     priority level, publisher title, and content validation.
+
+----------------------------------------------------------------------------------------------------
+B. CONTROLLER LAYER (MVC Architecture Coordination)
+----------------------------------------------------------------------------------------------------
+8. Admin Controller:
+   - Relative Path: src/com/faculty/management/controller/AdminController.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\controller\AdminController.java
+   - Description: Central dispatch controller connecting Admin GUI actions to underlying services.
+     Handles course CRUD, user management, credentials maintenance, and notice board workflows.
+
+----------------------------------------------------------------------------------------------------
+C. SERVICE LAYER (Business Logic & Validation)
+----------------------------------------------------------------------------------------------------
+9. Course Service:
+   - Relative Path: src/com/faculty/management/service/CourseService.java
+   - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\service\CourseService.java
+   - Description: Enforces academic business rules (duplicate course codes, credit value ranges,
+     contact hour totals, department formats) before delegating to CourseDAO.
+
+10. User Service:
+    - Relative Path: src/com/faculty/management/service/UserService.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\service\UserService.java
+    - Description: Manages user account lifecycle, username uniqueness checks, password hashing /
+      strength validation, role assignment transitions, and user deactivation rules.
+
+11. Notice Service:
+    - Relative Path: src/com/faculty/management/service/NoticeService.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\service\NoticeService.java
+    - Description: Validates notice publication dates, title/content lengths, category values,
+      and coordinates search and filtering logic.
+
+----------------------------------------------------------------------------------------------------
+D. DATA ACCESS OBJECT (DAO) LAYER (JDBC & Database Interaction)
+----------------------------------------------------------------------------------------------------
+12. Course DAO:
+    - Relative Path: src/com/faculty/management/dao/CourseDAO.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\dao\CourseDAO.java
+    - Description: Executes SQL queries (INSERT, UPDATE, DELETE, SELECT) on `courses` table in MySQL
+      and SQL Server. Maps ResultSets to Course model objects.
+
+13. User DAO:
+    - Relative Path: src/com/faculty/management/dao/UserDAO.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\dao\UserDAO.java
+    - Description: Executes SQL operations on `users` and `roles` tables. Handles polymorphic
+      user instantiation, credential updating, and active status toggling.
+
+14. Notice DAO:
+    - Relative Path: src/com/faculty/management/dao/NoticeDAO.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\dao\NoticeDAO.java
+    - Description: Executes SQL operations on `notices` table. Ensures schema exists, handles
+      category and keyword queries, and safely manages exceptions without mock data.
+
+----------------------------------------------------------------------------------------------------
+E. MODEL LAYER (Object-Oriented Entities)
+----------------------------------------------------------------------------------------------------
+15. Admin Entity Model:
+    - Relative Path: src/com/faculty/management/model/Admin.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\model\Admin.java
+    - Description: Inherits from abstract User class. Implements getRoleTitle() and getDashboardGreeting().
+
+16. Course Entity Model:
+    - Relative Path: src/com/faculty/management/model/Course.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\model\Course.java
+    - Description: Encapsulates course properties: courseId, courseCode, courseName, creditValue,
+      theoryHours, practicalHours, department, semester, description. Includes calculation methods.
+
+17. User Abstract Base Model:
+    - Relative Path: src/com/faculty/management/model/User.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\model\User.java
+    - Description: Abstract parent entity defining shared user properties (userId, username, password,
+      email, firstName, lastName, contactNo, role, status) with abstract polymorphic methods.
+
+18. Notice Entity Model:
+    - Relative Path: src/com/faculty/management/model/Notice.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\model\Notice.java
+    - Description: Encapsulates noticeId, title, content, category, priority, postedBy, and postedDate.
+
+19. Role Entity Model:
+    - Relative Path: src/com/faculty/management/model/Role.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\model\Role.java
+    - Description: Encapsulates roleId, roleName (ADMIN, LECTURER, TECHNICAL_OFFICER, UNDERGRADUATE),
+      and description.
+
+----------------------------------------------------------------------------------------------------
+F. SHARED UI UTILITIES & DATABASE CONFIGURATION (Used by Admin Module)
+----------------------------------------------------------------------------------------------------
+20. UI Theme & Design System:
+    - Relative Path: src/com/faculty/management/gui/common/UITheme.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\common\UITheme.java
+    - Description: Provides FMS color palette (Burgundy #5C1221, Gold #D97706, Slate #1E293B),
+      sidebar navigation component, modern header, card styling, and table styling.
+
+21. Database Connection Singleton:
+    - Relative Path: src/com/faculty/management/util/DatabaseConnection.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\util\DatabaseConnection.java
+    - Description: Singleton connection manager supporting automatic failover between Microsoft
+      SQL Server (localhost\SQLEXPRESS) and MySQL (3306).
+
+22. Database DDL & Seed Scripts:
+    - Relative Path: database/01_create_database.sql
+    - Relative Path: database/02_create_tables.sql
+    - Relative Path: database/03_insert_roles.sql
+    - Relative Path: database/04_insert_users.sql
+    - Relative Path: database/05_insert_courses.sql
+    - Relative Path: database/00_setup_sqlserver.sql
+
+----------------------------------------------------------------------------------------------------
+G. LOGIN & AUTHENTICATION SUBSYSTEM (System Gateway & Role Routing)
+----------------------------------------------------------------------------------------------------
+23. Login Frame GUI:
+    - Relative Path: src/com/faculty/management/gui/common/LoginFrame.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\gui\common\LoginFrame.java
+    - Description: Modern two-column login window with university branding, role selector, password
+      eye-toggle, input glow, and error animations.
+
+24. Login Controller:
+    - Relative Path: src/com/faculty/management/controller/LoginController.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\controller\LoginController.java
+    - Description: Orchestrates user authentication and polymorphic dashboard redirection.
+
+25. Authentication Service:
+    - Relative Path: src/com/faculty/management/service/AuthenticationService.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\service\AuthenticationService.java
+    - Description: Validates credentials, checks account status, and verifies role authorization.
+
+26. Authentication Exception:
+    - Relative Path: src/com/faculty/management/exception/AuthenticationException.java
+    - Absolute Path: C:\Users\Razim\Desktop\FacultyManagementSystem\src\com\faculty\management\exception\AuthenticationException.java
+    - Description: Checked exception signaling invalid credentials, inactive accounts, or role mismatch.
+
+
+====================================================================================================
+3. CORE OOP CONCEPTS MATRIX FOR VIVA / LAB EVALUATION
+====================================================================================================
+Concept                      Where Demonstrated in Member 1
+----------------------------------------------------------------------------------------------------
+1. Classes & Objects         All files. Instantiation of Entities, Dialogs, Panels, and DAOs.
+2. Inheritance               Admin extends User; AdminDashboard extends JFrame; Panels extend JPanel.
+3. Polymorphism              User.getRoleTitle() and User.getDashboardGreeting() overridden in Admin.
+                             Overloaded constructors in AdminDashboard, CourseManagementPanel, etc.
+4. Abstraction               MVC Architecture: GUI -> AdminController -> Services -> DAOs.
+                             Abstract class User defines template contracts for child entities.
+5. Encapsulation             Private instance variables with public getters/setters across all models.
+6. Error/Exception Handling  Custom ValidationException and DatabaseException caught with user-friendly alerts.
+7. Database Handling         Direct JDBC PreparedStatement and ResultSet queries across CourseDAO, UserDAO, NoticeDAO.
+====================================================================================================
+

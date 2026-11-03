@@ -2,7 +2,10 @@ package com.faculty.management.model;
 
 /**
  * Course entity model representing academic modules in the Faculty of Technology.
+<<<<<<< HEAD
  * Shared reference entity maintained by Member 1 (Admin) and consumed across the system.
+=======
+>>>>>>> Aysha
  * Demonstrates Classes & Objects and Encapsulation.
  */
 public class Course {
@@ -16,8 +19,11 @@ public class Course {
     private String department;
     private String semester;
     private String description;
+<<<<<<< HEAD
     private int semesterNumber;
     private String academicYear;
+=======
+>>>>>>> Aysha
 
     public Course() {
     }
@@ -40,6 +46,7 @@ public class Course {
         this(0, courseCode, courseName, creditValue, theoryHours, practicalHours, department, semester, description);
     }
 
+<<<<<<< HEAD
     public Course(int courseId, String courseCode, String courseName, int credits,
                   int theorySessions, int practicalSessions, int semesterNumber,
                   String academicYear, String department) {
@@ -58,6 +65,8 @@ public class Course {
         return practicalHours > 0;
     }
 
+=======
+>>>>>>> Aysha
     // Encapsulated Getters and Setters
     public int getCourseId() {
         return courseId;
@@ -91,6 +100,7 @@ public class Course {
         this.creditValue = creditValue;
     }
 
+<<<<<<< HEAD
     public int getCredits() {
         return creditValue;
     }
@@ -99,6 +109,8 @@ public class Course {
         this.creditValue = credits;
     }
 
+=======
+>>>>>>> Aysha
     public int getTheoryHours() {
         return theoryHours;
     }
@@ -107,6 +119,7 @@ public class Course {
         this.theoryHours = theoryHours;
     }
 
+<<<<<<< HEAD
     public int getTheorySessions() {
         return theoryHours;
     }
@@ -115,6 +128,8 @@ public class Course {
         this.theoryHours = theorySessions;
     }
 
+=======
+>>>>>>> Aysha
     public int getPracticalHours() {
         return practicalHours;
     }
@@ -123,6 +138,7 @@ public class Course {
         this.practicalHours = practicalHours;
     }
 
+<<<<<<< HEAD
     public int getPracticalSessions() {
         return practicalHours;
     }
@@ -131,6 +147,8 @@ public class Course {
         this.practicalHours = practicalSessions;
     }
 
+=======
+>>>>>>> Aysha
     public String getDepartment() {
         return department;
     }
@@ -155,6 +173,7 @@ public class Course {
         this.description = description;
     }
 
+<<<<<<< HEAD
     public int getSemesterNumber() {
         return semesterNumber;
     }
@@ -171,6 +190,8 @@ public class Course {
         this.academicYear = academicYear;
     }
 
+=======
+>>>>>>> Aysha
     @Override
     public String toString() {
         return courseCode + " - " + courseName + " (" + creditValue + " Credits)";

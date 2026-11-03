@@ -1,11 +1,16 @@
 package com.faculty.management.service;
 
+<<<<<<< HEAD
+=======
+import com.faculty.management.config.DatabaseConnection;
+>>>>>>> Aysha
 import com.faculty.management.dao.CourseDAO;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.Course;
 import com.faculty.management.util.ValidationUtil;
 
+<<<<<<< HEAD
 import java.util.List;
 
 /**
@@ -22,16 +27,38 @@ import java.util.List;
  * - Encapsulation: Private CourseDAO and validation logic protecting domain integrity.
  * - Error/Exception Handling: Uses ValidationException and DatabaseException.
  * - Database Handling: Parameterized SQL CRUD operations via CourseDAO.
+=======
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Service layer handling Course management business rules, validations, and database persistence.
+ * Demonstrates Classes & Objects, Encapsulation, Abstraction, Polymorphism,
+ * Error/Exception Handling, and Database Handling.
+>>>>>>> Aysha
  */
 public class CourseService {
 
     private final CourseDAO courseDAO;
 
+<<<<<<< HEAD
+=======
+    // In-memory mock storage for fallback demo mode when database is offline
+    private static final List<Course> mockCourses = new ArrayList<>();
+    private static final AtomicInteger mockIdGenerator = new AtomicInteger(10);
+
+    static {
+        initMockData();
+    }
+
+>>>>>>> Aysha
     public CourseService() {
         this.courseDAO = new CourseDAO();
     }
 
     public CourseService(CourseDAO courseDAO) {
+<<<<<<< HEAD
         this.courseDAO = (courseDAO != null) ? courseDAO : new CourseDAO();
     }
 
@@ -40,6 +67,16 @@ public class CourseService {
      *
      * @param course Course entity to add
      * @return Saved Course entity with assigned database ID
+=======
+        this.courseDAO = courseDAO;
+    }
+
+    /**
+     * Adds a new course to the system after validation and uniqueness checks.
+     *
+     * @param course Course entity to add
+     * @return Saved Course entity with assigned ID
+>>>>>>> Aysha
      * @throws ValidationException If validation fails (empty fields, duplicate code)
      * @throws DatabaseException   If database error occurs
      */
@@ -50,6 +87,7 @@ public class CourseService {
         String trimmedCode = course.getCourseCode().trim().toUpperCase();
         course.setCourseCode(trimmedCode);
 
+<<<<<<< HEAD
         // Derive academic curriculum metadata if absent (req.txt)
         if (course.getSemesterNumber() <= 0) {
             int semNum = (course.getSemester() != null && course.getSemester().contains("1")) ? 1 : 2;
@@ -66,11 +104,36 @@ public class CourseService {
 
         // 3. Direct SQL INSERT via CourseDAO
         return courseDAO.createCourse(course);
+=======
+        // 2. Database persistence when connected
+        if (DatabaseConnection.getInstance().isConnected()) {
+            if (courseDAO.existsByCode(trimmedCode)) {
+                throw new ValidationException("Course Code '" + trimmedCode + "' already exists in the system.");
+            }
+            Course saved = courseDAO.createCourse(course);
+            mockCourses.add(saved);
+            return saved;
+        }
+
+        // 3. Offline Fallback Demo Mode
+        for (Course c : mockCourses) {
+            if (c.getCourseCode().equalsIgnoreCase(trimmedCode)) {
+                throw new ValidationException("Course Code '" + trimmedCode + "' already exists in the system.");
+            }
+        }
+
+        course.setCourseId(mockIdGenerator.incrementAndGet());
+        mockCourses.add(course);
+        return course;
+>>>>>>> Aysha
     }
 
     /**
      * Polymorphic overload to add a course using individual parameter values.
+<<<<<<< HEAD
      * Demonstrates Polymorphism and Abstraction.
+=======
+>>>>>>> Aysha
      */
     public Course addCourse(String courseCode, String courseName, int creditValue, int theoryHours,
                             int practicalHours, String department, String semester, String description)
@@ -80,6 +143,7 @@ public class CourseService {
     }
 
     /**
+<<<<<<< HEAD
      * Polymorphic overload to add a standard course with default 30h theory and 30h practical contact hours.
      * Demonstrates Polymorphism and Abstraction.
      */
@@ -135,12 +199,52 @@ public class CourseService {
      * @param courseCode Course code (e.g. "ICT2132")
      * @return Course entity or null
      * @throws DatabaseException If database query fails
+=======
+     * Retrieves all courses in the system.
+     *
+     * @return List of Course entities
+     * @throws DatabaseException If database error occurs
+     */
+    public List<Course> getAllCourses() throws DatabaseException {
+        if (DatabaseConnection.getInstance().isConnected()) {
+            return courseDAO.getAllCourses();
+        }
+        return new ArrayList<>(mockCourses);
+    }
+
+    /**
+     * Retrieves a course by its unique ID.
+     *
+     * @param courseId ID of the course
+     * @return Course entity or null if not found
+     * @throws DatabaseException If database error occurs
+     */
+    public Course getCourseById(int courseId) throws DatabaseException {
+        if (DatabaseConnection.getInstance().isConnected()) {
+            return courseDAO.findById(courseId);
+        }
+        for (Course c : mockCourses) {
+            if (c.getCourseId() == courseId) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves a course by its course code.
+     *
+     * @param courseCode Course code (e.g. "ICT2132")
+     * @return Course entity or null
+     * @throws DatabaseException If database error occurs
+>>>>>>> Aysha
      */
     public Course getCourseByCode(String courseCode) throws DatabaseException {
         if (courseCode == null || courseCode.trim().isEmpty()) {
             return null;
         }
         String trimmed = courseCode.trim().toUpperCase();
+<<<<<<< HEAD
         return courseDAO.findByCode(trimmed);
     }
 
@@ -166,6 +270,26 @@ public class CourseService {
      * @return true if updated successfully in MySQL
      * @throws ValidationException If validation fails
      * @throws DatabaseException   If database update fails
+=======
+        if (DatabaseConnection.getInstance().isConnected()) {
+            return courseDAO.findByCode(trimmed);
+        }
+        for (Course c : mockCourses) {
+            if (c.getCourseCode().equalsIgnoreCase(trimmed)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Updates an existing course record with validation and uniqueness checks.
+     *
+     * @param course Course entity with updated values
+     * @return true if updated successfully
+     * @throws ValidationException If validation fails
+     * @throws DatabaseException   If database error occurs
+>>>>>>> Aysha
      */
     public boolean updateCourse(Course course) throws ValidationException, DatabaseException {
         if (course == null || course.getCourseId() <= 0) {
@@ -176,6 +300,7 @@ public class CourseService {
         String trimmedCode = course.getCourseCode().trim().toUpperCase();
         course.setCourseCode(trimmedCode);
 
+<<<<<<< HEAD
         // Check uniqueness excluding current course ID
         if (courseDAO.existsByCodeExcludingCourse(trimmedCode, course.getCourseId())) {
             throw new ValidationException("Course Code '" + trimmedCode + "' is already in use by another course in the database.");
@@ -183,6 +308,26 @@ public class CourseService {
 
         // Direct SQL UPDATE via CourseDAO
         return courseDAO.updateCourse(course);
+=======
+        // Database persistence when connected
+        if (DatabaseConnection.getInstance().isConnected()) {
+            if (courseDAO.existsByCodeExcludingCourse(trimmedCode, course.getCourseId())) {
+                throw new ValidationException("Course Code '" + trimmedCode + "' is already in use by another course.");
+            }
+            boolean updated = courseDAO.updateCourse(course);
+            updateMockCourse(course);
+            return updated;
+        }
+
+        // Offline Fallback Demo Mode
+        for (Course c : mockCourses) {
+            if (c.getCourseId() != course.getCourseId() && c.getCourseCode().equalsIgnoreCase(trimmedCode)) {
+                throw new ValidationException("Course Code '" + trimmedCode + "' is already in use by another course.");
+            }
+        }
+
+        return updateMockCourse(course);
+>>>>>>> Aysha
     }
 
     /**
@@ -196,6 +341,7 @@ public class CourseService {
     }
 
     /**
+<<<<<<< HEAD
      * Polymorphic overload to update a course using course code identifier.
      * Demonstrates Polymorphism and Abstraction.
      */
@@ -242,11 +388,18 @@ public class CourseService {
 
     /**
      * Deletes a course by its ID directly from MySQL database.
+=======
+     * Deletes a course by its ID.
+>>>>>>> Aysha
      *
      * @param courseId ID of the course to delete
      * @return true if deleted
      * @throws ValidationException If validation fails
+<<<<<<< HEAD
      * @throws DatabaseException   If database deletion fails
+=======
+     * @throws DatabaseException   If database error occurs
+>>>>>>> Aysha
      */
     public boolean deleteCourse(int courseId) throws ValidationException, DatabaseException {
         if (courseId <= 0) {
@@ -255,6 +408,7 @@ public class CourseService {
 
         Course course = getCourseById(courseId);
         if (course == null) {
+<<<<<<< HEAD
             throw new ValidationException("Course with ID " + courseId + " does not exist in the database.");
         }
 
@@ -278,6 +432,18 @@ public class CourseService {
             throw new ValidationException("Course with code '" + courseCode + "' does not exist in the database.");
         }
         return deleteCourse(course.getCourseId());
+=======
+            throw new ValidationException("Course with ID " + courseId + " does not exist.");
+        }
+
+        if (DatabaseConnection.getInstance().isConnected()) {
+            boolean deleted = courseDAO.deleteCourse(courseId);
+            mockCourses.removeIf(c -> c.getCourseId() == courseId);
+            return deleted;
+        }
+
+        return mockCourses.removeIf(c -> c.getCourseId() == courseId);
+>>>>>>> Aysha
     }
 
     /**
@@ -295,6 +461,7 @@ public class CourseService {
         return deleteCourse(course.getCourseId());
     }
 
+<<<<<<< HEAD
     /**
      * Assigns course information (department, semester, credits, contact hours, syllabus) to a course.
      * Validates input rules and persists updates directly to MySQL database via CourseDAO.
@@ -378,5 +545,23 @@ public class CourseService {
             throw new ValidationException("Course with code '" + courseCode + "' does not exist in the database.");
         }
         return assignCourseInformation(course.getCourseId(), department, semester, creditValue, theoryHours, practicalHours, description);
+=======
+    private boolean updateMockCourse(Course course) {
+        for (int i = 0; i < mockCourses.size(); i++) {
+            if (mockCourses.get(i).getCourseId() == course.getCourseId()) {
+                mockCourses.set(i, course);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void initMockData() {
+        mockCourses.add(new Course(1, "ICT2112", "Data Structures and Algorithms", 2, 30, 30, "Department of Information & Communication Technology", "Semester 2", "Core data structures and algorithmic complexity"));
+        mockCourses.add(new Course(2, "ICT2123", "Database Management Systems", 3, 30, 60, "Department of Information & Communication Technology", "Semester 2", "Relational database concepts, normalization, and SQL"));
+        mockCourses.add(new Course(3, "ICT2132", "Object Oriented Programming Practicum", 2, 0, 60, "Department of Information & Communication Technology", "Semester 2", "Hands-on object-oriented programming with Java Swing & MySQL"));
+        mockCourses.add(new Course(4, "BST2113", "Bioprocess Technology", 3, 30, 60, "Department of Biosystems Technology", "Semester 2", "Bioprocess fundamentals and industrial biotechnology applications"));
+        mockCourses.add(new Course(5, "ENG2113", "Engineering Mechanics", 3, 30, 60, "Department of Engineering Technology", "Semester 2", "Applied statics, dynamics, and engineering mechanics principles"));
+>>>>>>> Aysha
     }
 }

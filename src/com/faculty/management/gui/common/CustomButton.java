@@ -29,7 +29,11 @@ public class CustomButton extends JButton {
      * Constructor taking text, background, foreground, and border colors.
      */
     public CustomButton(String text, Color bg, Color fg, Color border) {
+<<<<<<< HEAD
         this(text, bg, computeHoverColor(bg), computePressedColor(bg), fg, border, 8);
+=======
+        this(text, bg, computeHoverColor(bg), computePressedColor(bg), fg, border, 6);
+>>>>>>> Aysha
     }
 
     /**

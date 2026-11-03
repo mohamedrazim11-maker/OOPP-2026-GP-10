@@ -1,16 +1,22 @@
 package com.faculty.management.gui.member2_lecturer;
 
 import com.faculty.management.controller.LecturerController;
+<<<<<<< HEAD
 import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.CourseMaterial;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+=======
+
+import javax.swing.*;
+>>>>>>> Aysha
 import java.awt.*;
 import java.io.File;
 
 public class MaterialFormDialog extends JDialog {
     private JTextField txtTitle, txtCourseId, txtFilePath;
+<<<<<<< HEAD
     private JButton btnBrowse, btnSave, btnCancel;
     private File selectedFile;
     private final LecturerController controller;
@@ -112,17 +118,50 @@ public class MaterialFormDialog extends JDialog {
         add(formPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         pack();
+=======
+    private JButton btnBrowse, btnUpload;
+    private File selectedFile;
+    private final LecturerController controller;
+    private boolean success = false;
+
+    public MaterialFormDialog(Frame parent, LecturerController controller) {
+        super(parent, "Upload Course Material", true);
+        this.controller = controller;
+        setLayout(new GridLayout(4, 2, 10, 10));
+
+        txtCourseId = new JTextField();
+        txtTitle = new JTextField();
+        txtFilePath = new JTextField(); txtFilePath.setEditable(false);
+
+        btnBrowse = new JButton("Browse File");
+        btnBrowse.addActionListener(e -> chooseFile());
+
+        btnUpload = new JButton("Upload");
+        btnUpload.addActionListener(e -> doUpload());
+
+        add(new JLabel("Course ID:")); add(txtCourseId);
+        add(new JLabel("Material Title:")); add(txtTitle);
+        add(btnBrowse); add(txtFilePath);
+        add(new JLabel("")); add(btnUpload);
+
+        pack();
+        setLocationRelativeTo(parent);
+>>>>>>> Aysha
     }
 
     private void chooseFile() {
         JFileChooser chooser = new JFileChooser();
+<<<<<<< HEAD
         chooser.setDialogTitle("Select Course Material File (PDF, Slides, Doc)");
+=======
+>>>>>>> Aysha
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             selectedFile = chooser.getSelectedFile();
             txtFilePath.setText(selectedFile.getAbsolutePath());
         }
     }
 
+<<<<<<< HEAD
     private void doSave() {
         String courseId = txtCourseId.getText().trim();
         String title = txtTitle.getText().trim();
@@ -160,4 +199,21 @@ public class MaterialFormDialog extends JDialog {
     public boolean isSuccess() {
         return success;
     }
+=======
+    private void doUpload() {
+        if (selectedFile == null || txtTitle.getText().isEmpty() || txtCourseId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields and select a file.");
+            return;
+        }
+        success = controller.uploadCourseMaterial(txtCourseId.getText(), txtTitle.getText(), selectedFile);
+        if (success) {
+            JOptionPane.showMessageDialog(this, "File uploaded successfully!");
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Upload failed.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public boolean isSuccess() { return success; }
+>>>>>>> Aysha
 }

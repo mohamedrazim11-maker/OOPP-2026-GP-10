@@ -2,6 +2,7 @@ package com.faculty.management.model;
 
 import com.faculty.management.exception.InvalidMarkException;
 
+<<<<<<< HEAD
 /**
  * Represents student evaluation marks and component scores.
  * Unifies Member 2 evaluation-based mark entries and Continuous Assessment
@@ -10,11 +11,15 @@ import com.faculty.management.exception.InvalidMarkException;
  */
 public class Mark {
 
+=======
+public class Mark {
+>>>>>>> Aysha
     private int markId;
     private String studentId;
     private int evaluationId;
     private double marksObtained; // Out of 100
 
+<<<<<<< HEAD
     // Component marks for course CA & Final calculations (Requirement 4)
     private int courseId;
     private String courseCode;
@@ -63,6 +68,8 @@ public class Mark {
     public Mark() {
     }
 
+=======
+>>>>>>> Aysha
     public Mark(int markId, String studentId, int evaluationId, double marksObtained) throws InvalidMarkException {
         this.markId = markId;
         this.studentId = studentId;
@@ -74,6 +81,7 @@ public class Mark {
         this(0, studentId, evaluationId, marksObtained);
     }
 
+<<<<<<< HEAD
     public Mark(int markId, int studentId, int courseId, Double quizMarks, Double assignmentMarks,
                 Double midSemMarks, Double practicalMarks, Double finalExamMarks) {
         this.markId = markId;
@@ -172,10 +180,21 @@ public class Mark {
     // Encapsulation with domain rule validation (Requirement 4: Out of 100)
     public void setMarksObtained(double marksObtained) throws InvalidMarkException {
         if (marksObtained < 0.0 || marksObtained > 100.0) {
+=======
+    public int getMarkId() { return markId; }
+    public String getStudentId() { return studentId; }
+    public int getEvaluationId() { return evaluationId; }
+    public double getMarksObtained() { return marksObtained; }
+
+    // Encapsulation with domain rule validation
+    public void setMarksObtained(double marksObtained) throws InvalidMarkException {
+        if (marksObtained < 0 || marksObtained > 100) {
+>>>>>>> Aysha
             throw new InvalidMarkException("Invalid Mark: " + marksObtained + ". Marks must be between 0 and 100.");
         }
         this.marksObtained = marksObtained;
     }
+<<<<<<< HEAD
 
     public int getCourseId() {
         return courseId;
@@ -240,4 +259,6 @@ public class Mark {
     public void setFinalExamMarks(Double finalExamMarks) {
         this.finalExamMarks = finalExamMarks;
     }
+=======
+>>>>>>> Aysha
 }

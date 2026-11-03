@@ -2,6 +2,7 @@ package com.faculty.management.service;
 
 import java.util.Map;
 
+<<<<<<< HEAD
 /**
  * Demonstrates Abstraction in Academic Operations.
  * Base contract for calculating Continuous Assessment (CA) and final aggregated course scores.
@@ -32,6 +33,14 @@ public abstract class EvaluationCalculator {
      * @param caPercentage Continuous Assessment percentage
      * @return true if Eligible (CA >= 40.0%), false otherwise
      */
+=======
+// Abstraction
+public abstract class EvaluationCalculator {
+    // Abstract method to calculate final aggregated CA percentage
+    public abstract double calculateCAPercentage(Map<String, Double> caComponentMarks);
+
+    // Business Logic Rule: CA >= 40% is Eligible
+>>>>>>> Aysha
     public boolean isEligibleForFinalExam(double caPercentage) {
         return caPercentage >= 40.0;
     }

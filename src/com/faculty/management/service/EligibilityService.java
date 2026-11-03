@@ -44,6 +44,7 @@ public class EligibilityService {
     public List<Mark> getStudentMarks(String studentId) throws DatabaseException, SQLException, InvalidMarkException {
         return markDAO.getMarksByStudent(studentId);
     }
+<<<<<<< HEAD
 
     public List<Mark> getStudentMarks(String studentId, String courseId) throws DatabaseException, SQLException, InvalidMarkException {
         try {
@@ -55,4 +56,6 @@ public class EligibilityService {
         // Fall back to all marks if courseId is invalid or no course-specific marks found
         return markDAO.getMarksByStudent(studentId);
     }
+=======
+>>>>>>> Aysha
 }

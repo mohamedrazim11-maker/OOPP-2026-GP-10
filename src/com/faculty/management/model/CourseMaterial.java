@@ -2,6 +2,7 @@ package com.faculty.management.model;
 
 import java.sql.Timestamp;
 
+<<<<<<< HEAD
 /**
  * Represents a course material document uploaded by a lecturer.
  * Demonstrates Classes & Objects and Encapsulation.
@@ -10,10 +11,16 @@ public class CourseMaterial {
     private int materialId;
     private String courseId; // Numeric ID or Course Code
     private int uploadedBy;  // Lecturer user_id
+=======
+public class CourseMaterial {
+    private int materialId;
+    private String courseId;
+>>>>>>> Aysha
     private String title;
     private String filePath;
     private Timestamp uploadedDate;
 
+<<<<<<< HEAD
     public CourseMaterial() {
     }
 
@@ -25,11 +32,17 @@ public class CourseMaterial {
         this.materialId = materialId;
         this.courseId = courseId;
         this.uploadedBy = uploadedBy;
+=======
+    public CourseMaterial(int materialId, String courseId, String title, String filePath, Timestamp uploadedDate) {
+        this.materialId = materialId;
+        this.courseId = courseId;
+>>>>>>> Aysha
         this.title = title;
         this.filePath = filePath;
         this.uploadedDate = uploadedDate;
     }
 
+<<<<<<< HEAD
     public int getMaterialId() {
         return materialId;
     }
@@ -82,4 +95,11 @@ public class CourseMaterial {
     public String toString() {
         return title + " (" + courseId + ")";
     }
+=======
+    public int getMaterialId() { return materialId; }
+    public String getCourseId() { return courseId; }
+    public String getTitle() { return title; }
+    public String getFilePath() { return filePath; }
+    public Timestamp getUploadedDate() { return uploadedDate; }
+>>>>>>> Aysha
 }

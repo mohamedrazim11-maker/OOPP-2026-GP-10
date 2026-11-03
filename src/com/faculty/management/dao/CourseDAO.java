@@ -15,14 +15,19 @@ import java.util.List;
 public class CourseDAO {
 
     /**
+<<<<<<< HEAD
      * Inserts a new course record into the courses table using parameterized JDBC.
      * Demonstrates Database Handling, Abstraction, and Exception Handling.
+=======
+     * Inserts a new course record into the courses table.
+>>>>>>> Aysha
      *
      * @param course Course entity to insert
      * @return Saved Course entity with generated courseId
      * @throws DatabaseException If database operation fails
      */
     public Course createCourse(Course course) throws DatabaseException {
+<<<<<<< HEAD
         if (course == null) {
             throw new DatabaseException("Course entity cannot be null for database insertion.");
         }
@@ -79,6 +84,26 @@ public class CourseDAO {
             int affected = stmt.executeUpdate();
             if (affected == 0) {
                 throw new DatabaseException("Creating course failed, no rows affected in database.");
+=======
+        String sql = "INSERT INTO courses (course_code, course_name, credit_value, theory_hours, practical_hours, department, semester, description) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, course.getCourseCode());
+            stmt.setString(2, course.getCourseName());
+            stmt.setInt(3, course.getCreditValue());
+            stmt.setInt(4, course.getTheoryHours());
+            stmt.setInt(5, course.getPracticalHours());
+            stmt.setString(6, course.getDepartment());
+            stmt.setString(7, course.getSemester());
+            stmt.setString(8, course.getDescription());
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("Creating course failed, no rows affected.");
+>>>>>>> Aysha
             }
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -95,6 +120,7 @@ public class CourseDAO {
     }
 
     /**
+<<<<<<< HEAD
      * Polymorphic overload to insert a new course into the database using individual parameter fields.
      * Demonstrates Polymorphism and Database Handling.
      *
@@ -136,6 +162,8 @@ public class CourseDAO {
     }
 
     /**
+=======
+>>>>>>> Aysha
      * Retrieves all courses ordered by course code.
      *
      * @return List of Course entities
@@ -163,6 +191,7 @@ public class CourseDAO {
     }
 
     /**
+<<<<<<< HEAD
      * Alias for getAllCourses() for cross-module compatibility.
      */
     public List<Course> findAll() throws DatabaseException {
@@ -170,6 +199,8 @@ public class CourseDAO {
     }
 
     /**
+=======
+>>>>>>> Aysha
      * Finds a course by unique course ID.
      *
      * @param courseId ID of the course
@@ -269,14 +300,19 @@ public class CourseDAO {
     }
 
     /**
+<<<<<<< HEAD
      * Updates an existing course record in the database using parameterized JDBC.
      * Demonstrates Database Handling, Abstraction, and Exception Handling.
+=======
+     * Updates an existing course record in the database.
+>>>>>>> Aysha
      *
      * @param course Course entity with updated values
      * @return true if updated successfully
      * @throws DatabaseException If database operation fails
      */
     public boolean updateCourse(Course course) throws DatabaseException {
+<<<<<<< HEAD
         if (course == null || course.getCourseId() <= 0) {
             throw new DatabaseException("Invalid course specified for update.");
         }
@@ -334,6 +370,27 @@ public class CourseDAO {
             int affected = stmt.executeUpdate();
             if (affected == 0) {
                 throw new DatabaseException("No course found with ID " + course.getCourseId() + " to update in database.");
+=======
+        String sql = "UPDATE courses SET course_code = ?, course_name = ?, credit_value = ?, theory_hours = ?, " +
+                     "practical_hours = ?, department = ?, semester = ?, description = ? WHERE course_id = ?";
+
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, course.getCourseCode());
+            stmt.setString(2, course.getCourseName());
+            stmt.setInt(3, course.getCreditValue());
+            stmt.setInt(4, course.getTheoryHours());
+            stmt.setInt(5, course.getPracticalHours());
+            stmt.setString(6, course.getDepartment());
+            stmt.setString(7, course.getSemester());
+            stmt.setString(8, course.getDescription());
+            stmt.setInt(9, course.getCourseId());
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new DatabaseException("No course found with ID " + course.getCourseId() + " to update.");
+>>>>>>> Aysha
             }
             return true;
 
@@ -343,6 +400,7 @@ public class CourseDAO {
     }
 
     /**
+<<<<<<< HEAD
      * Polymorphic overload to update an existing course using individual field parameters.
      * Demonstrates Polymorphism and Database Handling.
      */
@@ -373,6 +431,9 @@ public class CourseDAO {
     /**
      * Deletes a course by unique course ID with foreign key validation.
      * Demonstrates Database Handling and Error/Exception Handling.
+=======
+     * Deletes a course by unique course ID.
+>>>>>>> Aysha
      *
      * @param courseId ID of the course to delete
      * @return true if deleted
@@ -391,15 +452,21 @@ public class CourseDAO {
             return true;
 
         } catch (SQLException e) {
+<<<<<<< HEAD
             if (e.getErrorCode() == 1451 || e.getErrorCode() == 547 ||
                 (e.getMessage() != null && (e.getMessage().contains("foreign key constraint") || e.getMessage().contains("REFERENCE constraint")))) {
                 throw new DatabaseException("Cannot delete course (ID: " + courseId + ") because student marks, attendance, timetables, or materials exist for it.", e);
+=======
+            if (e.getErrorCode() == 1451 || (e.getMessage() != null && e.getMessage().contains("foreign key constraint"))) {
+                throw new DatabaseException("Cannot delete course because student marks, attendance, or materials exist for it.", e);
+>>>>>>> Aysha
             }
             throw new DatabaseException("Failed to delete course: " + e.getMessage(), e);
         }
     }
 
     /**
+<<<<<<< HEAD
      * Polymorphic overload to delete a course using its unique Course Code.
      *
      * @param courseCode Course code (e.g. "ICT2132")
@@ -418,6 +485,8 @@ public class CourseDAO {
     }
 
     /**
+=======
+>>>>>>> Aysha
      * Polymorphic overload to delete a course using a Course entity.
      *
      * @param course Course entity to delete
@@ -431,6 +500,7 @@ public class CourseDAO {
         return deleteCourse(course.getCourseId());
     }
 
+<<<<<<< HEAD
     /**
      * Searches courses by course code or course name substring directly from the database.
      * Demonstrates Database Handling and Abstraction for View Courses option.
@@ -607,6 +677,8 @@ public class CourseDAO {
         return assignCourseInformation(course.getCourseId(), department, semester, creditValue, theoryHours, practicalHours, description);
     }
 
+=======
+>>>>>>> Aysha
     private Course mapResultSetToCourse(ResultSet rs) throws SQLException {
         Course c = new Course();
         c.setCourseId(rs.getInt("course_id"));
@@ -618,6 +690,7 @@ public class CourseDAO {
         c.setDepartment(rs.getString("department"));
         c.setSemester(rs.getString("semester"));
         c.setDescription(rs.getString("description"));
+<<<<<<< HEAD
 
         try {
             int semNum = rs.getInt("semester_number");
@@ -643,4 +716,8 @@ public class CourseDAO {
     Course mapRow(ResultSet rs) throws SQLException {
         return mapResultSetToCourse(rs);
     }
+=======
+        return c;
+    }
+>>>>>>> Aysha
 }

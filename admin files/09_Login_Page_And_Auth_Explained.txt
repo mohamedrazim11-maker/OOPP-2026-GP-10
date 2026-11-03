@@ -1,0 +1,112 @@
+====================================================================================================
+FACULTY MANAGEMENT SYSTEM — LOGIN & AUTHENTICATION SUBSYSTEM
+LINE-BY-LINE CODE EXPLANATION
+FILES:
+  1. LoginFrame.java (src/com/faculty/management/gui/common/LoginFrame.java)
+  2. LoginController.java (src/com/faculty/management/controller/LoginController.java)
+  3. AuthenticationService.java (src/com/faculty/management/service/AuthenticationService.java)
+  4. AuthenticationException.java (src/com/faculty/management/exception/AuthenticationException.java)
+====================================================================================================
+
+ROLE & PURPOSE:
+- Represents the university gateway and authentication entry-point for the Faculty Management System.
+- Securely authenticates users (Administrator, Lecturer, Technical Officer, Undergraduate) against
+  the database (`users` and `roles` tables).
+- Upon successful authentication, polymorphic role dispatching routes the user directly to the appropriate
+  dashboard:
+  - Role "ADMIN" -> launches `AdminDashboard(user)` (Member 1)
+  - Role "LECTURER" -> launches `LecturerDashboard(user)` (Member 2)
+  - Role "TECHNICAL_OFFICER" -> launches `TechnicalOfficerDashboard(user)` (Member 3)
+  - Role "UNDERGRADUATE" -> launches `UndergraduateDashboard(user)` (Member 4)
+
+----------------------------------------------------------------------------------------------------
+PART 1: LoginFrame.java
+----------------------------------------------------------------------------------------------------
+DETAILED LINE-BY-LINE EXPLANATION:
+
+1. Color Palette & UI Constants (Lines 23-39)
+   - `MAROON_PRIMARY = new Color(92, 18, 33)`: Solid University Burgundy (#5C1221).
+   - `GOLD_PRIMARY = new Color(232, 175, 68)`: Golden Accent (#E8AF44).
+   - `CREAM_BG = new Color(246, 239, 230)`: Soft Warm Ivory (#F6EFE6).
+   - `BORDER_NORMAL` & `BORDER_ACTIVE`: Subtle border turning burgundy on focus glow.
+
+2. GUI State Fields (Lines 41-56)
+   - `roleComboBox`: Dropdown for role selection (`Administrator`, `Lecturer`, `Technical Officer`, `Undergraduate`).
+   - `usernameField`: Text input for user account ID or handle.
+   - `passwordField`: Masked input for user credentials.
+   - `eyeToggleButton` & `showPasswordCheckBox`: Dual-toggle allowing user to reveal/hide entered password characters.
+   - `loginButton`: Styled burgundy primary action button with hover and click animations.
+   - `resetButton`: Clears all input fields and resets error messages.
+   - `errorLabel`: Displays user-friendly validation and authentication error banners.
+   - `loginController`: Reference to `LoginController` mediating business actions.
+
+3. Two-Column Layout Hierarchy (Lines 58-80)
+   - Left Column (`LeftBrandingPanel`, 420px): Renders high-resolution Java2D university branding:
+     Neoclassical academic pillar facade, golden accent ribbons, and university crest.
+   - Right Column (`RightFormPanel`, remaining width): Hosts the clean, centered login form card.
+
+4. Form Panel Construction & Interactivity (Lines 350-650)
+   - Adds academic title `"Welcome Back"` and subtitle `"Sign in to your university portal account"`.
+   - Role selector: Pre-configures target portal access.
+   - Input fields: Vector user icon, focus listener painting subtle golden/burgundy outline on active state.
+   - Enter-key support: Hitting `Enter` in either `usernameField` or `passwordField` immediately invokes `loginButton.doClick()`.
+
+5. Login Action Trigger (Lines 680-750)
+   - Gathers `usernameField.getText().trim()`, `new String(passwordField.getPassword())`, and `selectedRole`.
+   - Delegates to `loginController.handleLogin(this, username, password, selectedRole)`.
+   - `showErrorMessage(String message)`: Injects error text into `errorLabel` with red highlight and shake animation.
+   - `clearForm()`: Clears password and username, resets dropdown to index 0, and clears error labels.
+
+----------------------------------------------------------------------------------------------------
+PART 2: LoginController.java
+----------------------------------------------------------------------------------------------------
+DETAILED LINE-BY-LINE EXPLANATION:
+
+1. Constructor & Dependencies (Lines 20-27)
+   - `private final AuthenticationService authService`: Service layer performing password hashing and DB matching.
+   - Initialized in constructor `this.authService = new AuthenticationService()`.
+
+2. Login Handler: `handleLogin(...)` (Lines 29-55)
+   - Receives `LoginFrame`, `username`, `password`, and `selectedRole`.
+   - Step 1: Calls `authService.authenticate(username, password, selectedRole)`. Returns authenticated `User`.
+   - Step 2: Calls `redirectToRoleDashboard(user)`.
+   - Step 3: Closes login window via `loginFrame.dispose()`.
+   - Exception Handling:
+     - Catches `ValidationException` (empty username or password) -> displays message on login frame.
+     - Catches `AuthenticationException` (invalid credentials or role mismatch) -> displays message.
+     - Catches `DatabaseException` (server offline or connection timeout) -> displays alert.
+
+3. Role-Based Dashboard Redirection (Lines 64-95)
+   - Extracts `roleName = user.getRole().getRoleName()`.
+   - Uses `SwingUtilities.invokeLater(...)` for thread-safe GUI dispatch.
+   - Switch Statement (Polymorphism):
+     - `case Role.ADMIN`: Instantiates `new AdminDashboard(user).setVisible(true)`.
+     - `case Role.LECTURER`: Instantiates `new LecturerDashboard(user).setVisible(true)`.
+     - `case Role.TECHNICAL_OFFICER`: Instantiates `new TechnicalOfficerDashboard(user).setVisible(true)`.
+     - `case Role.UNDERGRADUATE`: Instantiates `new UndergraduateDashboard(user).setVisible(true)`.
+
+4. Static Entry Point: `showLogin()` (Lines 98-106)
+   - Thread-safe launcher method: `SwingUtilities.invokeLater(() -> new LoginFrame(new LoginController()).setVisible(true))`.
+   - Called by sign-out buttons across all four dashboards.
+
+----------------------------------------------------------------------------------------------------
+PART 3: AuthenticationService.java
+----------------------------------------------------------------------------------------------------
+DETAILED LINE-BY-LINE EXPLANATION:
+
+1. Credentials Verification & Business Rules
+   - Validates that `username` and `password` are non-null and non-empty.
+   - Queries `UserDAO.findByUsername(username)`.
+   - If user does not exist, throws `AuthenticationException("Invalid username or password.")`.
+   - Checks account status: If `status.equalsIgnoreCase("INACTIVE")`, throws `AuthenticationException("This account has been deactivated. Please contact the Administrator.")`.
+   - Verifies password match: Compares entered password against stored hash/password.
+   - Enforces Role Verification: If user selected a specific role dropdown in the login window, verifies that `user.getRole().getRoleName()` matches the selected role. If not, throws `AuthenticationException("Access denied: User account is not registered under the selected role.")`.
+
+----------------------------------------------------------------------------------------------------
+PART 4: AuthenticationException.java
+----------------------------------------------------------------------------------------------------
+- Custom checked exception extending `Exception`.
+- Used to distinguish authentication failures (wrong credentials, deactivated account, role mismatch)
+  from database communication errors.
+====================================================================================================
+

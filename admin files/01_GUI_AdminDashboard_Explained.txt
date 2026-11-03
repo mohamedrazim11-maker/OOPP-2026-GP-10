@@ -1,0 +1,126 @@
+====================================================================================================
+MEMBER 1: ADMINISTRATOR MODULE — LINE-BY-LINE CODE EXPLANATION
+FILE: src/com/faculty/management/gui/member1_admin/AdminDashboard.java
+====================================================================================================
+
+ROLE & PURPOSE:
+- Represents the top-level Administrator Portal window (JFrame) in the Faculty Management System.
+- Serves as the landing window upon successful login by an Administrator.
+- Houses the modern burgundy left navigation sidebar, top navigation header with user credentials,
+  overview quick-action cards, and tabbed navigation switching between User Profiles, Course Management,
+  and Notice Board.
+
+----------------------------------------------------------------------------------------------------
+DETAILED LINE-BY-LINE EXPLANATION
+----------------------------------------------------------------------------------------------------
+
+Lines 1-15: Package Declaration & Imports
+----------------------------------------------------------------------------------------------------
+- Line 1: `package com.faculty.management.gui.member1_admin;`
+  Defines the package namespace for Member 1 GUI components according to project conventions.
+- Lines 3-14: Imports:
+  - `LoginController`: Used to handle logout and redirect back to the login screen.
+  - `UITheme`, `DangerButton`: Common UI styling constants and custom buttons.
+  - `Admin`, `Role`, `User`: Domain models for the authenticated administrator.
+  - `javax.swing.*`, `java.awt.*`: Standard Swing GUI widgets and layout managers.
+
+Lines 16-29: Class Definition & OOP Documentation
+----------------------------------------------------------------------------------------------------
+- Line 29: `public class AdminDashboard extends JFrame`
+  Inheritance: Extends `javax.swing.JFrame` to inherit window behavior (title bar, minimizing, closing).
+  Demonstrates Core OOP Principles:
+  1. Inheritance: `extends JFrame` and calls `super(...)`.
+  2. Encapsulation: All GUI fields are declared `private final` or `private`.
+  3. Polymorphism: Runtime dispatch through `currentUser.getFullName()` and `currentUser.getRoleTitle()`.
+
+Lines 31-45: Encapsulated Instance Fields
+----------------------------------------------------------------------------------------------------
+- Line 32: `private final User currentUser;`
+  Holds the active authenticated administrator object. `final` ensures reference immutability.
+- Lines 33-38: GUI Component references:
+  - `private JTabbedPane tabbedPane;`: Hosts the switchable views.
+  - `private UITheme.SidebarNavigation sidebarNav;`: Custom sidebar panel matching the FMS UI PDF.
+  - `private UITheme.HeaderPanel headerPanel;`: Header showing breadcrumbs, user name, and logout button.
+  - `private UserManagementPanel userManagementPanel;`: Tab 2 component.
+  - `private CourseManagementPanel courseManagementPanel;`: Tab 3 component.
+  - `private NoticeManagementPanel noticeManagementPanel;`: Tab 4 component.
+- Lines 40-45: `private static final String[] NAV_TITLES = { "Overview", "User Profiles", "Course Management", "Notice Board" };`
+  Constants defining the title and order of navigation options.
+
+Lines 47-67: Constructors & Constructor Chaining
+----------------------------------------------------------------------------------------------------
+- Lines 52-54: Default Constructor (No-Arg)
+  ```java
+  public AdminDashboard() {
+      this(null);
+  }
+  ```
+  Demonstrates Constructor Overloading and Constructor Chaining via `this(...)`.
+  Allows testing or previewing the dashboard without an explicit login object.
+- Lines 63-67: Parameterized Constructor
+  ```java
+  public AdminDashboard(User user) {
+      super("Faculty Management System — Administrator Portal");
+      this.currentUser = (user != null) ? user : new Admin(1, "admin", "admin123", "admin@faculty.edu", "System", "Admin", new Role(1, Role.ADMIN, "Administrator"), "0771234567", null, "ACTIVE");
+      initComponents();
+  }
+  ```
+  - `super(...)`: Explicitly invokes the superclass (`JFrame`) constructor as the very first statement.
+  - Ternary null-safety check: If `user` is provided, assign it; otherwise initialize a default `Admin` object.
+  - Calls `initComponents()` to construct the UI hierarchy.
+
+Lines 69-137: `initComponents()` Method
+----------------------------------------------------------------------------------------------------
+- Lines 70-75: Window Configuration
+  - `setSize(1180, 740);`: Sets standard viewport size according to wireframe layout.
+  - `setMinimumSize(new Dimension(980, 620));`: Prevents window components from squishing on resize.
+  - `setLocationRelativeTo(null);`: Centers the window on the computer monitor.
+  - `setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);`: Terminates the JVM when the window is closed.
+  - `setLayout(new BorderLayout());`: Uses BorderLayout with sidebar on WEST and main container on CENTER.
+  - `getContentPane().setBackground(UITheme.BG_PAGE);`: Sets global background color.
+- Lines 77-87: Sidebar Construction
+  - Instantiates `UITheme.SidebarNavigation` with title `"Administrator Portal"` and navigation items.
+  - Passes a lambda callback `idx -> { ... }` which synchronizes the tabbed pane and header title when a sidebar item is clicked.
+- Lines 90-101: Header Construction
+  - Instantiates `UITheme.HeaderPanel` with user full name, role title, and a logout callback.
+  - Logout callback disposes the current dashboard and re-opens `LoginController.showLogin()`.
+- Lines 104-123: Tabbed Pane Construction
+  - Instantiates `JTabbedPane` and calls `UITheme.styleTabbedPane(tabbedPane)`.
+  - Creates and adds each sub-panel:
+    - Tab 0: `createOverviewPanel()` (Welcome card + 4 quick action cards)
+    - Tab 1: `userManagementPanel` (User profiles)
+    - Tab 2: `courseManagementPanel` (Course management)
+    - Tab 3: `noticeManagementPanel` (Notice board)
+- Lines 124-130: ChangeListener Synchronization
+  - Synchronizes the sidebar active selection whenever the user switches tabs directly.
+- Lines 132-136: Assembly
+  - Adds header to `mainContentContainer` NORTH, tabbed pane to CENTER.
+  - Adds sidebar to window WEST, main container to window CENTER.
+
+Lines 139-192: `createOverviewPanel()` Method
+----------------------------------------------------------------------------------------------------
+- Line 140: Creates `centerPanel` with BorderLayout and padding.
+- Lines 144-150: Creates `welcomeCard` with white background, border, and BoxLayout.
+- Lines 152-159: Adds greeting label: `"Welcome to Admin Portal, " + currentUser.getFullName() + "!"` and descriptive subtitle.
+- Lines 162-185: Creates a 2x2 GridLayout for module quick-action cards:
+  1. `userCard`: Clicking switches `tabbedPane.setSelectedIndex(1)` (User Management).
+  2. `courseCard`: Clicking switches `tabbedPane.setSelectedIndex(2)` (Course Management).
+  3. `noticeCard`: Clicking switches `tabbedPane.setSelectedIndex(3)` (Notice Board).
+  4. `timetableCard`: Informative card explaining semester timetable workflow.
+- Line 191: Returns the completed overview panel.
+
+Lines 194-241: `createModuleCard(...)` Helper Method
+----------------------------------------------------------------------------------------------------
+- Accepts card `title`, `desc`, and a `Runnable onManage` callback.
+- Constructs a card panel with title label, description label, and a `"Click to manage"` button.
+- Attaches an ActionListener to the button that invokes `onManage.run()`.
+
+Lines 243-267: Public Encapsulation Getters
+----------------------------------------------------------------------------------------------------
+- `getUserManagementPanel()`: Returns `userManagementPanel`.
+- `getCourseManagementPanel()`: Returns `courseManagementPanel`.
+- `getNoticeManagementPanel()`: Returns `noticeManagementPanel`.
+- `getTabbedPane()`: Returns `tabbedPane`.
+- `getCurrentUser()`: Returns `currentUser`.
+====================================================================================================
+
