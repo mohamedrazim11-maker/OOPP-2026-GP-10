@@ -2,57 +2,53 @@ package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.AdminController;
 import com.faculty.management.exception.DatabaseException;
-import com.faculty.management.exception.ValidationException;
-import com.faculty.management.gui.common.CustomButton;
-import com.faculty.management.gui.common.DangerButton;
-import com.faculty.management.gui.common.PrimaryButton;
-import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Course;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.faculty.management.gui.member1_admin.AdminUIComponents.*;
+
 /**
- * Course Management Panel for Administrator (Member 1).
- * Represents the Course Management section in the Admin Dashboard.
- * 
- * Provides strictly the "Add Course", "Update Course", "Delete Course", "View Courses", and "Assign Course Information" options UI for managing academic courses.
- * Strictly avoids adding any other options inside course management as requested.
- * 
+ * Course Management Panel for Member 1 (Administrator).
+ * Strictly implements the UI/UX design from Page 3 of the FMS Specification.
+ * Features semester group banners ("Semester 1  4 courses · 10 credits", etc.).
+ *
  * Demonstrates Core OOP Principles:
- * - Classes & Objects: Instantiation of UI cards, controller, buttons, and models.
- * - Inheritance: Extends JPanel to inherit Swing container behavior.
- * - Abstraction: Controller & service layers abstract backend database logic from UI.
- * - Polymorphism: Swing event listener dispatching and controller delegation.
- * - Encapsulation: Private component fields with controlled access via getters.
- * - Error & Exception Handling: Catches and manages errors through CourseFormDialog and message dialogs.
- * - Database Handling: Connects to MySQL through AdminController, CourseService, and CourseDAO.
+ * - Classes & Objects: Encapsulation of course entity management, table models, and controllers.
+ * - Inheritance: Extends JPanel to integrate into Swing container hierarchy.
+ * - Abstraction: Database operations abstracted through AdminController and CourseService.
+ * - Polymorphism: Custom TableCellRenderers for section headers, course data, and action links.
+ * - Encapsulation: Private member variables with controlled public accessors.
+ * - Error & Exception Handling: Structured handling of DatabaseException.
+ * - Database Handling: Direct backend persistence to MySQL.
  */
 public class CourseManagementPanel extends JPanel {
 
-    // Encapsulated Controller & Components
     private final AdminController adminController;
-    private PrimaryButton addCourseButton;
-    private CustomButton updateCourseButton;
-    private CustomButton deleteCourseButton;
-    private CustomButton viewCourseButton;
-    private CustomButton assignCourseInfoButton;
-    private JLabel lastActionCourseLabel;
-
-    private JTable courseTable;
+    private List<Course> allCourses = new ArrayList<>();
     private DefaultTableModel tableModel;
-    private List<Course> currentCoursesList = new ArrayList<>();
+    private TableRowSorter<DefaultTableModel> rowSorter;
+    private JTable courseTable;
+
+    // Filters & summary
+    private SearchTextField searchField;
+    private JComboBox<String> semesterFilterBox;
+    private JLabel totalSummaryLabel;
 
     public CourseManagementPanel() {
-        this.adminController = new AdminController();
-        initComponents();
-        loadCourseTable();
+        this(new AdminController());
     }
 
     public CourseManagementPanel(AdminController adminController) {
@@ -63,71 +59,85 @@ public class CourseManagementPanel extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout(0, 16));
-        setBackground(UITheme.BG_PAGE);
-        setBorder(new EmptyBorder(20, 25, 20, 25));
+        setBackground(COLOR_PAGE_BG);
+        setBorder(new EmptyBorder(0, 28, 20, 28));
 
-        // 1. Header Title & Description (Wireframe 04 Course Management)
-        JPanel headerPanel = new JPanel();
-        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        // 1. Header: Title, Subtitle, and Top Action Buttons
+        JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
 
-        JLabel mainTitleLabel = new JLabel("Course Management");
-        mainTitleLabel.setFont(UITheme.FONT_PAGE_TITLE);
-        mainTitleLabel.setForeground(UITheme.TEXT_MAIN);
+        JPanel titleBox = new JPanel();
+        titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
+        titleBox.setOpaque(false);
 
-        JLabel subTitleLabel = new JLabel("Register and maintain academic course modules");
-        subTitleLabel.setFont(UITheme.FONT_BODY);
-        subTitleLabel.setForeground(UITheme.TEXT_MUTED);
+        JLabel pageTitle = new JLabel("Course Management");
+        pageTitle.setFont(FONT_PAGE_TITLE);
+        pageTitle.setForeground(COLOR_TEXT_DARK);
 
-        headerPanel.add(mainTitleLabel);
-        headerPanel.add(Box.createVerticalStrut(4));
-        headerPanel.add(subTitleLabel);
+        JLabel pageSub = new JLabel("Register and maintain academic course modules.");
+        pageSub.setFont(FONT_PAGE_SUB);
+        pageSub.setForeground(COLOR_TEXT_MUTED);
 
-        // 2. Action Toolbar & Table Container
-        JPanel centerContainer = new JPanel(new BorderLayout(0, 12));
-        centerContainer.setOpaque(false);
+        titleBox.add(pageTitle);
+        titleBox.add(Box.createVerticalStrut(4));
+        titleBox.add(pageSub);
 
-        // Action Toolbar matching Wireframe 04 Course Management
-        JPanel actionToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        actionToolbar.setOpaque(false);
+        JPanel actionBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        actionBtns.setOpaque(false);
 
-        addCourseButton = new PrimaryButton("+ Add Course");
-        addCourseButton.setPreferredSize(new Dimension(135, 36));
-        addCourseButton.setToolTipText("Open form to register a new academic course");
-        addCourseButton.addActionListener(e -> handleAddCourseAction());
+        WhiteOutlineButton assignInfoBtn = new WhiteOutlineButton("Assign course info");
+        assignInfoBtn.setPreferredSize(new Dimension(150, 38));
+        assignInfoBtn.addActionListener(e -> handleAssignCourseInfoAction());
 
-        updateCourseButton = new CustomButton("Update Course", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
-        updateCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        updateCourseButton.setPreferredSize(new Dimension(145, 36));
-        updateCourseButton.setToolTipText("Modify selected academic course module");
-        updateCourseButton.addActionListener(e -> handleUpdateCourseAction());
+        BurgundyButton addCourseBtn = new BurgundyButton("+ Add course");
+        addCourseBtn.setPreferredSize(new Dimension(135, 38));
+        addCourseBtn.addActionListener(e -> handleAddCourseAction());
 
-        deleteCourseButton = new DangerButton("Delete Course");
-        deleteCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        deleteCourseButton.setPreferredSize(new Dimension(135, 36));
-        deleteCourseButton.setToolTipText("Remove selected academic course module");
-        deleteCourseButton.addActionListener(e -> handleDeleteCourseAction());
+        actionBtns.add(assignInfoBtn);
+        actionBtns.add(addCourseBtn);
 
-        viewCourseButton = new CustomButton("View Courses", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
-        viewCourseButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        viewCourseButton.setPreferredSize(new Dimension(135, 36));
-        viewCourseButton.setToolTipText("Inspect comprehensive course details from database");
-        viewCourseButton.addActionListener(e -> handleViewCoursesAction());
+        headerPanel.add(titleBox, BorderLayout.WEST);
+        headerPanel.add(actionBtns, BorderLayout.EAST);
 
-        assignCourseInfoButton = new CustomButton("Assign Course Info", Color.WHITE, UITheme.TEXT_BODY, UITheme.BORDER_INPUT);
-        assignCourseInfoButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        assignCourseInfoButton.setPreferredSize(new Dimension(160, 36));
-        assignCourseInfoButton.setToolTipText("Assign department, semester, credits, and contact hours");
-        assignCourseInfoButton.addActionListener(e -> handleAssignCourseInfoAction());
+        // 2. Filter Toolbar
+        JPanel filterBar = new JPanel(new BorderLayout(10, 0));
+        filterBar.setOpaque(false);
 
-        actionToolbar.add(addCourseButton);
-        actionToolbar.add(updateCourseButton);
-        actionToolbar.add(deleteCourseButton);
-        actionToolbar.add(viewCourseButton);
-        actionToolbar.add(assignCourseInfoButton);
+        searchField = new SearchTextField("Search by code or name", 24);
+        searchField.setPreferredSize(new Dimension(280, 36));
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { applyFilters(); }
+            public void removeUpdate(DocumentEvent e) { applyFilters(); }
+            public void changedUpdate(DocumentEvent e) { applyFilters(); }
+        });
 
-        // Table Component (Columns per Wireframe 04: Course Code | Name | Credits | Theory Hrs | Practical Hrs | Dept | Sem)
-        String[] columns = {"Course Code", "Name", "Credits", "Theory Hrs", "Practical Hrs", "Dept", "Sem"};
+        String[] semesters = {"All semesters", "Semester 1", "Semester 2"};
+        semesterFilterBox = new JComboBox<>(semesters);
+        styleComboBox(semesterFilterBox);
+        semesterFilterBox.setPreferredSize(new Dimension(140, 36));
+        semesterFilterBox.addActionListener(e -> applyFilters());
+
+        WhiteOutlineButton refreshBtn = createRefreshButton();
+        refreshBtn.setPreferredSize(new Dimension(100, 36));
+        refreshBtn.addActionListener(e -> {
+            searchField.setText("");
+            semesterFilterBox.setSelectedIndex(0);
+            loadCourseTable();
+        });
+
+        JPanel leftFilters = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        leftFilters.setOpaque(false);
+        leftFilters.add(searchField);
+        leftFilters.add(semesterFilterBox);
+
+        filterBar.add(leftFilters, BorderLayout.WEST);
+        filterBar.add(refreshBtn, BorderLayout.EAST);
+
+        // 3. Table Container
+        JPanel tableContainer = new JPanel(new BorderLayout(0, 10));
+        tableContainer.setOpaque(false);
+
+        String[] columns = {"CODE", "COURSE NAME", "CREDITS", "THEORY HRS", "PRACTICAL HRS", "DEPT", "ACTIONS", "_DATA_"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -136,81 +146,233 @@ public class CourseManagementPanel extends JPanel {
         };
 
         courseTable = new JTable(tableModel);
-        UITheme.styleTable(courseTable);
+        courseTable.setRowHeight(42);
+        courseTable.setShowVerticalLines(false);
+        courseTable.setGridColor(new Color(243, 244, 246));
+        courseTable.setSelectionBackground(new Color(254, 249, 235));
+        courseTable.setSelectionForeground(COLOR_TEXT_DARK);
         courseTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        courseTable.setFont(FONT_BODY);
 
-        // Column widths
-        courseTable.getColumnModel().getColumn(0).setPreferredWidth(110);
-        courseTable.getColumnModel().getColumn(1).setPreferredWidth(260);
-        courseTable.getColumnModel().getColumn(2).setPreferredWidth(70);
-        courseTable.getColumnModel().getColumn(3).setPreferredWidth(95);
-        courseTable.getColumnModel().getColumn(4).setPreferredWidth(105);
-        courseTable.getColumnModel().getColumn(5).setPreferredWidth(160);
-        courseTable.getColumnModel().getColumn(6).setPreferredWidth(80);
+        // Header Styling
+        JTableHeader th = courseTable.getTableHeader();
+        th.setFont(FONT_SMALL_BOLD);
+        th.setForeground(COLOR_TEXT_MUTED);
+        th.setBackground(Color.WHITE);
+        th.setPreferredSize(new Dimension(th.getPreferredSize().width, 36));
+        th.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_BORDER));
+        ((DefaultTableCellRenderer) th.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 
-        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
-        centerRender.setHorizontalAlignment(SwingConstants.CENTER);
-        courseTable.getColumnModel().getColumn(0).setCellRenderer(centerRender);
-        courseTable.getColumnModel().getColumn(2).setCellRenderer(centerRender);
-        courseTable.getColumnModel().getColumn(3).setCellRenderer(centerRender);
-        courseTable.getColumnModel().getColumn(4).setCellRenderer(centerRender);
-        courseTable.getColumnModel().getColumn(6).setCellRenderer(centerRender);
+        // Set column widths & renderers
+        courseTable.getColumnModel().getColumn(0).setPreferredWidth(230); // CODE / Group Banner
+        courseTable.getColumnModel().getColumn(0).setCellRenderer(new CourseCodeCellRenderer());
 
-        JScrollPane scrollPane = UITheme.createModernScrollPane(courseTable);
+        courseTable.getColumnModel().getColumn(1).setPreferredWidth(230); // COURSE NAME
+        courseTable.getColumnModel().getColumn(1).setCellRenderer(new CourseTextCellRenderer(JLabel.LEFT));
 
-        // 3. Results area / operation help text banner
-        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
-        statusPanel.setBackground(Color.WHITE);
-        statusPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UITheme.BORDER_LIGHT, 1),
-                new EmptyBorder(4, 10, 4, 10)
+        courseTable.getColumnModel().getColumn(2).setPreferredWidth(75); // CREDITS
+        courseTable.getColumnModel().getColumn(2).setCellRenderer(new CourseTextCellRenderer(JLabel.CENTER));
+
+        courseTable.getColumnModel().getColumn(3).setPreferredWidth(90); // THEORY HRS
+        courseTable.getColumnModel().getColumn(3).setCellRenderer(new CourseTextCellRenderer(JLabel.CENTER));
+
+        courseTable.getColumnModel().getColumn(4).setPreferredWidth(105); // PRACTICAL HRS
+        courseTable.getColumnModel().getColumn(4).setCellRenderer(new CourseTextCellRenderer(JLabel.CENTER));
+
+        courseTable.getColumnModel().getColumn(5).setPreferredWidth(70); // DEPT
+        courseTable.getColumnModel().getColumn(5).setCellRenderer(new CourseTextCellRenderer(JLabel.CENTER));
+
+        courseTable.getColumnModel().getColumn(6).setPreferredWidth(130); // ACTIONS
+        courseTable.getColumnModel().getColumn(6).setCellRenderer(new CourseActionsCellRenderer());
+
+        // Hide internal course reference column
+        courseTable.getColumnModel().getColumn(7).setMinWidth(0);
+        courseTable.getColumnModel().getColumn(7).setMaxWidth(0);
+        courseTable.getColumnModel().getColumn(7).setPreferredWidth(0);
+
+        // Click listener for Edit and Delete action links in column 6
+        courseTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int col = courseTable.columnAtPoint(e.getPoint());
+                int row = courseTable.rowAtPoint(e.getPoint());
+                if (row >= 0 && col == 6) {
+                    int modelRow = courseTable.convertRowIndexToModel(row);
+                    Course c = (Course) tableModel.getValueAt(modelRow, 7);
+                    if (c == null) return; // Ignore clicks on banner rows
+
+                    Rectangle cellRect = courseTable.getCellRect(row, col, false);
+                    int clickX = e.getX() - cellRect.x;
+
+                    // Edit is roughly in the first half (0 to 55px), Delete in the second half
+                    if (clickX < 55) {
+                        handleEditCourse(c);
+                    } else {
+                        handleDeleteCourse(c);
+                    }
+                }
+            }
+        });
+
+        // Row Sorter
+        rowSorter = new TableRowSorter<>(tableModel);
+        courseTable.setRowSorter(rowSorter);
+
+        JScrollPane scrollPane = new JScrollPane(courseTable);
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COLOR_BORDER, 1, true),
+                new EmptyBorder(0, 0, 0, 0)
         ));
 
-        lastActionCourseLabel = new JLabel("");
-        lastActionCourseLabel.setFont(UITheme.FONT_SMALL);
-        lastActionCourseLabel.setForeground(UITheme.TEXT_MUTED);
-        statusPanel.add(lastActionCourseLabel);
+        // Footer summary label (e.g. "9 courses · 25 credits in total")
+        totalSummaryLabel = new JLabel("0 courses · 0 credits in total");
+        totalSummaryLabel.setFont(FONT_SMALL);
+        totalSummaryLabel.setForeground(COLOR_TEXT_MUTED);
+        totalSummaryLabel.setBorder(new EmptyBorder(4, 4, 4, 4));
 
-        centerContainer.add(actionToolbar, BorderLayout.NORTH);
-        centerContainer.add(scrollPane, BorderLayout.CENTER);
-        centerContainer.add(statusPanel, BorderLayout.SOUTH);
+        tableContainer.add(filterBar, BorderLayout.NORTH);
+        tableContainer.add(scrollPane, BorderLayout.CENTER);
+        tableContainer.add(totalSummaryLabel, BorderLayout.SOUTH);
 
         add(headerPanel, BorderLayout.NORTH);
-        add(centerContainer, BorderLayout.CENTER);
+        add(tableContainer, BorderLayout.CENTER);
     }
 
     /**
-     * Loads courses from database into table.
+     * Loads courses from database and organizes them with Semester 1 & Semester 2 group banners.
      */
     public void loadCourseTable() {
         try {
-            currentCoursesList = adminController.loadAllCourses();
+            allCourses = adminController.loadAllCourses();
             tableModel.setRowCount(0);
-            if (currentCoursesList != null) {
-                for (Course c : currentCoursesList) {
-                    tableModel.addRow(new Object[]{
-                            c.getCourseCode(),
-                            c.getCourseName(),
-                            c.getCreditValue(),
-                            c.getTheoryHours(),
-                            c.getPracticalHours(),
-                            c.getDepartment() != null ? c.getDepartment() : "General",
-                            c.getSemester() != null ? c.getSemester() : "Semester 1"
-                    });
+
+            if (allCourses == null) allCourses = new ArrayList<>();
+
+            List<Course> sem1 = new ArrayList<>();
+            List<Course> sem2 = new ArrayList<>();
+
+            for (Course c : allCourses) {
+                String sem = c.getSemester() != null ? c.getSemester().trim() : "Semester 1";
+                if (sem.toLowerCase().contains("2")) {
+                    sem2.add(c);
+                } else {
+                    sem1.add(c);
                 }
-                lastActionCourseLabel.setText("");
-                // Reset on load
             }
+
+            // Populate Semester 1 Group
+            if (!sem1.isEmpty()) {
+                int sem1Creds = 0;
+                for (Course c : sem1) sem1Creds += c.getCreditValue();
+                String banner1 = "Semester 1  " + sem1.size() + " courses · " + sem1Creds + " credits";
+                tableModel.addRow(new Object[]{banner1, "", "", "", "", "", "", null});
+
+                for (Course c : sem1) {
+                    addCourseRow(c);
+                }
+            }
+
+            // Populate Semester 2 Group
+            if (!sem2.isEmpty()) {
+                int sem2Creds = 0;
+                for (Course c : sem2) sem2Creds += c.getCreditValue();
+                String banner2 = "Semester 2  " + sem2.size() + " courses · " + sem2Creds + " credits";
+                tableModel.addRow(new Object[]{banner2, "", "", "", "", "", "", null});
+
+                for (Course c : sem2) {
+                    addCourseRow(c);
+                }
+            }
+
+            applyFilters();
         } catch (DatabaseException ex) {
-            lastActionCourseLabel.setText("Error loading courses: " + ex.getMessage());
-            lastActionCourseLabel.setForeground(new Color(220, 38, 38));
+            JOptionPane.showMessageDialog(this,
+                    "Failed to load courses from database: " + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    private void addCourseRow(Course c) {
+        int creds = c.getCreditValue();
+        String theoryStr = c.getTheoryHours() > 0 ? String.valueOf(c.getTheoryHours()) : "—";
+        String practicalStr = c.getPracticalHours() > 0 ? String.valueOf(c.getPracticalHours()) : "—";
+        String dept = (c.getDepartment() != null && !c.getDepartment().isEmpty()) ? c.getDepartment() : "ICT";
+
+        tableModel.addRow(new Object[]{
+                c.getCourseCode(),
+                c.getCourseName(),
+                String.valueOf(creds),
+                theoryStr,
+                practicalStr,
+                dept,
+                "Edit   Delete",
+                c
+        });
+    }
+
     /**
-     * Handles opening the Add Course Dialog.
-     * Demonstrates Abstraction, Polymorphism, and Error Handling.
+     * Filters courses according to search text and semester selection.
      */
+    private void applyFilters() {
+        String query = searchField.getText().trim().toLowerCase();
+        String selectedSem = (String) semesterFilterBox.getSelectedItem();
+
+        RowFilter<DefaultTableModel, Object> rf = new RowFilter<DefaultTableModel, Object>() {
+            @Override
+            public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
+                Course c = (Course) entry.getValue(7);
+
+                // For group banners (where course object is null)
+                if (c == null) {
+                    String bannerText = entry.getStringValue(0);
+                    if (selectedSem != null && !selectedSem.equals("All semesters")) {
+                        if (selectedSem.equalsIgnoreCase("Semester 1") && bannerText.startsWith("Semester 2")) return false;
+                        if (selectedSem.equalsIgnoreCase("Semester 2") && bannerText.startsWith("Semester 1")) return false;
+                    }
+                    return query.isEmpty();
+                }
+
+                // Semester filter check
+                if (selectedSem != null && !selectedSem.equals("All semesters")) {
+                    String sem = c.getSemester() != null ? c.getSemester() : "Semester 1";
+                    if (!sem.equalsIgnoreCase(selectedSem)) {
+                        return false;
+                    }
+                }
+
+                // Query search check (matches course code or course name)
+                if (!query.isEmpty()) {
+                    boolean codeMatch = c.getCourseCode() != null && c.getCourseCode().toLowerCase().contains(query);
+                    boolean nameMatch = c.getCourseName() != null && c.getCourseName().toLowerCase().contains(query);
+                    if (!codeMatch && !nameMatch) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+
+        rowSorter.setRowFilter(rf);
+
+        int visibleCourses = 0;
+        int visibleCredits = 0;
+        for (int i = 0; i < courseTable.getRowCount(); i++) {
+            int modelRow = courseTable.convertRowIndexToModel(i);
+            Course c = (Course) tableModel.getValueAt(modelRow, 7);
+            if (c != null) {
+                visibleCourses++;
+                visibleCredits += c.getCreditValue();
+            }
+        }
+        totalSummaryLabel.setText(visibleCourses + " courses · " + visibleCredits + " credits in total");
+    }
+
+    // =========================================================================
+    // ACTION HANDLERS
+    // =========================================================================
+
     private void handleAddCourseAction() {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.ADD);
@@ -218,247 +380,143 @@ public class CourseManagementPanel extends JPanel {
 
         if (dialog.isSaved()) {
             loadCourseTable();
-            Course course = dialog.getCreatedCourse();
-            if (course != null) {
-                lastActionCourseLabel.setText("✓ Successfully added: " + course.getCourseCode() + " — " +
-                        course.getCourseName() + " (" + course.getCreditValue() + " Credits)");
-                lastActionCourseLabel.setForeground(new Color(22, 101, 52)); // Success green
-            }
+            JOptionPane.showMessageDialog(this, "Course registered successfully in the database!", "Course Added", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    /**
-     * Programmatic backend method to add a new course via the panel's controller.
-     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
-     *
-     * @param course Course entity to register
-     * @return Registered Course entity with generated ID
-     * @throws ValidationException If validation fails
-     * @throws DatabaseException   If database insertion fails
-     */
-    public Course handleAddCourse(Course course) throws ValidationException, DatabaseException {
-        return adminController.handleAddCourse(course);
+    private void handleEditCourse(Course course) {
+        if (course == null) return;
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.UPDATE, course);
+        dialog.setVisible(true);
+
+        if (dialog.isSaved()) {
+            loadCourseTable();
+            JOptionPane.showMessageDialog(this, "Course updated successfully!", "Update Success", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
-    /**
-     * Programmatic backend method to update an existing course via the panel's controller.
-     * Demonstrates Abstraction, Encapsulation, and Error/Exception Handling.
-     */
-    public boolean handleUpdateCourse(Course course) throws ValidationException, DatabaseException {
-        return adminController.handleUpdateCourse(course);
-    }
+    private void handleDeleteCourse(Course course) {
+        if (course == null) return;
 
-    /**
-     * Programmatic backend method to delete a course by ID via the panel's controller.
-     * Demonstrates Abstraction, Encapsulation, and Database Handling.
-     */
-    public boolean handleDeleteCourse(int courseId) throws ValidationException, DatabaseException {
-        return adminController.handleDeleteCourse(courseId);
-    }
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to delete course " + course.getCourseCode() + " (" + course.getCourseName() + ")?\nThis action cannot be undone!",
+                "Confirm Delete Course",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
 
-    /**
-     * Polymorphic overload to delete a course using a Course entity.
-     */
-    public boolean handleDeleteCourse(Course course) throws ValidationException, DatabaseException {
-        return adminController.handleDeleteCourse(course);
-    }
-
-    /**
-     * Programmatic backend method to load all courses from the database.
-     */
-    public List<Course> handleLoadAllCourses() throws DatabaseException {
-        return adminController.loadAllCourses();
-    }
-
-    /**
-     * Programmatic backend method to view a specific course by ID.
-     */
-    public Course handleViewCourse(int courseId) throws ValidationException, DatabaseException {
-        return adminController.handleViewCourse(courseId);
-    }
-
-    /**
-     * Programmatic backend method to view a specific course by Code.
-     */
-    public Course handleViewCourseByCode(String courseCode) throws ValidationException, DatabaseException {
-        return adminController.handleViewCourseByCode(courseCode);
-    }
-
-    /**
-     * Programmatic backend method to search courses by query.
-     */
-    public List<Course> handleSearchCourses(String query) throws DatabaseException {
-        return adminController.handleSearchCourses(query);
-    }
-
-    /**
-     * Handles opening the Update Course Dialog.
-     * Demonstrates Abstraction, Polymorphism, Database Handling, and Error & Exception Handling.
-     */
-    private void handleUpdateCourseAction() {
-        try {
-            List<Course> courses = adminController.loadAllCourses();
-            if (courses == null || courses.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "No courses found in database to update. Please add a course first.",
-                        "No Courses Available",
-                        JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.UPDATE);
-            dialog.setVisible(true);
-
-            if (dialog.isSaved()) {
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                adminController.handleDeleteCourse(course.getCourseCode());
                 loadCourseTable();
-                Course course = dialog.getCreatedCourse();
-                if (course != null) {
-                    lastActionCourseLabel.setText("✓ Successfully updated: " + course.getCourseCode() + " — " +
-                            course.getCourseName() + " (" + course.getCreditValue() + " Credits)");
-                    lastActionCourseLabel.setForeground(new Color(22, 101, 52)); // Success green
-                }
+                JOptionPane.showMessageDialog(this, "Course deleted successfully.", "Course Deleted", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Failed to delete course: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (DatabaseException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Failed to retrieve courses from database: " + ex.getMessage(),
-                    "Database Error",
-                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    /**
-     * Handles opening the Delete Course Dialog.
-     * Demonstrates Abstraction, Polymorphism, Database Handling, and Error & Exception Handling.
-     */
-    private void handleDeleteCourseAction() {
-        try {
-            List<Course> courses = adminController.loadAllCourses();
-            if (courses == null || courses.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "No courses found in database to delete. Please add a course first.",
-                        "No Courses Available",
-                        JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.DELETE);
-            dialog.setVisible(true);
-
-            if (dialog.isSaved()) {
-                loadCourseTable();
-                Course course = dialog.getCreatedCourse();
-                if (course != null) {
-                    lastActionCourseLabel.setText("✓ Successfully deleted: " + course.getCourseCode() + " — " +
-                            course.getCourseName());
-                    lastActionCourseLabel.setForeground(new Color(220, 38, 38)); // Delete red
-                }
-            }
-        } catch (DatabaseException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Failed to retrieve courses from database: " + ex.getMessage(),
-                    "Database Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
-     * Handles opening the View Courses Dialog.
-     * Demonstrates Abstraction, Polymorphism, Database Handling, and Error & Exception Handling.
-     */
-    private void handleViewCoursesAction() {
-        loadCourseTable();
-        try {
-            List<Course> courses = adminController.loadAllCourses();
-            if (courses == null || courses.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "No courses found in database to view. Please add a course first.",
-                        "No Courses Available",
-                        JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.VIEW);
-            dialog.setVisible(true);
-
-            Course selected = dialog.getSelectedCourse();
-            if (selected != null) {
-                lastActionCourseLabel.setText("Currently viewing: " + selected.getCourseCode() + " — " +
-                        selected.getCourseName() + " (" + selected.getCreditValue() + " Credits)");
-                lastActionCourseLabel.setForeground(new Color(37, 99, 235)); // Primary blue
-            }
-        } catch (DatabaseException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Failed to retrieve courses from database: " + ex.getMessage(),
-                    "Database Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    /**
-     * Handles opening the Assign Course Information Dialog.
-     * Demonstrates Abstraction, Polymorphism, Database Handling, and Error & Exception Handling.
-     */
     private void handleAssignCourseInfoAction() {
-        try {
-            List<Course> courses = adminController.loadAllCourses();
-            if (courses == null || courses.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
-                        "No courses found in database to assign information. Please add a course first.",
-                        "No Courses Available",
-                        JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.ASSIGN_INFO);
+        dialog.setVisible(true);
 
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            CourseFormDialog dialog = new CourseFormDialog(parentFrame, adminController, CourseFormDialog.FormMode.ASSIGN_INFO);
-            dialog.setVisible(true);
-
-            if (dialog.isSaved()) {
-                loadCourseTable();
-                Course course = dialog.getCreatedCourse();
-                if (course != null) {
-                    lastActionCourseLabel.setText("✓ Successfully assigned information for: " + course.getCourseCode() + " — " +
-                            course.getCourseName() + " (" + course.getDepartment() + " | " + course.getSemester() + ")");
-                    lastActionCourseLabel.setForeground(new Color(109, 40, 217)); // Purple
-                }
-            }
-        } catch (DatabaseException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Failed to retrieve courses from database: " + ex.getMessage(),
-                    "Database Error",
-                    JOptionPane.ERROR_MESSAGE);
+        if (dialog.isSaved()) {
+            loadCourseTable();
+            JOptionPane.showMessageDialog(this, "Course information assigned successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
-    // Encapsulated Getters
-    public AdminController getAdminController() {
-        return adminController;
+    // =========================================================================
+    // TABLE CELL RENDERERS (Handles Group Banners & Rows)
+    // =========================================================================
+
+    private static final Color BANNER_BG = new Color(251, 243, 228);     // #FBF3E4 Warm Light Gold
+    private static final Color BANNER_TEXT = new Color(120, 53, 15);      // #78350F Brown Gold
+
+    private static class CourseCodeCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+            int modelRow = table.convertRowIndexToModel(row);
+            Object dataObj = table.getModel().getValueAt(modelRow, 7);
+
+            if (dataObj == null) {
+                // Group Banner Header
+                setBackground(BANNER_BG);
+                setForeground(BANNER_TEXT);
+                setFont(new Font("Segoe UI", Font.BOLD, 12));
+                setBorder(new EmptyBorder(0, 14, 0, 0));
+            } else {
+                setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+                setForeground(COLOR_TEXT_DARK);
+                setFont(FONT_BODY_BOLD);
+                setBorder(new EmptyBorder(0, 14, 0, 0));
+            }
+            return c;
+        }
     }
 
-    public PrimaryButton getAddCourseButton() {
-        return addCourseButton;
+    private static class CourseTextCellRenderer extends DefaultTableCellRenderer {
+        public CourseTextCellRenderer(int alignment) {
+            setHorizontalAlignment(alignment);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+            int modelRow = table.convertRowIndexToModel(row);
+            Object dataObj = table.getModel().getValueAt(modelRow, 7);
+
+            if (dataObj == null) {
+                setBackground(BANNER_BG);
+                setText("");
+            } else {
+                setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+                setForeground(COLOR_TEXT_DARK);
+                setFont(FONT_BODY);
+            }
+            return c;
+        }
     }
 
-    public CustomButton getUpdateCourseButton() {
-        return updateCourseButton;
-    }
+    private static class CourseActionsCellRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
+        private final JLabel editLink = new JLabel("Edit");
+        private final JLabel deleteLink = new JLabel("Delete");
 
-    public CustomButton getDeleteCourseButton() {
-        return deleteCourseButton;
-    }
+        public CourseActionsCellRenderer() {
+            setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
+            setOpaque(true);
 
-    public CustomButton getViewCourseButton() {
-        return viewCourseButton;
-    }
+            editLink.setFont(FONT_BODY_BOLD);
+            editLink.setForeground(COLOR_BURGUNDY);
+            editLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-    public CustomButton getAssignCourseInfoButton() {
-        return assignCourseInfoButton;
-    }
+            deleteLink.setFont(FONT_BODY_BOLD);
+            deleteLink.setForeground(new Color(220, 38, 38));
+            deleteLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-    public JLabel getLastActionCourseLabel() {
-        return lastActionCourseLabel;
+            add(editLink);
+            add(deleteLink);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            int modelRow = table.convertRowIndexToModel(row);
+            Object dataObj = table.getModel().getValueAt(modelRow, 7);
+
+            if (dataObj == null) {
+                setBackground(BANNER_BG);
+                editLink.setVisible(false);
+                deleteLink.setVisible(false);
+            } else {
+                setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+                editLink.setVisible(true);
+                deleteLink.setVisible(true);
+            }
+            return this;
+        }
     }
 }
