@@ -373,7 +373,11 @@ public class TechnicalOfficerDashboard extends JFrame {
         content.add(Box.createVerticalStrut(18));
         content.add(twoColumnPanel);
 
-        return UITheme.createModernScrollPane(content);
+        JScrollPane scrollPane = UITheme.createModernScrollPane(content);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setBackground(new Color(246, 239, 230));
+        scrollPane.getViewport().setBackground(new Color(246, 239, 230));
+        return scrollPane;
     }
 
     /**
