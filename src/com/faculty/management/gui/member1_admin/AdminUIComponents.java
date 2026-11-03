@@ -18,6 +18,15 @@ public class AdminUIComponents {
     public static final Color COLOR_BURGUNDY_HOVER = new Color(115, 24, 43); // #73182B Hover
     public static final Color COLOR_BURGUNDY_DARK = new Color(72, 14, 26);   // #480E1A Active
     public static final Color COLOR_GOLD_UNDERLINE = new Color(217, 119, 6); // #D97706 Tab Active Underline
+    public static final Color COLOR_GOLD_ACCENT = new Color(217, 119, 6);    // #D97706 Primary Amber/Gold Accent
+    public static final Color COLOR_GOLD_HEADER_SUB = new Color(255, 211, 77);   // #FFD34D Header Subtitle Yellow (Exact)
+    public static final Color COLOR_GOLD_STAT_ACCENT = new Color(240, 176, 47);  // #F0B02F Urgent Notice Stat Number Yellow (Exact)
+    public static final Color COLOR_GOLD_BG_LIGHT = new Color(254, 243, 199);// #FEF3C7 Warm Soft Yellow / Cream Badge Background
+    public static final Color COLOR_GOLD_TEXT = new Color(146, 64, 14);     // #92400E Rich Amber / Gold Text
+    public static final Color COLOR_GOLD_BORDER = new Color(252, 211, 77);   // #FCD34D Subtle Golden Border
+    public static final Color COLOR_ROW_SELECTED_BG = new Color(254, 246, 222); // #FEF6DE Warm Soft Yellow Table Row Highlight
+    public static final Color COLOR_SEMESTER_BANNER_BG = new Color(251, 243, 220); // #FBF3DC Warm Gold Semester Group Banner
+    public static final Color COLOR_SEMESTER_BANNER_TEXT = new Color(120, 53, 15); // #78350F Dark Gold Banner Header
     public static final Color COLOR_PAGE_BG = new Color(251, 249, 245);     // #FBF9F5 Warm Canvas Page
     public static final Color COLOR_CARD_BG = Color.WHITE;                  // #FFFFFF Pure White Card
     public static final Color COLOR_BORDER = new Color(229, 231, 235);      // #E5E7EB Subtle 1px Border
@@ -271,6 +280,10 @@ public class AdminUIComponents {
         private final Color bgColor;
         private final Color fgColor;
 
+        public AvatarBadgeComponent(String initials, int size) {
+            this(initials, size, COLOR_GOLD_BG_LIGHT, COLOR_GOLD_TEXT);
+        }
+
         public AvatarBadgeComponent(String initials, int size, Color bgColor, Color fgColor) {
             this.initials = (initials != null && !initials.trim().isEmpty()) ? initials.trim().toUpperCase() : "U";
             this.size = size;
@@ -415,7 +428,7 @@ public class AdminUIComponents {
 
         JLabel lblValue = new JLabel(bigValue);
         lblValue.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        lblValue.setForeground(isAccent ? Color.WHITE : COLOR_TEXT_DARK);
+        lblValue.setForeground(isAccent ? COLOR_GOLD_STAT_ACCENT : COLOR_TEXT_DARK);
 
         JLabel lblSub = new JLabel(subtext);
         lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 11));

@@ -130,7 +130,7 @@ public class NoticeFormDialog extends JDialog {
         }
 
         headerPanel.setBackground(bannerColor);
-        headerPanel.setBorder(new EmptyBorder(16, 22, 16, 22));
+        headerPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 3, 0, new Color(217, 119, 6)), new EmptyBorder(16, 22, 16, 22)));
 
         JLabel titleLbl = new JLabel(bannerTitle);
         titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 17));

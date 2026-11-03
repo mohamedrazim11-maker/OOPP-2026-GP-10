@@ -178,7 +178,7 @@ public class UserManagementPanel extends JPanel {
         userTable.setRowHeight(52);
         userTable.setShowVerticalLines(false);
         userTable.setGridColor(new Color(243, 244, 246));
-        userTable.setSelectionBackground(new Color(254, 249, 235)); // Warm Cream selection
+        userTable.setSelectionBackground(COLOR_ROW_SELECTED_BG); // Warm Yellow selection highlight
         userTable.setSelectionForeground(COLOR_TEXT_DARK);
         userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         userTable.setFont(FONT_BODY);
@@ -535,14 +535,14 @@ public class UserManagementPanel extends JPanel {
         if ("Admin".equalsIgnoreCase(role)) return new Color(254, 243, 199);
         if ("Lecturer".equalsIgnoreCase(role)) return new Color(254, 240, 199);
         if ("Technical Officer".equalsIgnoreCase(role)) return new Color(254, 249, 195);
-        return new Color(237, 233, 254);
+        return COLOR_GOLD_BG_LIGHT;
     }
 
     private Color getAvatarFgForRole(String role) {
         if ("Admin".equalsIgnoreCase(role)) return new Color(146, 64, 14);
         if ("Lecturer".equalsIgnoreCase(role)) return new Color(180, 83, 9);
         if ("Technical Officer".equalsIgnoreCase(role)) return new Color(133, 77, 14);
-        return new Color(67, 56, 202);
+        return COLOR_GOLD_TEXT;
     }
 
     // =========================================================================
@@ -745,7 +745,7 @@ public class UserManagementPanel extends JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (isSelected) {
-                setBackground(new Color(254, 249, 235));
+                setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
             } else {
                 setBackground(Color.WHITE);
             }
@@ -785,7 +785,7 @@ public class UserManagementPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+            setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
             String role = (value != null) ? value.toString() : "Undergraduate";
             badge.setText(role);
 
@@ -799,8 +799,8 @@ public class UserManagementPanel extends JPanel {
                 badge.setBackground(new Color(254, 249, 195));
                 badge.setForeground(new Color(133, 77, 14));
             } else {
-                badge.setBackground(new Color(237, 233, 254));
-                badge.setForeground(new Color(67, 56, 202));
+                badge.setBackground(COLOR_GOLD_BG_LIGHT);
+                badge.setForeground(COLOR_GOLD_TEXT);
             }
             return this;
         }
@@ -820,7 +820,7 @@ public class UserManagementPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+            setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
             String status = (value != null) ? value.toString() : "ACTIVE";
             boolean isActive = "ACTIVE".equalsIgnoreCase(status);
 

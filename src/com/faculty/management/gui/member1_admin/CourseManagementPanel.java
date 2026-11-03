@@ -149,7 +149,7 @@ public class CourseManagementPanel extends JPanel {
         courseTable.setRowHeight(42);
         courseTable.setShowVerticalLines(false);
         courseTable.setGridColor(new Color(243, 244, 246));
-        courseTable.setSelectionBackground(new Color(254, 249, 235));
+        courseTable.setSelectionBackground(COLOR_ROW_SELECTED_BG);
         courseTable.setSelectionForeground(COLOR_TEXT_DARK);
         courseTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         courseTable.setFont(FONT_BODY);
@@ -433,8 +433,8 @@ public class CourseManagementPanel extends JPanel {
     // TABLE CELL RENDERERS (Handles Group Banners & Rows)
     // =========================================================================
 
-    private static final Color BANNER_BG = new Color(251, 243, 228);     // #FBF3E4 Warm Light Gold
-    private static final Color BANNER_TEXT = new Color(120, 53, 15);      // #78350F Brown Gold
+    private static final Color BANNER_BG = COLOR_SEMESTER_BANNER_BG;
+    private static final Color BANNER_TEXT = COLOR_SEMESTER_BANNER_TEXT;
 
     private static class CourseCodeCellRenderer extends DefaultTableCellRenderer {
         @Override
@@ -450,7 +450,7 @@ public class CourseManagementPanel extends JPanel {
                 setFont(new Font("Segoe UI", Font.BOLD, 12));
                 setBorder(new EmptyBorder(0, 14, 0, 0));
             } else {
-                setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+                setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
                 setForeground(COLOR_TEXT_DARK);
                 setFont(FONT_BODY_BOLD);
                 setBorder(new EmptyBorder(0, 14, 0, 0));
@@ -474,7 +474,7 @@ public class CourseManagementPanel extends JPanel {
                 setBackground(BANNER_BG);
                 setText("");
             } else {
-                setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+                setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
                 setForeground(COLOR_TEXT_DARK);
                 setFont(FONT_BODY);
             }
@@ -512,7 +512,7 @@ public class CourseManagementPanel extends JPanel {
                 editLink.setVisible(false);
                 deleteLink.setVisible(false);
             } else {
-                setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+                setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
                 editLink.setVisible(true);
                 deleteLink.setVisible(true);
             }

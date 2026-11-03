@@ -131,7 +131,7 @@ public class CourseFormDialog extends JDialog {
             headerBg = new Color(92, 18, 33); // Solid University Burgundy #5C1221
         }
         headerPanel.setBackground(headerBg);
-        headerPanel.setBorder(new EmptyBorder(18, 24, 18, 24));
+        headerPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 3, 0, new Color(217, 119, 6)), new EmptyBorder(18, 24, 18, 24)));
 
         String titleText;
         if (mode == FormMode.DELETE) {

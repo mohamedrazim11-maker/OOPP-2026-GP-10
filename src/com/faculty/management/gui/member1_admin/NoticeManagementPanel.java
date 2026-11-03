@@ -187,7 +187,7 @@ public class NoticeManagementPanel extends JPanel {
         noticeTable.setRowHeight(44);
         noticeTable.setShowVerticalLines(false);
         noticeTable.setGridColor(new Color(243, 244, 246));
-        noticeTable.setSelectionBackground(new Color(254, 249, 235));
+        noticeTable.setSelectionBackground(COLOR_ROW_SELECTED_BG);
         noticeTable.setSelectionForeground(COLOR_TEXT_DARK);
         noticeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         noticeTable.setFont(FONT_BODY);
@@ -518,17 +518,17 @@ public class NoticeManagementPanel extends JPanel {
 
     private static void applyCategoryBadgeStyle(PillBadge badge, String category) {
         if ("Examination".equalsIgnoreCase(category)) {
-            badge.setBackground(new Color(237, 233, 254));
-            badge.setForeground(new Color(109, 40, 217));
+            badge.setBackground(COLOR_GOLD_BG_LIGHT);
+            badge.setForeground(COLOR_GOLD_TEXT);
         } else if ("Academic".equalsIgnoreCase(category)) {
-            badge.setBackground(new Color(224, 242, 254));
-            badge.setForeground(new Color(3, 105, 161));
+            badge.setBackground(COLOR_GOLD_BG_LIGHT);
+            badge.setForeground(COLOR_GOLD_TEXT);
         } else if ("Timetable".equalsIgnoreCase(category)) {
-            badge.setBackground(new Color(254, 243, 199));
+            badge.setBackground(COLOR_GOLD_BG_LIGHT);
             badge.setForeground(new Color(180, 83, 9));
         } else {
-            badge.setBackground(new Color(243, 244, 246));
-            badge.setForeground(new Color(55, 65, 81));
+            badge.setBackground(COLOR_GOLD_BG_LIGHT);
+            badge.setForeground(COLOR_GOLD_TEXT);
         }
     }
 
@@ -537,8 +537,8 @@ public class NoticeManagementPanel extends JPanel {
             badge.setBackground(new Color(254, 226, 226));
             badge.setForeground(new Color(220, 38, 38));
         } else {
-            badge.setBackground(new Color(243, 244, 246));
-            badge.setForeground(new Color(75, 85, 99));
+            badge.setBackground(COLOR_GOLD_BG_LIGHT);
+            badge.setForeground(COLOR_GOLD_TEXT);
         }
     }
 
@@ -624,7 +624,7 @@ public class NoticeManagementPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+            setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
             String cat = (value != null) ? value.toString() : "General";
             badge.setText(cat);
             applyCategoryBadgeStyle(badge, cat);
@@ -643,7 +643,7 @@ public class NoticeManagementPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+            setBackground(isSelected ? COLOR_ROW_SELECTED_BG : Color.WHITE);
             String pri = (value != null) ? value.toString() : "Normal";
             badge.setText(pri);
             applyPriorityBadgeStyle(badge, pri);

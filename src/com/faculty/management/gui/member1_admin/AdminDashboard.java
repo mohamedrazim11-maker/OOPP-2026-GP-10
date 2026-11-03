@@ -157,7 +157,7 @@ public class AdminDashboard extends JFrame {
 
         JLabel subTitle = new JLabel("Faculty of Technology · University of Ruhuna");
         subTitle.setFont(FONT_HEADER_SUB);
-        subTitle.setForeground(new Color(230, 205, 210));
+        subTitle.setForeground(COLOR_GOLD_HEADER_SUB);
 
         brandBox.add(Box.createVerticalGlue());
         brandBox.add(appTitle);
@@ -173,7 +173,7 @@ public class AdminDashboard extends JFrame {
         if (fullName == null || fullName.trim().isEmpty()) fullName = "Admin User";
         String initials = extractInitials(fullName);
 
-        AvatarBadgeComponent avatar = new AvatarBadgeComponent(initials, 36, new Color(245, 235, 228), COLOR_BURGUNDY);
+        AvatarBadgeComponent avatar = new AvatarBadgeComponent(initials, 36, COLOR_GOLD_BG_LIGHT, COLOR_GOLD_TEXT);
 
         JPanel nameBox = new JPanel();
         nameBox.setLayout(new BoxLayout(nameBox, BoxLayout.Y_AXIS));
@@ -559,8 +559,8 @@ public class AdminDashboard extends JFrame {
 
         PillBadge badge = new PillBadge(
                 isUrgent ? "Urgent" : "Normal",
-                isUrgent ? new Color(254, 226, 226) : new Color(243, 244, 246),
-                isUrgent ? new Color(220, 38, 38) : new Color(75, 85, 99)
+                isUrgent ? new Color(254, 226, 226) : COLOR_GOLD_BG_LIGHT,
+                isUrgent ? new Color(220, 38, 38) : COLOR_GOLD_TEXT
         );
 
         JPanel badgeWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 4));
@@ -673,7 +673,7 @@ public class AdminDashboard extends JFrame {
         JPanel rightBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightBox.setOpaque(false);
 
-        PillBadge badge = new PillBadge(slotCount, new Color(243, 244, 246), COLOR_TEXT_BODY);
+        PillBadge badge = new PillBadge(slotCount, COLOR_GOLD_BG_LIGHT, COLOR_GOLD_TEXT);
         WhiteOutlineButton viewBtn = new WhiteOutlineButton("View schedule");
         viewBtn.addActionListener(e -> {
             JOptionPane.showMessageDialog(this,
@@ -743,7 +743,7 @@ public class AdminDashboard extends JFrame {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(COLOR_GOLD_UNDERLINE);
                 // Draw bottom underline bar matching the screenshots
-                g2.fillRect(6, getHeight() - 3, getWidth() - 12, 3);
+                g2.fillRect(0, getHeight() - 3, getWidth(), 3);
                 g2.dispose();
             }
         }
