@@ -1,0 +1,106 @@
+====================================================================================================
+MEMBER 1: ADMINISTRATOR MODULE — LINE-BY-LINE CODE EXPLANATION
+FILE: src/com/faculty/management/controller/AdminController.java
+====================================================================================================
+
+ROLE & PURPOSE:
+- Acts as the Central Controller in the MVC (Model-View-Controller) architectural pattern for Member 1.
+- Receives user interactions and input events from `AdminDashboard`, `CourseManagementPanel`,
+  `UserManagementPanel`, `NoticeManagementPanel`, and their corresponding dialogs.
+- Coordinates business logic and validation by calling `UserService`, `CourseService`, and `NoticeService`.
+- Strictly insulates the Swing presentation layer from database and persistence details.
+
+----------------------------------------------------------------------------------------------------
+DETAILED LINE-BY-LINE EXPLANATION
+----------------------------------------------------------------------------------------------------
+
+Lines 1-17: Package, Imports, and Class Documentation
+----------------------------------------------------------------------------------------------------
+- Line 1: `package com.faculty.management.controller;`
+- Lines 3-10: Imports:
+  - Custom exceptions: `DatabaseException`, `ValidationException`.
+  - Domain models: `User`, `Course`, `Notice`, `Admin`, `Lecturer`, `TechnicalOfficer`, `Undergraduate`, `Role`.
+  - Service dependencies: `UserService`, `CourseService`, `NoticeService`.
+- Lines 12-17: Class Declaration
+  - `public class AdminController`: Demonstrates Abstraction by exposing clean programmatic API endpoints
+    to the UI layer while hiding complex service workflows.
+
+Lines 19-45: Encapsulated Dependencies & Constructor Overloading
+----------------------------------------------------------------------------------------------------
+- Lines 19-21: Service References (Encapsulation)
+  - `private final UserService userService;`
+  - `private final CourseService courseService;`
+  - `private final NoticeService noticeService;`
+- Lines 23-45: Constructor Overloading (OOP Principle)
+  - `public AdminController()`: Default no-arg constructor initializing real instances of all 3 services.
+  - `public AdminController(UserService)`: Overloaded constructor allowing custom UserService injection.
+  - `public AdminController(UserService, CourseService)`: Two-parameter overload.
+  - `public AdminController(UserService, CourseService, NoticeService)`: Full dependency injection constructor.
+
+Lines 47-150: User Management Controller Methods
+----------------------------------------------------------------------------------------------------
+- `handleCreateUser(...)`:
+  - Validates password match: `if (!password.equals(confirmPassword)) throw new ValidationException(...)`.
+  - Polymorphic subclass instantiation based on `roleName`:
+    - Case `"Admin"` -> returns `new Admin(...)`
+    - Case `"Lecturer"` -> returns `new Lecturer(...)` with department
+    - Case `"Technical Officer"` -> returns `new TechnicalOfficer(...)` with department
+    - Case `"Undergraduate"` -> returns `new Undergraduate(...)` with batch and department
+  - Calls `userService.createUser(user)`.
+- `loadAllUsers()`:
+  - Calls `userService.getAllUsers()`. Returns `List<User>`.
+- `handleUpdateUser(User user)`:
+  - Validates user object and invokes `userService.updateUser(user)`.
+- `handleAssignRole(int userId, String newRoleName)`:
+  - Role management endpoint: Resolves role ID from role name and calls `userService.assignUserRole(userId, roleId)`.
+- `handleMaintainCredentials(int userId, String newUsername, String newPassword, String confirmPassword)`:
+  - Enforces password confirmation match and calls `userService.maintainCredentials(userId, newUsername, newPassword)`.
+- `handleDeleteUser(int userId)`:
+  - Calls `userService.deleteUser(userId)` to remove user record from the system.
+- `handleToggleUserStatus(int userId, String newStatus)`:
+  - Toggles status between `"ACTIVE"` and `"INACTIVE"`.
+
+Lines 152-320: Course Management Controller Methods
+----------------------------------------------------------------------------------------------------
+- `loadAllCourses()`:
+  - Calls `courseService.getAllCourses()`. Returns list of active courses from database.
+- `handleAddCourse(Course course)`:
+  - Parameter validation: Checks null-safety.
+  - Calls `courseService.createCourse(course)` which verifies code uniqueness and hours.
+- `handleUpdateCourse(Course course)`:
+  - Calls `courseService.updateCourse(course)`.
+- `handleDeleteCourse(int courseId)`:
+  - Calls `courseService.deleteCourse(courseId)`.
+- `handleDeleteCourse(Course course)`:
+  - Polymorphic overload allowing deletion via entity instance.
+- `handleViewCourse(int courseId)`:
+  - Retrieves a specific course by ID via `courseService.getCourseById(courseId)`.
+- `handleViewCourseByCode(String courseCode)`:
+  - Retrieves course by code (e.g., `"ICT2132"`).
+- `handleSearchCourses(String query)`:
+  - Performs keyword search across course names and codes via `courseService.searchCourses(query)`.
+
+Lines 322-550: Notice Board Management Controller Methods
+----------------------------------------------------------------------------------------------------
+- `loadAllNotices()`:
+  - Calls `noticeService.getAllNotices()`. Returns all announcements ordered by publication date.
+- `handleCreateNotice(Notice notice)`:
+  - Calls `noticeService.createNotice(notice)`.
+- `handleUpdateNotice(Notice notice)`:
+  - Calls `noticeService.updateNotice(notice)`.
+- `handleDeleteNotice(int noticeId)`:
+  - Calls `noticeService.deleteNotice(noticeId)`.
+- `filterNoticesByCategory(String category)`:
+  - Calls `noticeService.getNoticesByCategory(category)`.
+- `searchNotices(String keyword)`:
+  - Calls `noticeService.searchNotices(keyword)`.
+- `getNoticeCount()`:
+  - Returns total number of notices currently in database.
+
+Lines 552-744: Encapsulated Getters
+----------------------------------------------------------------------------------------------------
+- `getUserService()`: Returns internal `userService`.
+- `getCourseService()`: Returns internal `courseService`.
+- `getNoticeService()`: Returns internal `noticeService`.
+====================================================================================================
+

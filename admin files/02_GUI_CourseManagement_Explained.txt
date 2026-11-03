@@ -1,0 +1,126 @@
+====================================================================================================
+MEMBER 1: ADMINISTRATOR MODULE — LINE-BY-LINE CODE EXPLANATION
+FILES:
+  1. src/com/faculty/management/gui/member1_admin/CourseManagementPanel.java
+  2. src/com/faculty/management/gui/member1_admin/CourseFormDialog.java
+====================================================================================================
+
+PART 1: CourseManagementPanel.java
+----------------------------------------------------------------------------------------------------
+ROLE & PURPOSE:
+- Represents the Course Management section of the Admin Dashboard.
+- Strictly provides the options: "Add Course", "Update Course", "Delete Course", "View Courses",
+  and "Assign Course Information" per project specifications and wireframes.
+- Displays all academic courses in a styled JTable loaded dynamically from the relational database.
+
+DETAILED LINE-BY-LINE EXPLANATION:
+- Lines 1-20: Package & Imports
+  - Package: `com.faculty.management.gui.member1_admin`
+  - Imports `AdminController`, `DatabaseException`, `ValidationException`, UI buttons, and `Course` model.
+- Lines 37-51: Class Declaration & Fields
+  - `public class CourseManagementPanel extends JPanel`: Inherits JPanel container features.
+  - `private final AdminController adminController`: Controller for business logic and data access.
+  - Buttons: `addCourseButton`, `updateCourseButton`, `deleteCourseButton`, `viewCourseButton`, `assignCourseInfoButton`.
+  - Table: `JTable courseTable`, `DefaultTableModel tableModel`, `List<Course> currentCoursesList`.
+  - Status Label: `private JLabel lastActionCourseLabel`: Bottom feedback label.
+- Lines 52-63: Constructors
+  - Default constructor `public CourseManagementPanel()` chains to overloaded constructor with `new AdminController()`.
+  - Initializes components via `initComponents()` and retrieves records via `loadCourseTable()`.
+- Lines 64-180: `initComponents()`
+  - Sets BorderLayout with empty margin padding (20, 25, 20, 25).
+  - Header Panel: Title `"Course Management"` and subtitle `"Register and maintain academic course modules"`.
+  - Action Toolbar:
+    - `+ Add Course`: Primary button. Listener calls `handleAddCourseAction()`.
+    - `Update Course`: Custom button. Listener calls `handleUpdateCourseAction()`.
+    - `Delete Course`: Danger crimson button. Listener calls `handleDeleteCourseAction()`.
+    - `View Courses`: Custom button. Listener calls `handleViewCoursesAction()`.
+    - `Assign Course Info`: Custom button. Listener calls `handleAssignCourseInfoAction()`.
+  - JTable & DefaultTableModel:
+    - Columns: `{"Course Code", "Name", "Credits", "Theory Hrs", "Practical Hrs", "Dept", "Sem"}`.
+    - Overrides `isCellEditable(row, col)` returning `false` to make all table cells read-only.
+    - Sets preferred column widths and custom center-alignment table cell renderers.
+  - Status Bar Panel:
+    - Placed at `BorderLayout.SOUTH`.
+    - Holds `lastActionCourseLabel` initialized with `""`.
+- Lines 182-208: `loadCourseTable()`
+  - Calls `adminController.loadAllCourses()` which delegates to `CourseService` and `CourseDAO`.
+  - Clears previous rows via `tableModel.setRowCount(0)`.
+  - Iterates through the returned course list and appends each as a table row.
+  - Displays any `DatabaseException` error messages in red text if database query fails.
+- Lines 210-228: `handleAddCourseAction()`
+  - Opens `CourseFormDialog` in `FormMode.ADD`.
+  - If user saves (`dialog.isSaved()`), refreshes the table (`loadCourseTable()`) and displays a green success alert.
+- Lines 298-328: `handleUpdateCourseAction()`
+  - Validates that courses exist in DB before opening dialog; warns if list is empty.
+  - Opens `CourseFormDialog` in `FormMode.UPDATE`.
+  - Upon save, reloads table and displays updated confirmation.
+- Lines 334-364: `handleDeleteCourseAction()`
+  - Validates that courses exist in DB.
+  - Opens `CourseFormDialog` in `FormMode.DELETE`.
+  - Upon save, reloads table and displays red deletion alert.
+- Lines 370-398: `handleViewCoursesAction()`
+  - Opens `CourseFormDialog` in `FormMode.VIEW` for read-only inspection of selected module details.
+- Lines 404-434: `handleAssignCourseInfoAction()`
+  - Opens `CourseFormDialog` in `FormMode.ASSIGN_INFO` allowing administrators to modify department, semester,
+    credit value, and contact hours.
+
+----------------------------------------------------------------------------------------------------
+PART 2: CourseFormDialog.java
+----------------------------------------------------------------------------------------------------
+ROLE & PURPOSE:
+- Modal dialog (JDialog) for entering, modifying, viewing, and deleting course modules.
+- Adapts dynamic UI fields depending on `FormMode` (ADD, UPDATE, DELETE, VIEW, ASSIGN_INFO).
+
+DETAILED LINE-BY-LINE EXPLANATION:
+- Lines 1-35: Package, Imports, and Enum Definition
+  - `public enum FormMode { ADD, UPDATE, DELETE, VIEW, ASSIGN_INFO }`: Defines distinct operating modes.
+- Lines 37-60: Fields
+  - Mode: `private final FormMode mode`.
+  - Controller: `private final AdminController adminController`.
+  - Course entities: `selectedCourse`, `createdCourse`.
+  - Input Widgets:
+    - `JComboBox<Course> courseSelectorComboBox`: Active in UPDATE, DELETE, VIEW, ASSIGN_INFO.
+    - `JTextField courseCodeField`: Academic code (e.g., ICT2132).
+    - `JTextField courseNameField`: Full title (e.g., Data Structures).
+    - `JSpinner creditSpinner`: Credit rating (1 to 10).
+    - `JSpinner theoryHoursSpinner`: Total lecture contact hours (0 to 150).
+    - `JSpinner practicalHoursSpinner`: Total lab contact hours (0 to 150).
+    - `JComboBox<String> departmentComboBox`: Faculty departments dropdown.
+    - `JComboBox<String> semesterComboBox`: Semester 1 / Semester 2 dropdown.
+    - `JTextArea descriptionArea`: Curriculum syllabus overview.
+    - `JLabel errorLabel`: Validation feedback banner.
+    - `JButton saveButton`, `cancelButton`.
+- Lines 62-108: Constructors & Title Generation
+  - Multiple overloaded constructors for flexible instantiation.
+  - Sets modal dialog properties (`super(parent, title, true)`).
+  - Dynamically computes window title based on mode (e.g. "Add New Course", "Update Course").
+- Lines 110-205: Header & Course Selector Setup
+  - Custom header color based on action (Crimson for Delete, Burgundy for Add/Update/View, Purple for Assign).
+  - If in UPDATE/DELETE/VIEW/ASSIGN_INFO mode, adds the Course Selector combo box at the top.
+  - Populates selector via `loadExistingCourses()`.
+- Lines 207-335: Form Field Creation & Mode Restrictions
+  - Adds labels, input fields, spinners, and combo boxes using GridBagLayout.
+  - In DELETE and VIEW modes: Sets all fields `setEditable(false)` and disabled to prevent edits.
+  - In ASSIGN_INFO mode: Locks Course Code and Name as read-only, allowing only department, semester,
+    and hour modifications.
+- Lines 350-405: Action Buttons
+  - In VIEW mode: Shows single `"Close"` button.
+  - In other modes: Shows `"Cancel"` button and context-specific action button
+    (`"Add Course"`, `"Update Course"`, `"Delete Course"`, `"Assign Course Info"`).
+- Lines 416-465: `loadExistingCourses()`
+  - Loads courses from `adminController.loadAllCourses()` into `courseSelectorComboBox`.
+  - Adds an ActionListener: Changing the selection immediately populates form fields with the selected course.
+- Lines 490-530: `populateFormWithCourse(Course c)`
+  - Reads values from the `Course` object and sets them into UI components:
+    `courseCodeField.setText(c.getCourseCode())`, `courseNameField.setText(c.getCourseName())`,
+    spinner values, department and semester combo box selections, and description.
+- Lines 532-610: Form Submission & Validation Logic
+  - `handleFormSubmission()`:
+    1. Validates inputs: checks non-empty Course Code and Course Name, checks valid department selection.
+    2. In ADD mode: Instantiates new `Course` entity and calls `adminController.handleAddCourse(course)`.
+    3. In UPDATE / ASSIGN_INFO mode: Updates properties and calls `adminController.handleUpdateCourse(course)`.
+    4. In DELETE mode: Confirms action with `JOptionPane.showConfirmDialog` and calls `adminController.handleDeleteCourse(course)`.
+    5. Sets `isSaved = true` and closes dialog via `dispose()`.
+    6. Catches `ValidationException` and `DatabaseException`, displaying errors in red text on `errorLabel`.
+====================================================================================================
+

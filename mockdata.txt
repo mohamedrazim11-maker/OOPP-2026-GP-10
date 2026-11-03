@@ -1,0 +1,32 @@
+-- =====================================================================
+-- Manual Course Data Insertion Commands
+-- Faculty Management System
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- 1. Microsoft SQL Server (MSSQL$SQLEXPRESS)
+-- ---------------------------------------------------------------------
+USE faculty_management_db;
+GO
+
+INSERT INTO dbo.courses (course_code, course_name, credit_value, credits, theory_hours, practical_hours, department, semester, description) VALUES
+(N'ICT2112', N'Data Structures and Algorithms', 2, 2, 30, 30, N'Department of Information & Communication Technology', N'Semester 2', N'Core algorithms, abstract data types, trees, graphs, and complexity analysis'),
+(N'ICT2123', N'Database Management Systems', 3, 3, 30, 60, N'Department of Information & Communication Technology', N'Semester 2', N'Relational data modeling, SQL programming, normalization, and indexing'),
+(N'ICT2132', N'Object Oriented Programming Practicum', 2, 2, 0, 60, N'Department of Information & Communication Technology', N'Semester 2', N'Comprehensive hands-on OOP software development using Java Swing and SQL Server'),
+(N'BST2113', N'Bioprocess Technology', 3, 3, 30, 60, N'Department of Biosystems Technology', N'Semester 2', N'Bioreactor engineering, downstream processing, and industrial applications'),
+(N'ENG2113', N'Engineering Mechanics', 3, 3, 30, 60, N'Department of Engineering Technology', N'Semester 2', N'Engineering statics, dynamics, stress analysis, and structural mechanics');
+GO
+
+
+-- ---------------------------------------------------------------------
+-- 2. MySQL
+-- ---------------------------------------------------------------------
+USE faculty_management_db;
+
+INSERT INTO courses (course_code, course_name, credit_value, theory_hours, practical_hours, department, semester, description) VALUES
+('ICT2112', 'Data Structures and Algorithms', 2, 30, 30, 'Department of Information & Communication Technology', 'Semester 2', 'Core algorithms, abstract data types, trees, graphs, and complexity analysis'),
+('ICT2123', 'Database Management Systems', 3, 30, 60, 'Department of Information & Communication Technology', 'Semester 2', 'Relational data modeling, SQL programming, normalization, and indexing'),
+('ICT2132', 'Object Oriented Programming Practicum', 2, 0, 60, 'Department of Information & Communication Technology', 'Semester 2', 'Comprehensive hands-on OOP software development using Java Swing and MySQL'),
+('BST2113', 'Bioprocess Technology', 3, 30, 60, 'Department of Biosystems Technology', 'Semester 2', 'Bioreactor engineering, downstream processing, and industrial applications'),
+('ENG2113', 'Engineering Mechanics', 3, 30, 60, 'Department of Engineering Technology', 'Semester 2', 'Engineering statics, dynamics, stress analysis, and structural mechanics');
+
