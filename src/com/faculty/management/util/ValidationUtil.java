@@ -64,7 +64,6 @@ public class ValidationUtil {
     }
 
     /**
-<<<<<<< HEAD
      * Validates a Sri Lankan contact number: 9-10 digits, optionally
      * prefixed with '+', e.g. "0771234567" or "+94771234567".
      */
@@ -76,8 +75,6 @@ public class ValidationUtil {
     }
 
     /**
-=======
->>>>>>> Aysha
      * Validates all required fields for creating a new user.
      *
      * @param user            User object containing user information
@@ -272,7 +269,6 @@ public class ValidationUtil {
         if (isEmpty(course.getCourseCode())) {
             throw new ValidationException("Course Code is required (e.g. ICT2132).");
         }
-<<<<<<< HEAD
         String trimmedCode = course.getCourseCode().trim();
         if (trimmedCode.length() < 4) {
             throw new ValidationException("Course Code must be at least 4 characters long.");
@@ -280,11 +276,6 @@ public class ValidationUtil {
         if (!trimmedCode.matches("^[a-zA-Z]{2,5}[0-9]{3,4}$")) {
             throw new ValidationException("Invalid Course Code format. Example valid formats: ICT2132, BST2113, ENG2113.");
         }
-=======
-        if (course.getCourseCode().trim().length() < 4) {
-            throw new ValidationException("Course Code must be at least 4 characters long.");
-        }
->>>>>>> Aysha
         if (isEmpty(course.getCourseName())) {
             throw new ValidationException("Course Name is required.");
         }
@@ -300,7 +291,6 @@ public class ValidationUtil {
         if (course.getPracticalHours() < 0) {
             throw new ValidationException("Practical hours cannot be negative.");
         }
-<<<<<<< HEAD
         if (course.getTheoryHours() == 0 && course.getPracticalHours() == 0) {
             throw new ValidationException("A course module must have at least one of theory hours or practical hours greater than 0.");
         }
@@ -523,10 +513,6 @@ public class ValidationUtil {
     public static void validateNoticeLookup(String title) throws ValidationException {
         if (isEmpty(title)) {
             throw new ValidationException("Notice title cannot be empty for lookup.");
-=======
-        if (isEmpty(course.getDepartment())) {
-            throw new ValidationException("Department selection is required.");
->>>>>>> Aysha
         }
     }
 }

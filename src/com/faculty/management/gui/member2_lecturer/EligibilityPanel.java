@@ -89,8 +89,4 @@ public class EligibilityPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Failed to load batch summary: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> Aysha

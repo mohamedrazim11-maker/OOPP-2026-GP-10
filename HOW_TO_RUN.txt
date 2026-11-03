@@ -49,7 +49,6 @@ Example:
    git checkout person-1
 
 
-<<<<<<< HEAD
 4. DATABASE SETUP (DUAL DATABASE SUPPORT)
 --------------------------------------------------------------------------------
 The system automatically detects whichever database server is running:
@@ -64,18 +63,10 @@ The system automatically detects whichever database server is running:
 a. Start Apache & MySQL in XAMPP Control Panel.
 b. Open phpMyAdmin in your browser (http://localhost/phpmyadmin).
 c. Import the SQL scripts located in the 'database/' folder in this order:
-=======
-4. DATABASE SETUP (MySQL / XAMPP)
---------------------------------------------------------------------------------
-a. Start Apache & MySQL in XAMPP Control Panel.
-b. Open phpMyAdmin in your browser (http://localhost/phpmyadmin).
-c. Import the 4 SQL scripts located in the 'database/' folder in this exact order:
->>>>>>> Aysha
    1) database/01_create_database.sql
    2) database/02_create_tables.sql
    3) database/03_insert_roles.sql
    4) database/04_insert_users.sql
-<<<<<<< HEAD
    5) database/05_insert_courses.sql
    6) database/06_insert_attendance_medical.sql
    7) database/M4_01_create_tables.sql
@@ -84,16 +75,6 @@ c. Import the 4 SQL scripts located in the 'database/' folder in this exact orde
 * Database Configuration:
   Check or customize 'database/local.properties':
   db.type=auto (or 'mysql' or 'sqlserver')
-=======
-
-* Note on Database Credentials:
-  Default credentials in src/com/faculty/management/config/DatabaseConnection.java:
-  - Host: localhost:3306
-  - Database: faculty_management_db
-  - User: root
-  - Password: "" (blank)
-  If your MySQL has a password, update the PASSWORD variable in DatabaseConnection.java.
->>>>>>> Aysha
 
 
 5. COMPILE & RUN THE PROJECT
@@ -102,7 +83,6 @@ c. Import the 4 SQL scripts located in the 'database/' folder in this exact orde
 >>> OPTION A: Using PowerShell (VS Code Terminal)
 
 1) Compile:
-<<<<<<< HEAD
 javac -cp "lib/*;resources" -d bin (Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName })
 
 2) Run:
@@ -110,15 +90,6 @@ java -cp "bin;lib/*;resources" com.faculty.management.Main
 
 --- Or compile & run in a single command ---
 javac -cp "lib/*;resources" -d bin (Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName }); java -cp "bin;lib/*;resources" com.faculty.management.Main
-=======
-javac -cp "lib/mysql-connector-j-9.2.0.jar;resources" -d bin (Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName })
-
-2) Run:
-java -cp "bin;lib/mysql-connector-j-9.2.0.jar;resources" com.faculty.management.Main
-
---- Or compile & run in a single command ---
-javac -cp "lib/mysql-connector-j-9.2.0.jar;resources" -d bin (Get-ChildItem -Recurse -Filter *.java src | ForEach-Object { $_.FullName }); java -cp "bin;lib/mysql-connector-j-9.2.0.jar;resources" com.faculty.management.Main
->>>>>>> Aysha
 
 
 >>> OPTION B: Using Command Prompt (cmd.exe)

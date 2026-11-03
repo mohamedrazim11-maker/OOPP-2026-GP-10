@@ -1,5 +1,4 @@
 package com.faculty.management.service;
-<<<<<<< HEAD
 
 import java.util.Map;
 
@@ -8,11 +7,6 @@ import java.util.Map;
  * Implements standard Continuous Assessment calculation (average of submitted components)
  * and verifies CA >= 40% threshold for final exam eligibility.
  */
-=======
-import java.util.Map;
-
-// Polymorphism & Concrete Business Logic
->>>>>>> Aysha
 public class CAEligibilityCalculator extends EvaluationCalculator {
 
     @Override
@@ -21,7 +15,6 @@ public class CAEligibilityCalculator extends EvaluationCalculator {
             return 0.0;
         }
 
-<<<<<<< HEAD
         double sum = 0.0;
         int count = 0;
         for (Double score : caComponentMarks.values()) {
@@ -41,15 +34,3 @@ public class CAEligibilityCalculator extends EvaluationCalculator {
         return (caPercentage * 0.40) + (finalExamMark * 0.60);
     }
 }
-=======
-        double totalWeightedScore = 0.0;
-        for (Double score : caComponentMarks.values()) {
-            totalWeightedScore += score;
-        }
-
-        // Return calculated percentage (out of 100)
-        return totalWeightedScore;
-    }
-}
-
->>>>>>> Aysha

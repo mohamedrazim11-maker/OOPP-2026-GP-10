@@ -1,33 +1,10 @@
 package com.faculty.management.service;
 
-<<<<<<< HEAD
-=======
 import com.faculty.management.config.DatabaseConnection;
->>>>>>> Aysha
 import com.faculty.management.dao.UserDAO;
 import com.faculty.management.exception.AuthenticationException;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
-<<<<<<< HEAD
-import com.faculty.management.model.User;
-import com.faculty.management.util.PasswordUtil;
-import com.faculty.management.util.ValidationUtil;
-
-/**
- * Service handling authentication logic, credential validation, and role identification.
- * 
- * Directly connected to MySQL via UserDAO with pure JDBC.
- * Free of mock or hardcoded data.
- * 
- * Demonstrates:
- * - Classes & Objects: Instantiates UserDAO and processes User objects.
- * - Inheritance: Handles concrete User subclasses.
- * - Abstraction: Abstracts SQL authentication queries from the Controller/GUI.
- * - Polymorphism: Overloaded authenticate methods and polymorphic User model returns.
- * - Encapsulation: Private DAO and role verification logic.
- * - Error & Exception Handling: Throws ValidationException, AuthenticationException, and DatabaseException.
- * - Database Handling: Real-time queries via pure JDBC.
-=======
 import com.faculty.management.model.*;
 import com.faculty.management.util.PasswordUtil;
 import com.faculty.management.util.ValidationUtil;
@@ -37,24 +14,11 @@ import java.util.Map;
 
 /**
  * Service handling authentication logic, credential validation, and role identification.
->>>>>>> Aysha
+ * Connects directly to MySQL / SQL Server via UserDAO with graceful fallback for offline testing.
  */
 public class AuthenticationService {
 
     private final UserDAO userDAO;
-<<<<<<< HEAD
-
-    public AuthenticationService() {
-        this.userDAO = new UserDAO();
-    }
-
-    public AuthenticationService(UserDAO userDAO) {
-        this.userDAO = (userDAO != null) ? userDAO : new UserDAO();
-    }
-
-    /**
-     * Authenticates a user with given credentials against the MySQL database and verifies role selection.
-=======
     private final Map<String, User> mockUsers;
 
     public AuthenticationService() {
@@ -63,24 +27,14 @@ public class AuthenticationService {
         initMockUsers();
     }
 
+    public AuthenticationService(UserDAO userDAO) {
+        this.userDAO = (userDAO != null) ? userDAO : new UserDAO();
+        this.mockUsers = new HashMap<>();
+        initMockUsers();
+    }
+
     /**
-     * Authenticates a user with given credentials and verifies role selection.
->>>>>>> Aysha
-     *
-     * @param username     User-entered username
-     * @param password     User-entered password
-     * @param selectedRole User-selected role from login dropdown
-<<<<<<< HEAD
-     * @return Authenticated concrete User object (Admin, Lecturer, TechnicalOfficer, or Undergraduate)
-     * @throws ValidationException     If inputs are invalid or empty
-     * @throws AuthenticationException If username/password do not match, account is inactive, or role mismatches
-     * @throws DatabaseException       If database communication fails
-=======
-     * @return Authenticated User object (Admin, Lecturer, TechnicalOfficer, or Undergraduate)
-     * @throws ValidationException If inputs are invalid or empty
-     * @throws AuthenticationException If username/password do not match, account is inactive, or role mismatches
-     * @throws DatabaseException If database communication fails
->>>>>>> Aysha
+     * Authenticates a user with given credentials against the database and verifies role selection.
      */
     public User authenticate(String username, String password, String selectedRole) 
             throws ValidationException, AuthenticationException, DatabaseException {
@@ -90,65 +44,49 @@ public class AuthenticationService {
 
         String trimmedUsername = username.trim();
 
-<<<<<<< HEAD
-        // 2. Query MySQL database directly via UserDAO
-        User user = userDAO.findByUsername(trimmedUsername);
-        if (user == null) {
-            throw new AuthenticationException("Invalid username or password.");
-        }
-
-        // 3. Verify password hash or plain text using PasswordUtil
-        if (!PasswordUtil.verifyPassword(password, user.getPassword())) {
-            throw new AuthenticationException("Invalid username or password.");
-        }
-
-        // 4. Verify account active status
-        if (!user.isActive()) {
-            throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
-        }
-
-        // 5. Verify user's assigned role matches the selected role
-        verifyUserRole(user, selectedRole);
-
-        return user;
-=======
-        // 2. Try authenticating via MySQL Database
-        boolean isDbConnected = DatabaseConnection.getInstance().isConnected();
-        if (isDbConnected) {
+        // 2. Try authenticating via database
+        try {
             User user = userDAO.findByUsername(trimmedUsername);
-            if (user == null) {
+            if (user != null) {
+                if (!PasswordUtil.verifyPassword(password, user.getPassword())) {
+                    throw new AuthenticationException("Invalid username or password.");
+                }
+
+                if (!user.isActive()) {
+                    throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
+                }
+
+                verifyUserRole(user, selectedRole);
+                return user;
+            } else if (DatabaseConnection.getInstance().isConnected()) {
                 throw new AuthenticationException("Invalid username or password.");
             }
-
-            if (!PasswordUtil.verifyPassword(password, user.getPassword())) {
-                throw new AuthenticationException("Invalid username or password.");
+        } catch (DatabaseException e) {
+            // If database is offline, fall back to offline mock users
+            if (!DatabaseConnection.getInstance().isConnected()) {
+                User mockUser = mockUsers.get(trimmedUsername.toLowerCase());
+                if (mockUser != null && PasswordUtil.verifyPassword(password, mockUser.getPassword())) {
+                    if (!mockUser.isActive()) {
+                        throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
+                    }
+                    verifyUserRole(mockUser, selectedRole);
+                    return mockUser;
+                }
             }
-
-            if (!user.isActive()) {
-                throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
-            }
-
-            // Verify user's assigned role matches the selected role
-            verifyUserRole(user, selectedRole);
-
-            return user;
+            throw e;
         }
 
-        // 3. Graceful offline fallback for testing/demo mode when MySQL is offline
+        // 3. Graceful offline fallback for testing/demo mode when database is not populated
         User mockUser = mockUsers.get(trimmedUsername.toLowerCase());
         if (mockUser != null && PasswordUtil.verifyPassword(password, mockUser.getPassword())) {
             if (!mockUser.isActive()) {
                 throw new AuthenticationException("Account is inactive or suspended. Please contact administrator.");
             }
-
-            // Verify mock user's assigned role matches the selected role
             verifyUserRole(mockUser, selectedRole);
-
             return mockUser;
         }
 
-        throw new AuthenticationException("Invalid username or password. (Database offline: check credentials or start MySQL)");
->>>>>>> Aysha
+        throw new AuthenticationException("Invalid username or password.");
     }
 
     /**
@@ -161,11 +99,6 @@ public class AuthenticationService {
 
     /**
      * Verifies that the authenticated user has the role selected in the login form.
-     * Demonstrates Encapsulation and Polymorphism.
-     *
-     * @param user         The authenticated user object
-     * @param selectedRole The role chosen in the GUI dropdown
-     * @throws AuthenticationException If selected role does not match user's actual role
      */
     private void verifyUserRole(User user, String selectedRole) throws AuthenticationException {
         if (selectedRole == null || selectedRole.trim().isEmpty() || "-- Select Role --".equalsIgnoreCase(selectedRole.trim())) {
@@ -191,11 +124,9 @@ public class AuthenticationService {
             throw new AuthenticationException("Role mismatch: You cannot log in as '" + selectedRole + "' with this account.");
         }
     }
-<<<<<<< HEAD
-=======
 
     /**
-     * Initializes mock users for instant testing/demonstration when MySQL server is not running.
+     * Initializes mock users for instant testing/demonstration when database is offline.
      */
     private void initMockUsers() {
         Role adminRole = new Role(1, Role.ADMIN, "System Administrator");
@@ -215,5 +146,4 @@ public class AuthenticationService {
         mockUsers.put("tg2021001", new Undergraduate(11, "tg2021001", "std123", "tg2021001@fot.ruh.ac.lk", 
                 "Kasun", "Kalhara", stdRole, "0701122334", null, "ACTIVE"));
     }
->>>>>>> Aysha
 }

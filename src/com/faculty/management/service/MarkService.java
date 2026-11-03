@@ -3,7 +3,6 @@ package com.faculty.management.service;
 import com.faculty.management.dao.MarkDAO;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.InvalidMarkException;
-<<<<<<< HEAD
 import com.faculty.management.model.Evaluation;
 import com.faculty.management.model.Mark;
 
@@ -20,15 +19,6 @@ public class MarkService {
     private final MarkDAO markDAO = new MarkDAO();
     private final EvaluationCalculator caCalculator = new CAEligibilityCalculator();
     private final EvaluationCalculator finalCalculator = new FinalMarkCalculator();
-=======
-import com.faculty.management.model.Mark;
-
-import java.sql.SQLException;
-import java.util.List;
-
-public class MarkService {
-    private final MarkDAO markDAO = new MarkDAO();
->>>>>>> Aysha
 
     /**
      * Instantiates Mark (which validates 0-100 range) and persists to DB.
@@ -40,11 +30,7 @@ public class MarkService {
             throw new IllegalArgumentException("Student ID cannot be empty.");
         }
 
-<<<<<<< HEAD
         // Creating Mark instance triggers its validation constructor (Requirement 4: Out of 100)
-=======
-        // Creating Mark instance triggers its validation constructor
->>>>>>> Aysha
         Mark mark = new Mark(studentId, evaluationId, marks);
 
         // Try updating first; if no record was modified, perform insert
@@ -55,7 +41,6 @@ public class MarkService {
         return true;
     }
 
-<<<<<<< HEAD
     /**
      * Saves or updates all evaluation components for a student in a course (Requirement 4: Quiz, Assessment, Mid-sem, Practical, Theory, Final).
      */
@@ -73,8 +58,6 @@ public class MarkService {
         return markDAO.saveCourseComponentMarks(studentId, courseId, quiz, assignment, midSem, practical, finalExam);
     }
 
-=======
->>>>>>> Aysha
     public List<Mark> getMarksForStudent(String studentId) throws DatabaseException, SQLException, InvalidMarkException {
         return markDAO.getMarksByStudent(studentId);
     }
@@ -83,7 +66,6 @@ public class MarkService {
         return markDAO.getMarksByEvaluation(evaluationId);
     }
 
-<<<<<<< HEAD
     public List<Mark> getMarksForCourse(int courseId) throws DatabaseException, SQLException {
         return markDAO.getMarksByCourse(courseId);
     }
@@ -115,9 +97,4 @@ public class MarkService {
     public double calculateFinalMark(double caPercentage, double finalExamMark) {
         return caCalculator.calculateFinalTotal(caPercentage, finalExamMark);
     }
-=======
-    public boolean removeMark(String studentId, int evaluationId) throws DatabaseException, SQLException {
-        return markDAO.deleteMark(studentId, evaluationId);
-    }
->>>>>>> Aysha
 }

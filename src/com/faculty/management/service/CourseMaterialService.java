@@ -15,11 +15,7 @@ public class CourseMaterialService {
     private final CourseMaterialDAO materialDAO = new CourseMaterialDAO();
     private static final String UPLOAD_DIR = "resources/course_materials/";
 
-<<<<<<< HEAD
     public boolean uploadMaterial(String courseId, String title, File sourceFile, int lecturerId) throws IOException, SQLException, DatabaseException {
-=======
-    public boolean uploadMaterial(String courseId, String title, File sourceFile) throws IOException, SQLException {
->>>>>>> Aysha
         File dir = new File(UPLOAD_DIR);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -29,7 +25,6 @@ public class CourseMaterialService {
         File destFile = new File(dir, destFileName);
         Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-<<<<<<< HEAD
         CourseMaterial material = new CourseMaterial(0, courseId, lecturerId, title, destFile.getPath(), null);
         return materialDAO.saveMaterial(material);
     }
@@ -61,21 +56,5 @@ public class CourseMaterialService {
 
     public List<CourseMaterial> fetchMaterials(String courseId) throws SQLException, DatabaseException {
         return materialDAO.getMaterialsByCourse(courseId);
-=======
-        CourseMaterial material = new CourseMaterial(0, courseId, title, destFile.getPath(), null);
-        try {
-            return materialDAO.saveMaterial(material);
-        } catch (DatabaseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public List<CourseMaterial> fetchMaterials(String courseId) throws SQLException {
-        try {
-            return materialDAO.getMaterialsByCourse(courseId);
-        } catch (DatabaseException e) {
-            throw new RuntimeException(e);
-        }
->>>>>>> Aysha
     }
 }
