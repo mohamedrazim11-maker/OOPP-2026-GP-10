@@ -17,6 +17,8 @@ import java.util.List;
  */
 public class UndergraduateDashboard extends JFrame {
 
+    private static final Color UNDERGRADUATE_YELLOW = new Color(232, 175, 68);
+
     private static final String[] STUDENT_SECTIONS = {
             "Overview", "Courses", "Timetable", "Attendance", "Medical",
             "Notices", "Grades", "Results", "SGPA", "CGPA", "Profile"
@@ -67,8 +69,7 @@ public class UndergraduateDashboard extends JFrame {
         title.setForeground(Color.WHITE);
         JLabel subtitle = new JLabel("Faculty of Technology  ·  University of Ruhuna");
         subtitle.setFont(UITheme.FONT_SMALL);
-        subtitle.setForeground(new Color(245, 220, 184));
-
+        subtitle.setForeground(UNDERGRADUATE_YELLOW);
         brand.add(title);
         brand.add(Box.createVerticalStrut(3));
         brand.add(subtitle);
@@ -94,7 +95,7 @@ public class UndergraduateDashboard extends JFrame {
         name.setForeground(Color.WHITE);
         JLabel roleAndId = new JLabel(currentUser.getRoleTitle() + "  ·  " + currentUser.getUsername());
         roleAndId.setFont(UITheme.FONT_SMALL);
-        roleAndId.setForeground(new Color(245, 220, 184));
+        roleAndId.setForeground(UNDERGRADUATE_YELLOW);
         identity.add(name);
         identity.add(Box.createVerticalStrut(2));
         identity.add(roleAndId);
@@ -211,9 +212,9 @@ public class UndergraduateDashboard extends JFrame {
         private void setActive(boolean selected) {
             this.selected = selected;
             setFont(selected ? UITheme.FONT_BODY_BOLD : UITheme.FONT_BODY);
-            setForeground(selected ? UITheme.PRIMARY : UITheme.TEXT_BODY);
+            setForeground(selected ? UITheme.TEXT_MAIN : UITheme.TEXT_BODY);
             setBorder(selected
-                    ? new MatteBorder(0, 0, 3, 0, UITheme.PRIMARY)
+                    ? new MatteBorder(0, 0, 3, 0, UNDERGRADUATE_YELLOW)
                     : new EmptyBorder(15, 15, 12, 15));
             repaint();
         }

@@ -213,7 +213,6 @@ public class DashboardOverviewPanel extends JPanel {
 
         try {
             List<Notice> notices = controller.getNotices().stream()
-                    .filter(notice -> notice.isForRole("UNDERGRADUATE"))
                     .sorted(Comparator.comparing(
                             Notice::getPostedDate,
                             Comparator.nullsLast(Comparator.reverseOrder())))
