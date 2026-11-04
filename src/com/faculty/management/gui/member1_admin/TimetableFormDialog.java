@@ -12,6 +12,7 @@ import java.awt.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.faculty.management.gui.member1_admin.AdminUIComponents.*;
@@ -39,6 +40,14 @@ public class TimetableFormDialog extends JDialog {
     private static final DateTimeFormatter DISPLAY_TIME_FMT = DateTimeFormatter.ofPattern("hh:mm a");
     private static final DateTimeFormatter ISO_TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
+    private static final String[] DEPARTMENTS = {
+            "All Departments",
+            "Department of Information & Communication Technology",
+            "Department of Biosystems Technology",
+            "Department of Engineering Technology",
+            "Department of Multidisciplinary Studies"
+    };
+
     private static final String[] DAYS_OF_WEEK = {
             "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"
     };
@@ -65,13 +74,15 @@ public class TimetableFormDialog extends JDialog {
     private boolean saved = false;
     private TimetableEntry timetableEntry;
     private int timetableIdToUpdate = 0;
+    private List<Course> allCourses = new ArrayList<>();
 
     // UI Controls
+    private JComboBox<String> departmentComboBox;
     private JComboBox<Course> courseComboBox;
     private JComboBox<String> dayComboBox;
+    private JComboBox<String> sessionTypeComboBox;
     private JComboBox<String> startTimeComboBox;
     private JComboBox<String> endTimeComboBox;
-    private JComboBox<String> sessionTypeComboBox;
     private JTextField lecturerField;
     private JComboBox<String> venueComboBox;
     private JComboBox<String> semesterComboBox;
@@ -114,13 +125,13 @@ public class TimetableFormDialog extends JDialog {
     }
 
     private void initComponents() {
-        setSize(560, 680);
-        setMinimumSize(new Dimension(500, 600));
+        setSize(600, 650);
+        setMinimumSize(new Dimension(540, 580));
         setLocationRelativeTo(getParent());
         setLayout(new BorderLayout());
         getContentPane().setBackground(COLOR_PAGE_BG);
 
-        // Header Panel
+        // 1. Header Panel
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(COLOR_BURGUNDY);
         headerPanel.setBorder(new EmptyBorder(18, 24, 18, 24));
@@ -143,13 +154,23 @@ public class TimetableFormDialog extends JDialog {
         headerPanel.add(headerText, BorderLayout.CENTER);
         add(headerPanel, BorderLayout.NORTH);
 
-        // Form Fields Container
+        // 2. Form Fields Container (Clean, balanced 2-column grid layout across all rows)
         JPanel formContainer = new JPanel();
         formContainer.setLayout(new BoxLayout(formContainer, BoxLayout.Y_AXIS));
         formContainer.setOpaque(false);
         formContainer.setBorder(new EmptyBorder(20, 24, 16, 24));
 
-        // 1. Course selection
+        // Row 1: Department (Left) | Course Module (Right)
+        JPanel row1 = new JPanel(new GridLayout(1, 2, 16, 0));
+        row1.setOpaque(false);
+        row1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row1.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
+
+        departmentComboBox = new JComboBox<>(DEPARTMENTS);
+        styleControl(departmentComboBox);
+        departmentComboBox.addActionListener(e -> filterCoursesByDepartment());
+        row1.add(createFieldWrapper("Department *", departmentComboBox));
+
         courseComboBox = new JComboBox<>();
         courseComboBox.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -161,81 +182,96 @@ public class TimetableFormDialog extends JDialog {
                 } else if (value == null) {
                     setText("-- Select Course Module --");
                 }
+                setBorder(new EmptyBorder(4, 8, 4, 8));
                 return this;
             }
         });
         styleControl(courseComboBox);
-        formContainer.add(createFieldWrapper("Course Module *", courseComboBox));
-        formContainer.add(Box.createVerticalStrut(12));
+        row1.add(createFieldWrapper("Course Module *", courseComboBox));
 
-        // 2. Day of Week & Session Type (Side by Side)
-        JPanel dayTypeRow = new JPanel(new GridLayout(1, 2, 14, 0));
-        dayTypeRow.setOpaque(false);
+        formContainer.add(row1);
+        formContainer.add(Box.createVerticalStrut(14));
+
+        // Row 2: Day of Week (Left) | Session Type (Right)
+        JPanel row2 = new JPanel(new GridLayout(1, 2, 16, 0));
+        row2.setOpaque(false);
+        row2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row2.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
 
         dayComboBox = new JComboBox<>(DAYS_OF_WEEK);
         styleControl(dayComboBox);
-        dayTypeRow.add(createFieldWrapper("Day of Week *", dayComboBox));
+        row2.add(createFieldWrapper("Day of Week *", dayComboBox));
 
         sessionTypeComboBox = new JComboBox<>(SESSION_TYPES);
         styleControl(sessionTypeComboBox);
-        dayTypeRow.add(createFieldWrapper("Session Type *", sessionTypeComboBox));
+        row2.add(createFieldWrapper("Session Type *", sessionTypeComboBox));
 
-        formContainer.add(dayTypeRow);
-        formContainer.add(Box.createVerticalStrut(12));
+        formContainer.add(row2);
+        formContainer.add(Box.createVerticalStrut(14));
 
-        // 3. Start Time & End Time (Side by Side)
-        JPanel timeRow = new JPanel(new GridLayout(1, 2, 14, 0));
-        timeRow.setOpaque(false);
+        // Row 3: Start Time (Left) | End Time (Right)
+        JPanel row3 = new JPanel(new GridLayout(1, 2, 16, 0));
+        row3.setOpaque(false);
+        row3.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row3.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
 
         startTimeComboBox = new JComboBox<>(TIME_SLOTS);
         startTimeComboBox.setEditable(true);
         styleControl(startTimeComboBox);
         startTimeComboBox.setSelectedItem("08:00 AM");
-        timeRow.add(createFieldWrapper("Start Time *", startTimeComboBox));
+        row3.add(createFieldWrapper("Start Time *", startTimeComboBox));
 
         endTimeComboBox = new JComboBox<>(TIME_SLOTS);
         endTimeComboBox.setEditable(true);
         styleControl(endTimeComboBox);
         endTimeComboBox.setSelectedItem("10:00 AM");
-        timeRow.add(createFieldWrapper("End Time *", endTimeComboBox));
+        row3.add(createFieldWrapper("End Time *", endTimeComboBox));
 
-        formContainer.add(timeRow);
-        formContainer.add(Box.createVerticalStrut(12));
+        formContainer.add(row3);
+        formContainer.add(Box.createVerticalStrut(14));
 
-        // 4. Lecturer / Instructor
+        // Row 4: Lecturer / Instructor Name (Left) | Venue / Room / Lab (Right)
+        JPanel row4 = new JPanel(new GridLayout(1, 2, 16, 0));
+        row4.setOpaque(false);
+        row4.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row4.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
+
         lecturerField = new JTextField();
         styleControl(lecturerField);
-        formContainer.add(createFieldWrapper("Lecturer / Instructor Name", lecturerField));
-        formContainer.add(Box.createVerticalStrut(12));
+        row4.add(createFieldWrapper("Lecturer / Instructor Name", lecturerField));
 
-        // 5. Venue / Lab
         venueComboBox = new JComboBox<>(VENUES);
         venueComboBox.setEditable(true);
         styleControl(venueComboBox);
-        formContainer.add(createFieldWrapper("Venue / Room / Lab *", venueComboBox));
-        formContainer.add(Box.createVerticalStrut(12));
+        row4.add(createFieldWrapper("Venue / Room / Lab *", venueComboBox));
 
-        // 6. Semester Number & Academic Year (Side by Side)
-        JPanel semYearRow = new JPanel(new GridLayout(1, 2, 14, 0));
-        semYearRow.setOpaque(false);
+        formContainer.add(row4);
+        formContainer.add(Box.createVerticalStrut(14));
+
+        // Row 5: Semester (Left) | Academic Year (Right)
+        JPanel row5 = new JPanel(new GridLayout(1, 2, 16, 0));
+        row5.setOpaque(false);
+        row5.setAlignmentX(Component.LEFT_ALIGNMENT);
+        row5.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
 
         String[] semesters = {"Semester 1", "Semester 2", "Semester 3", "Semester 4", "Semester 5", "Semester 6", "Semester 7", "Semester 8"};
         semesterComboBox = new JComboBox<>(semesters);
         semesterComboBox.setSelectedIndex(1); // Default Semester 2
         styleControl(semesterComboBox);
-        semYearRow.add(createFieldWrapper("Semester *", semesterComboBox));
+        row5.add(createFieldWrapper("Semester *", semesterComboBox));
 
         academicYearField = new JTextField("2025/2026");
         styleControl(academicYearField);
-        semYearRow.add(createFieldWrapper("Academic Year *", academicYearField));
+        row5.add(createFieldWrapper("Academic Year *", academicYearField));
 
-        formContainer.add(semYearRow);
+        formContainer.add(row5);
         formContainer.add(Box.createVerticalStrut(12));
 
         // Error message label
         errorLabel = new JLabel(" ");
         errorLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         errorLabel.setForeground(new Color(185, 28, 28));
+        errorLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         formContainer.add(errorLabel);
 
         JScrollPane scrollPane = new JScrollPane(formContainer);
@@ -245,7 +281,7 @@ public class TimetableFormDialog extends JDialog {
         scrollPane.getVerticalScrollBar().setUnitIncrement(14);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Footer Action Buttons
+        // 3. Footer Action Buttons
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 14));
         footerPanel.setBackground(Color.WHITE);
         footerPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, COLOR_BORDER));
@@ -266,7 +302,7 @@ public class TimetableFormDialog extends JDialog {
     }
 
     private void styleControl(JComponent c) {
-        c.setFont(FONT_BODY);
+        c.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         c.setPreferredSize(new Dimension(c.getPreferredSize().width, 36));
         c.setBackground(Color.WHITE);
         if (c instanceof JTextField) {
@@ -274,45 +310,112 @@ public class TimetableFormDialog extends JDialog {
                     BorderFactory.createLineBorder(COLOR_BORDER_INPUT, 1, true),
                     new EmptyBorder(4, 10, 4, 10)
             ));
+        } else if (c instanceof JComboBox) {
+            c.setBorder(BorderFactory.createLineBorder(COLOR_BORDER_INPUT, 1, true));
         }
     }
 
     private JPanel createFieldWrapper(String labelText, JComponent field) {
-        JPanel wrap = new JPanel();
-        wrap.setLayout(new BoxLayout(wrap, BoxLayout.Y_AXIS));
+        JPanel wrap = new JPanel(new BorderLayout(0, 5));
         wrap.setOpaque(false);
+        wrap.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel lbl = new JLabel(labelText);
         lbl.setFont(FONT_BODY_BOLD);
         lbl.setForeground(COLOR_TEXT_DARK);
-        lbl.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        field.setPreferredSize(new Dimension(field.getPreferredSize().width, 36));
 
-        wrap.add(lbl);
-        wrap.add(Box.createVerticalStrut(4));
-        wrap.add(field);
+        wrap.add(lbl, BorderLayout.NORTH);
+        wrap.add(field, BorderLayout.CENTER);
         return wrap;
     }
 
     private void loadCourses() {
         try {
-            List<Course> courses = adminController.loadAllCourses();
-            courseComboBox.removeAllItems();
-            for (Course c : courses) {
-                courseComboBox.addItem(c);
-            }
+            this.allCourses = adminController.loadAllCourses();
+            filterCoursesByDepartment();
         } catch (DatabaseException e) {
             errorLabel.setText("Failed to load courses: " + e.getMessage());
         }
     }
 
-    private void populateFields(TimetableEntry entry) {
-        if (entry.getCourse() != null) {
+    /**
+     * Filters the course dropdown according to the department selected.
+     */
+    private void filterCoursesByDepartment() {
+        String selectedDept = (String) departmentComboBox.getSelectedItem();
+        Course previouslySelected = (Course) courseComboBox.getSelectedItem();
+
+        courseComboBox.removeAllItems();
+
+        if (allCourses == null || allCourses.isEmpty()) {
+            return;
+        }
+
+        List<Course> filtered = new ArrayList<>();
+        if (selectedDept == null || "All Departments".equals(selectedDept) || "-- Select Department --".equals(selectedDept)) {
+            filtered.addAll(allCourses);
+        } else {
+            for (Course c : allCourses) {
+                if (matchesDepartment(c, selectedDept)) {
+                    filtered.add(c);
+                }
+            }
+        }
+
+        for (Course c : filtered) {
+            courseComboBox.addItem(c);
+        }
+
+        // Preserve previously selected course if it belongs to the filtered list
+        if (previouslySelected != null) {
             for (int i = 0; i < courseComboBox.getItemCount(); i++) {
                 Course c = courseComboBox.getItemAt(i);
-                if (c.getCourseId() == entry.getCourse().getCourseId()) {
+                if (c.getCourseId() == previouslySelected.getCourseId()) {
+                    courseComboBox.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Case-insensitive flexible matching for department names and abbreviations.
+     */
+    private boolean matchesDepartment(Course c, String selectedDept) {
+        if (c == null) return false;
+        String cDept = c.getDepartment();
+        if (cDept == null || cDept.trim().isEmpty()) return false;
+        String cd = cDept.trim().toLowerCase();
+        String target = selectedDept.trim().toLowerCase();
+
+        if (cd.equalsIgnoreCase(target)) return true;
+        if (target.contains("information") && (cd.contains("information") || cd.contains("ict"))) return true;
+        if (target.contains("biosystems") && (cd.contains("biosystems") || cd.contains("bst") || cd.contains("bio"))) return true;
+        if (target.contains("engineering") && (cd.contains("engineering") || cd.contains("eng"))) return true;
+        if (target.contains("multidisciplinary") && (cd.contains("multidisciplinary") || cd.contains("multi"))) return true;
+        return false;
+    }
+
+    private void populateFields(TimetableEntry entry) {
+        if (entry.getCourse() != null) {
+            Course course = entry.getCourse();
+            // Automatically select the department corresponding to this course
+            String dept = course.getDepartment();
+            if (dept != null && !dept.trim().isEmpty()) {
+                for (int i = 0; i < departmentComboBox.getItemCount(); i++) {
+                    String d = departmentComboBox.getItemAt(i);
+                    if (matchesDepartment(course, d)) {
+                        departmentComboBox.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+            // Select the course in the filtered course list
+            for (int i = 0; i < courseComboBox.getItemCount(); i++) {
+                Course c = courseComboBox.getItemAt(i);
+                if (c.getCourseId() == course.getCourseId()) {
                     courseComboBox.setSelectedIndex(i);
                     break;
                 }
@@ -355,6 +458,7 @@ public class TimetableFormDialog extends JDialog {
 
     private void applyModeRestrictions() {
         if (mode == FormMode.VIEW) {
+            departmentComboBox.setEnabled(false);
             courseComboBox.setEnabled(false);
             dayComboBox.setEnabled(false);
             startTimeComboBox.setEnabled(false);
@@ -463,4 +567,3 @@ public class TimetableFormDialog extends JDialog {
         return saved;
     }
 }
-
