@@ -33,7 +33,14 @@ public class GradeDAO {
      * lecturer has not entered marks for that student yet.
      */
     public Mark findMark(int studentId, int courseId) throws DatabaseException {
-        String sql = "SELECT * FROM marks WHERE student_id = ? AND course_id = ?";
+        String sql = "SELECT MIN(m.mark_id) AS mark_id, m.student_id, e.course_id, " +
+                     "AVG(CASE WHEN e.type = 'QUIZ' THEN m.marks_obtained END) AS quiz_marks, " +
+                     "AVG(CASE WHEN e.type = 'ASSESSMENT' THEN m.marks_obtained END) AS assignment_marks, " +
+                     "AVG(CASE WHEN e.type = 'MID_TERM' THEN m.marks_obtained END) AS mid_sem_marks, " +
+                     "AVG(CASE WHEN e.type = 'PRACTICAL' THEN m.marks_obtained END) AS practical_marks, " +
+                     "AVG(CASE WHEN e.type = 'FINAL' THEN m.marks_obtained END) AS final_exam_marks " +
+                     "FROM marks m JOIN evaluations e ON e.evaluation_id = m.evaluation_id " +
+                     "WHERE m.student_id = ? AND e.course_id = ? GROUP BY m.student_id, e.course_id";
         Connection conn = DatabaseConnection.getInstance().getConnection();
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, studentId);
