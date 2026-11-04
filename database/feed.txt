@@ -1,0 +1,557 @@
+-- ==============================================================================
+-- Faculty Management System (FMS) | University of Ruhuna - Faculty of Technology
+-- Master Database Feed Script (10 Realistic Data Records for Every Table)
+-- File: feed.txt
+-- Supported Environment: Microsoft SQL Server Management Studio (SSMS) / sqlcmd
+-- Target Database: [faculty_management_db]
+-- ==============================================================================
+
+USE [faculty_management_db];
+GO
+
+SET ANSI_NULLS ON;
+GO
+SET QUOTED_IDENTIFIER ON;
+GO
+
+PRINT '>>> Beginning Data Feed for all 17 database tables (10 rows per table)...';
+GO
+
+-- ------------------------------------------------------------------------------
+-- 1. dbo.roles (10 Roles)
+-- ------------------------------------------------------------------------------
+PRINT '1. Feeding dbo.roles (10 records)...';
+SET IDENTITY_INSERT dbo.roles ON;
+
+MERGE INTO dbo.roles AS target
+USING (VALUES
+    (1, N'ADMIN', N'Full system administrator with user, course, notice and timetable privileges'),
+    (2, N'LECTURER', N'Academic staff managing courses, materials, evaluations and student marks'),
+    (3, N'TECHNICAL_OFFICER', N'Technical officer responsible for lab sessions, student attendance and medical records'),
+    (4, N'STUDENT', N'Undergraduate student registered for academic courses, viewing attendance and results'),
+    (5, N'DEAN', N'Dean of Faculty responsible for overall faculty governance, approvals and executive oversight'),
+    (6, N'HEAD_OF_DEPARTMENT', N'Head of Department overseeing curriculum, lecturer allocations and departmental operations'),
+    (7, N'VISITING_LECTURER', N'External industry lecturer conducting specialized advanced modules and guest sessions'),
+    (8, N'DEMONSTRATOR', N'Graduate laboratory instructor assisting practical lab sessions and grading lab reports'),
+    (9, N'ASSISTANT_REGISTRAR', N'Academic registrar managing official student enrollments, exam admissions and certificates'),
+    (10, N'EXAM_COORDINATOR', N'Senior academic coordinating end-semester examination timetables, halls and mark moderation')
+) AS source (role_id, role_name, description)
+ON target.role_id = source.role_id
+WHEN MATCHED THEN
+    UPDATE SET role_name = source.role_name, description = source.description
+WHEN NOT MATCHED THEN
+    INSERT (role_id, role_name, description) VALUES (source.role_id, source.role_name, source.description);
+
+SET IDENTITY_INSERT dbo.roles OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 2. dbo.users (10 Users: Admin, Lecturers, Technical Officers, Students)
+-- ------------------------------------------------------------------------------
+PRINT '2. Feeding dbo.users (10 records)...';
+SET IDENTITY_INSERT dbo.users ON;
+
+MERGE INTO dbo.users AS target
+USING (VALUES
+    (1, N'admin', N'admin123', N'admin@fot.ruh.ac.lk', N'Chandana', N'Gamage', 1, N'0711234567', NULL, N'ACTIVE'),
+    (2, N'lec_kamal', N'lec123', N'kamal@fot.ruh.ac.lk', N'Kamal', N'Perera', 2, N'0771122334', NULL, N'ACTIVE'),
+    (3, N'lec_nimal', N'lec123', N'nimal@fot.ruh.ac.lk', N'Nimal', N'Silva', 2, N'0772233445', NULL, N'ACTIVE'),
+    (4, N'lec_sunil', N'lec123', N'sunil@fot.ruh.ac.lk', N'Sunil', N'Fernando', 2, N'0773344556', NULL, N'ACTIVE'),
+    (5, N'to_bandara', N'to123', N'bandara@fot.ruh.ac.lk', N'Bandara', N'Herath', 3, N'0761122334', NULL, N'ACTIVE'),
+    (6, N'to_sarath', N'to123', N'sarath@fot.ruh.ac.lk', N'Sarath', N'Kumara', 3, N'0762233445', NULL, N'ACTIVE'),
+    (7, N'tg2021001', N'std123', N'tg2021001@fot.ruh.ac.lk', N'Kasun', N'Kalhara', 4, N'0701122334', NULL, N'ACTIVE'),
+    (8, N'tg2021002', N'std123', N'tg2021002@fot.ruh.ac.lk', N'Nuwan', N'Pradeep', 4, N'0702233445', NULL, N'ACTIVE'),
+    (9, N'tg2021003', N'std123', N'tg2021003@fot.ruh.ac.lk', N'Dinuka', N'Madushan', 4, N'0703344556', NULL, N'ACTIVE'),
+    (10, N'tg2021004', N'std123', N'tg2021004@fot.ruh.ac.lk', N'Sajith', N'Premadasa', 4, N'0704455667', NULL, N'ACTIVE')
+) AS source (user_id, username, password, email, first_name, last_name, role_id, contact_no, profile_pic, status)
+ON target.user_id = source.user_id
+WHEN MATCHED THEN
+    UPDATE SET password = source.password, email = source.email, first_name = source.first_name,
+               last_name = source.last_name, role_id = source.role_id, contact_no = source.contact_no, status = source.status
+WHEN NOT MATCHED THEN
+    INSERT (user_id, username, password, email, first_name, last_name, role_id, contact_no, profile_pic, status)
+    VALUES (source.user_id, source.username, source.password, source.email, source.first_name, source.last_name, source.role_id, source.contact_no, source.profile_pic, source.status);
+
+SET IDENTITY_INSERT dbo.users OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 3. dbo.courses (10 Courses)
+-- ------------------------------------------------------------------------------
+PRINT '3. Feeding dbo.courses (10 records)...';
+SET IDENTITY_INSERT dbo.courses ON;
+
+MERGE INTO dbo.courses AS target
+USING (VALUES
+    (1, N'ICT2112', N'Data Structures and Algorithms', 2, 2, 30, 30, 15, 15, N'Information & Communication Technology', N'Semester 1', 1, N'2025/2026', N'Algorithm design, stacks, queues, trees, graphs, sorting and searching techniques'),
+    (2, N'ICT2123', N'Database Management Systems', 3, 3, 30, 30, 15, 15, N'Information & Communication Technology', N'Semester 1', 1, N'2025/2026', N'Relational algebra, SQL programming, normalization, transaction management and indexing'),
+    (3, N'ICT2132', N'Object Oriented Programming Practicum', 2, 2, 15, 45, 15, 15, N'Information & Communication Technology', N'Semester 2', 2, N'2025/2026', N'Advanced Java, Swing GUI architecture, JDBC database integration, design patterns and MVC'),
+    (4, N'BST2113', N'Bioprocess Technology Fundamentals', 3, 3, 30, 30, 15, 15, N'Bio-Systems Technology', N'Semester 1', 1, N'2025/2026', N'Upstream processing, bioreactor design, fermentation principles and downstream separation'),
+    (5, N'ENG2113', N'Engineering Mechanics & Materials', 3, 3, 45, 0, 15, 0, N'Engineering Technology', N'Semester 1', 1, N'2025/2026', N'Statics, dynamics of particles, stress-strain relations and material behavior under mechanical loads'),
+    (6, N'CS201', N'Computer Networks and Distributed Systems', 3, 3, 30, 30, 15, 15, N'Information & Communication Technology', N'Semester 2', 2, N'2025/2026', N'OSI reference model, TCP/IP protocol suite, socket programming, routing protocols and firewall design'),
+    (7, N'CS202', N'Software Engineering Methodologies', 3, 3, 45, 0, 15, 0, N'Information & Communication Technology', N'Semester 2', 2, N'2025/2026', N'Agile Scrum, UML modeling, software architecture, automated testing and DevOps CI/CD pipelines'),
+    (8, N'CS203', N'Operating Systems & System Programming', 3, 3, 30, 30, 15, 15, N'Information & Communication Technology', N'Semester 2', 2, N'2025/2026', N'Process scheduling, virtual memory management, concurrency, deadlock handling and POSIX thread API'),
+    (9, N'CS204', N'Web Application Development', 3, 3, 30, 30, 15, 15, N'Information & Communication Technology', N'Semester 2', 2, N'2025/2026', N'Client-side frameworks, server-side APIs, RESTful microservices, state management and cloud hosting'),
+    (10, N'MA201', N'Applied Statistics and Probability', 2, 2, 30, 0, 15, 0, N'Multidisciplinary Studies', N'Semester 2', 2, N'2025/2026', N'Probability distributions, hypothesis testing, regression analysis and statistical computing using R')
+) AS source (course_id, course_code, course_name, credit_value, credits, theory_hours, practical_hours, theory_sessions, practical_sessions, department, semester, semester_number, academic_year, description)
+ON target.course_id = source.course_id
+WHEN MATCHED THEN
+    UPDATE SET course_code = source.course_code, course_name = source.course_name, credit_value = source.credit_value,
+               credits = source.credits, theory_hours = source.theory_hours, practical_hours = source.practical_hours,
+               theory_sessions = source.theory_sessions, practical_sessions = source.practical_sessions,
+               department = source.department, semester = source.semester, semester_number = source.semester_number,
+               academic_year = source.academic_year, description = source.description
+WHEN NOT MATCHED THEN
+    INSERT (course_id, course_code, course_name, credit_value, credits, theory_hours, practical_hours, theory_sessions, practical_sessions, department, semester, semester_number, academic_year, description)
+    VALUES (source.course_id, source.course_code, source.course_name, source.credit_value, source.credits, source.theory_hours, source.practical_hours, source.theory_sessions, source.practical_sessions, source.department, source.semester, source.semester_number, source.academic_year, source.description);
+
+SET IDENTITY_INSERT dbo.courses OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 4. dbo.course_lecturers (10 Lecturer-Course Assignments)
+-- ------------------------------------------------------------------------------
+PRINT '4. Feeding dbo.course_lecturers (10 records)...';
+
+MERGE INTO dbo.course_lecturers AS target
+USING (VALUES
+    (1, 2), -- Dr. Kamal Perera teaches ICT2112
+    (2, 2), -- Dr. Kamal Perera teaches ICT2123
+    (3, 3), -- Dr. Nimal Silva teaches ICT2132
+    (4, 4), -- Dr. Sunil Fernando teaches BST2113
+    (5, 4), -- Dr. Sunil Fernando teaches ENG2113
+    (6, 2), -- Dr. Kamal Perera teaches CS201
+    (7, 3), -- Dr. Nimal Silva teaches CS202
+    (8, 3), -- Dr. Nimal Silva teaches CS203
+    (9, 2), -- Dr. Kamal Perera teaches CS204
+    (10, 4) -- Dr. Sunil Fernando teaches MA201
+) AS source (course_id, lecturer_id)
+ON target.course_id = source.course_id AND target.lecturer_id = source.lecturer_id
+WHEN NOT MATCHED THEN
+    INSERT (course_id, lecturer_id) VALUES (source.course_id, source.lecturer_id);
+GO
+
+-- ------------------------------------------------------------------------------
+-- 5. dbo.course_materials (10 Course Materials)
+-- ------------------------------------------------------------------------------
+PRINT '5. Feeding dbo.course_materials (10 records)...';
+SET IDENTITY_INSERT dbo.course_materials ON;
+
+MERGE INTO dbo.course_materials AS target
+USING (VALUES
+    (1, 1, 2, N'Lecture 01 - Asymptotic Analysis & Big-O Notation', N'resources/course_materials/ICT2112_Lecture01.pdf'),
+    (2, 1, 2, N'Tutorial Sheet 01 - Linked List Implementations', N'resources/course_materials/ICT2112_Tutorial01.pdf'),
+    (3, 2, 2, N'Lecture 02 - Relational Schema Normalization (1NF to BCNF)', N'resources/course_materials/ICT2123_Lecture02.pdf'),
+    (4, 2, 2, N'Lab Guide 01 - Complex SQL Queries & Indexing Exercises', N'resources/course_materials/ICT2123_Lab01.pdf'),
+    (5, 3, 3, N'Practicum Guide - Java Swing MVC Architecture & Event Dispatch', N'resources/course_materials/ICT2132_SwingMVC.pdf'),
+    (6, 3, 3, N'Lab Sheet 02 - JDBC Connection Pooling & DAO Pattern', N'resources/course_materials/ICT2132_Lab02_DAO.pdf'),
+    (7, 6, 2, N'Lecture 01 - Network Protocol Stack & Socket Programming', N'resources/course_materials/CS201_Networking_L01.pdf'),
+    (8, 7, 3, N'Lecture 03 - Design Patterns (Factory, Singleton, Observer)', N'resources/course_materials/CS202_DesignPatterns.pdf'),
+    (9, 8, 3, N'Lecture 02 - Process Synchronization & Semaphores', N'resources/course_materials/CS203_Sync_Semaphores.pdf'),
+    (10, 9, 2, N'Lab Guide 03 - RESTful API Construction with JSON Payloads', N'resources/course_materials/CS204_RestAPI_Guide.pdf')
+) AS source (material_id, course_id, uploaded_by, title, file_path)
+ON target.material_id = source.material_id
+WHEN MATCHED THEN
+    UPDATE SET course_id = source.course_id, uploaded_by = source.uploaded_by,
+               title = source.title, file_path = source.file_path
+WHEN NOT MATCHED THEN
+    INSERT (material_id, course_id, uploaded_by, title, file_path)
+    VALUES (source.material_id, source.course_id, source.uploaded_by, source.title, source.file_path);
+
+SET IDENTITY_INSERT dbo.course_materials OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 6. dbo.evaluations (10 Academic Evaluations)
+-- ------------------------------------------------------------------------------
+PRINT '6. Feeding dbo.evaluations (10 records)...';
+SET IDENTITY_INSERT dbo.evaluations ON;
+
+MERGE INTO dbo.evaluations AS target
+USING (VALUES
+    (1, 1, N'Quiz 01 - Stacks, Queues & Hash Maps', N'QUIZ', 10.0, 100.0),
+    (2, 1, N'Continuous Assessment 01 - Tree Traversals', N'ASSESSMENT', 15.0, 100.0),
+    (3, 1, N'Mid-Semester Theory Examination', N'MID_TERM', 25.0, 100.0),
+    (4, 1, N'Practical Lab Test - Graph Algorithms', N'PRACTICAL', 20.0, 100.0),
+    (5, 1, N'End-Semester Final Examination', N'FINAL', 30.0, 100.0),
+    (6, 2, N'Quiz 01 - SQL DDL/DML & Subqueries', N'QUIZ', 10.0, 100.0),
+    (7, 2, N'Database Mini Project - Schema Design', N'ASSESSMENT', 20.0, 100.0),
+    (8, 2, N'Mid-Semester Theory Exam', N'MID_TERM', 20.0, 100.0),
+    (9, 3, N'OOP Quiz - Polymorphism & Interfaces', N'QUIZ', 10.0, 100.0),
+    (10, 3, N'Swing GUI Desktop Project Milestone', N'ASSESSMENT', 30.0, 100.0)
+) AS source (evaluation_id, course_id, title, type, weightage, max_marks)
+ON target.evaluation_id = source.evaluation_id
+WHEN MATCHED THEN
+    UPDATE SET course_id = source.course_id, title = source.title, type = source.type,
+               weightage = source.weightage, max_marks = source.max_marks
+WHEN NOT MATCHED THEN
+    INSERT (evaluation_id, course_id, title, type, weightage, max_marks)
+    VALUES (source.evaluation_id, source.course_id, source.title, source.type, source.weightage, source.max_marks);
+
+SET IDENTITY_INSERT dbo.evaluations OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 7. dbo.enrollments (10 Student Course Enrollments)
+-- ------------------------------------------------------------------------------
+PRINT '7. Feeding dbo.enrollments (10 records)...';
+SET IDENTITY_INSERT dbo.enrollments ON;
+
+MERGE INTO dbo.enrollments AS target
+USING (VALUES
+    (1, 7, 1, 1, N'2025/2026', N'ONGOING'), -- Kasun in ICT2112
+    (2, 7, 2, 1, N'2025/2026', N'ONGOING'), -- Kasun in ICT2123
+    (3, 7, 3, 2, N'2025/2026', N'ONGOING'), -- Kasun in ICT2132
+    (4, 8, 1, 1, N'2025/2026', N'ONGOING'), -- Nuwan in ICT2112
+    (5, 8, 2, 1, N'2025/2026', N'ONGOING'), -- Nuwan in ICT2123
+    (6, 8, 3, 2, N'2025/2026', N'ONGOING'), -- Nuwan in ICT2132
+    (7, 9, 1, 1, N'2025/2026', N'ONGOING'), -- Dinuka in ICT2112
+    (8, 9, 2, 1, N'2025/2026', N'ONGOING'), -- Dinuka in ICT2123
+    (9, 10, 1, 1, N'2025/2026', N'ONGOING'), -- Sajith in ICT2112
+    (10, 10, 2, 1, N'2025/2026', N'ONGOING')  -- Sajith in ICT2123
+) AS source (enrollment_id, student_id, course_id, semester_number, academic_year, status)
+ON target.enrollment_id = source.enrollment_id
+WHEN MATCHED THEN
+    UPDATE SET student_id = source.student_id, course_id = source.course_id,
+               semester_number = source.semester_number, academic_year = source.academic_year, status = source.status
+WHEN NOT MATCHED THEN
+    INSERT (enrollment_id, student_id, course_id, semester_number, academic_year, status)
+    VALUES (source.enrollment_id, source.student_id, source.course_id, source.semester_number, source.academic_year, source.status);
+
+SET IDENTITY_INSERT dbo.enrollments OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 8. dbo.marks (10 Student Mark Records)
+-- ------------------------------------------------------------------------------
+PRINT '8. Feeding dbo.marks (10 records)...';
+SET IDENTITY_INSERT dbo.marks ON;
+
+MERGE INTO dbo.marks AS target
+USING (VALUES
+    (1, 7, 1, 1, CAST(88.0 AS DECIMAL(5,2)), CAST(88.0 AS DECIMAL(5,2)), CAST(82.0 AS DECIMAL(5,2)), CAST(85.0 AS DECIMAL(5,2)), CAST(90.0 AS DECIMAL(5,2)), CAST(86.0 AS DECIMAL(5,2))),
+    (2, 7, 1, 2, CAST(82.0 AS DECIMAL(5,2)), NULL, CAST(82.0 AS DECIMAL(5,2)), NULL, NULL, NULL),
+    (3, 7, 1, 3, CAST(79.5 AS DECIMAL(5,2)), NULL, NULL, CAST(79.5 AS DECIMAL(5,2)), NULL, NULL),
+    (4, 7, 1, 4, CAST(91.0 AS DECIMAL(5,2)), NULL, NULL, NULL, CAST(91.0 AS DECIMAL(5,2)), NULL),
+    (5, 7, 1, 5, CAST(85.0 AS DECIMAL(5,2)), NULL, NULL, NULL, NULL, CAST(85.0 AS DECIMAL(5,2))),
+    (6, 8, 1, 1, CAST(68.0 AS DECIMAL(5,2)), CAST(68.0 AS DECIMAL(5,2)), CAST(65.0 AS DECIMAL(5,2)), CAST(70.0 AS DECIMAL(5,2)), CAST(72.0 AS DECIMAL(5,2)), CAST(64.0 AS DECIMAL(5,2))),
+    (7, 8, 1, 2, CAST(65.0 AS DECIMAL(5,2)), NULL, CAST(65.0 AS DECIMAL(5,2)), NULL, NULL, NULL),
+    (8, 9, 1, 1, CAST(48.0 AS DECIMAL(5,2)), CAST(48.0 AS DECIMAL(5,2)), CAST(52.0 AS DECIMAL(5,2)), CAST(45.0 AS DECIMAL(5,2)), CAST(50.0 AS DECIMAL(5,2)), CAST(46.0 AS DECIMAL(5,2))),
+    (9, 10, 1, 1, CAST(32.0 AS DECIMAL(5,2)), CAST(32.0 AS DECIMAL(5,2)), CAST(30.0 AS DECIMAL(5,2)), CAST(28.0 AS DECIMAL(5,2)), CAST(35.0 AS DECIMAL(5,2)), CAST(34.0 AS DECIMAL(5,2))),
+    (10, 10, 1, 2, CAST(29.5 AS DECIMAL(5,2)), NULL, CAST(29.5 AS DECIMAL(5,2)), NULL, NULL, NULL)
+) AS source (mark_id, student_id, course_id, evaluation_id, marks_obtained, quiz_marks, assignment_marks, mid_sem_marks, practical_marks, final_exam_marks)
+ON target.mark_id = source.mark_id
+WHEN MATCHED THEN
+    UPDATE SET student_id = source.student_id, course_id = source.course_id, evaluation_id = source.evaluation_id,
+               marks_obtained = source.marks_obtained, quiz_marks = source.quiz_marks, assignment_marks = source.assignment_marks,
+               mid_sem_marks = source.mid_sem_marks, practical_marks = source.practical_marks, final_exam_marks = source.final_exam_marks
+WHEN NOT MATCHED THEN
+    INSERT (mark_id, student_id, course_id, evaluation_id, marks_obtained, quiz_marks, assignment_marks, mid_sem_marks, practical_marks, final_exam_marks)
+    VALUES (source.mark_id, source.student_id, source.course_id, source.evaluation_id, source.marks_obtained, source.quiz_marks, source.assignment_marks, source.mid_sem_marks, source.practical_marks, source.final_exam_marks);
+
+SET IDENTITY_INSERT dbo.marks OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 9. dbo.eligibility (10 CA Eligibility Computations)
+-- ------------------------------------------------------------------------------
+PRINT '9. Feeding dbo.eligibility (10 records)...';
+SET IDENTITY_INSERT dbo.eligibility ON;
+
+MERGE INTO dbo.eligibility AS target
+USING (VALUES
+    (1, 7, 1, 85.50, 1), -- Kasun: ICT2112 Eligible (CA >= 40%)
+    (2, 7, 2, 82.00, 1), -- Kasun: ICT2123 Eligible
+    (3, 7, 3, 90.00, 1), -- Kasun: ICT2132 Eligible
+    (4, 8, 1, 67.50, 1), -- Nuwan: ICT2112 Eligible
+    (5, 8, 2, 64.00, 1), -- Nuwan: ICT2123 Eligible
+    (6, 8, 3, 71.00, 1), -- Nuwan: ICT2132 Eligible
+    (7, 9, 1, 46.50, 1), -- Dinuka: ICT2112 Eligible (Marginal)
+    (8, 9, 2, 42.00, 1), -- Dinuka: ICT2123 Eligible (Marginal)
+    (9, 10, 1, 28.75, 0), -- Sajith: ICT2112 NOT Eligible (CA < 40%)
+    (10, 10, 2, 33.50, 0)  -- Sajith: ICT2123 NOT Eligible (CA < 40%)
+) AS source (eligibility_id, student_id, course_id, ca_percentage, is_eligible)
+ON target.eligibility_id = source.eligibility_id
+WHEN MATCHED THEN
+    UPDATE SET student_id = source.student_id, course_id = source.course_id,
+               ca_percentage = source.ca_percentage, is_eligible = source.is_eligible
+WHEN NOT MATCHED THEN
+    INSERT (eligibility_id, student_id, course_id, ca_percentage, is_eligible)
+    VALUES (source.eligibility_id, source.student_id, source.course_id, source.ca_percentage, source.is_eligible);
+
+SET IDENTITY_INSERT dbo.eligibility OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 10. dbo.timetable (10 Timetable Entries)
+-- ------------------------------------------------------------------------------
+PRINT '10. Feeding dbo.timetable (10 records)...';
+SET IDENTITY_INSERT dbo.timetable ON;
+
+MERGE INTO dbo.timetable AS target
+USING (VALUES
+    (1, 1, N'MONDAY', CAST('08:30:00' AS TIME), CAST('10:30:00' AS TIME), N'THEORY', N'Dr. Kamal Perera', N'Lecture Theatre 01', 1, N'2025/2026'),
+    (2, 1, N'MONDAY', CAST('10:45:00' AS TIME), CAST('12:45:00' AS TIME), N'PRACTICAL', N'Dr. Kamal Perera', N'Software Lab 02', 1, N'2025/2026'),
+    (3, 2, N'TUESDAY', CAST('08:30:00' AS TIME), CAST('10:30:00' AS TIME), N'THEORY', N'Dr. Kamal Perera', N'Lecture Theatre 02', 1, N'2025/2026'),
+    (4, 2, N'TUESDAY', CAST('13:30:00' AS TIME), CAST('16:30:00' AS TIME), N'PRACTICAL', N'Dr. Kamal Perera', N'Database Systems Lab', 1, N'2025/2026'),
+    (5, 3, N'WEDNESDAY', CAST('08:30:00' AS TIME), CAST('11:30:00' AS TIME), N'PRACTICAL', N'Dr. Nimal Silva', N'Advanced Computing Lab', 2, N'2025/2026'),
+    (6, 4, N'WEDNESDAY', CAST('13:30:00' AS TIME), CAST('15:30:00' AS TIME), N'THEORY', N'Dr. Sunil Fernando', N'Bioprocess Lecture Hall', 1, N'2025/2026'),
+    (7, 5, N'THURSDAY', CAST('08:30:00' AS TIME), CAST('11:30:00' AS TIME), N'THEORY', N'Dr. Sunil Fernando', N'Engineering Auditorium', 1, N'2025/2026'),
+    (8, 6, N'THURSDAY', CAST('13:30:00' AS TIME), CAST('15:30:00' AS TIME), N'THEORY', N'Dr. Kamal Perera', N'Networking Lab 01', 2, N'2025/2026'),
+    (9, 7, N'FRIDAY', CAST('08:30:00' AS TIME), CAST('11:30:00' AS TIME), N'THEORY', N'Dr. Nimal Silva', N'Lecture Theatre 01', 2, N'2025/2026'),
+    (10, 8, N'FRIDAY', CAST('13:30:00' AS TIME), CAST('16:30:00' AS TIME), N'PRACTICAL', N'Dr. Nimal Silva', N'Systems Programming Lab', 2, N'2025/2026')
+) AS source (timetable_id, course_id, day_of_week, start_time, end_time, session_type, lecturer_name, venue, semester_number, academic_year)
+ON target.timetable_id = source.timetable_id
+WHEN MATCHED THEN
+    UPDATE SET course_id = source.course_id, day_of_week = source.day_of_week,
+               start_time = source.start_time, end_time = source.end_time, session_type = source.session_type,
+               lecturer_name = source.lecturer_name, venue = source.venue, semester_number = source.semester_number,
+               academic_year = source.academic_year
+WHEN NOT MATCHED THEN
+    INSERT (timetable_id, course_id, day_of_week, start_time, end_time, session_type, lecturer_name, venue, semester_number, academic_year)
+    VALUES (source.timetable_id, source.course_id, source.day_of_week, source.start_time, source.end_time, source.session_type, source.lecturer_name, source.venue, source.semester_number, source.academic_year);
+
+SET IDENTITY_INSERT dbo.timetable OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 11. dbo.grades (10 Academic Grades)
+-- ------------------------------------------------------------------------------
+PRINT '11. Feeding dbo.grades (10 records)...';
+SET IDENTITY_INSERT dbo.grades ON;
+
+MERGE INTO dbo.grades AS target
+USING (VALUES
+    (1, 7, 1, 1, N'2025/2026', CAST(85.50 AS DECIMAL(5,2)), CAST(86.00 AS DECIMAL(5,2)), CAST(85.80 AS DECIMAL(5,2)), 1, N'A', CAST(4.00 AS DECIMAL(3,2))),
+    (2, 7, 2, 1, N'2025/2026', CAST(82.00 AS DECIMAL(5,2)), CAST(80.00 AS DECIMAL(5,2)), CAST(80.80 AS DECIMAL(5,2)), 1, N'A-', CAST(3.70 AS DECIMAL(3,2))),
+    (3, 7, 3, 2, N'2025/2026', CAST(90.00 AS DECIMAL(5,2)), CAST(88.00 AS DECIMAL(5,2)), CAST(88.80 AS DECIMAL(5,2)), 1, N'A+', CAST(4.00 AS DECIMAL(3,2))),
+    (4, 8, 1, 1, N'2025/2026', CAST(67.50 AS DECIMAL(5,2)), CAST(64.00 AS DECIMAL(5,2)), CAST(65.40 AS DECIMAL(5,2)), 1, N'B', CAST(3.00 AS DECIMAL(3,2))),
+    (5, 8, 2, 1, N'2025/2026', CAST(64.00 AS DECIMAL(5,2)), CAST(62.00 AS DECIMAL(5,2)), CAST(62.80 AS DECIMAL(5,2)), 1, N'B-', CAST(2.70 AS DECIMAL(3,2))),
+    (6, 8, 3, 2, N'2025/2026', CAST(71.00 AS DECIMAL(5,2)), CAST(74.00 AS DECIMAL(5,2)), CAST(72.80 AS DECIMAL(5,2)), 1, N'B+', CAST(3.30 AS DECIMAL(3,2))),
+    (7, 9, 1, 1, N'2025/2026', CAST(46.50 AS DECIMAL(5,2)), CAST(48.00 AS DECIMAL(5,2)), CAST(47.40 AS DECIMAL(5,2)), 1, N'C', CAST(2.00 AS DECIMAL(3,2))),
+    (8, 9, 2, 1, N'2025/2026', CAST(42.00 AS DECIMAL(5,2)), CAST(44.00 AS DECIMAL(5,2)), CAST(43.20 AS DECIMAL(5,2)), 1, N'C-', CAST(1.70 AS DECIMAL(3,2))),
+    (9, 10, 1, 1, N'2025/2026', CAST(28.75 AS DECIMAL(5,2)), CAST(0.00 AS DECIMAL(5,2)), CAST(14.38 AS DECIMAL(5,2)), 0, N'E', CAST(0.00 AS DECIMAL(3,2))),
+    (10, 10, 2, 1, N'2025/2026', CAST(33.50 AS DECIMAL(5,2)), CAST(0.00 AS DECIMAL(5,2)), CAST(16.75 AS DECIMAL(5,2)), 0, N'E', CAST(0.00 AS DECIMAL(3,2)))
+) AS source (grade_id, student_id, course_id, semester_number, academic_year, ca_marks, final_exam_marks, final_total_marks, ca_eligible, grade_letter, grade_point)
+ON target.grade_id = source.grade_id
+WHEN MATCHED THEN
+    UPDATE SET student_id = source.student_id, course_id = source.course_id,
+               semester_number = source.semester_number, academic_year = source.academic_year,
+               ca_marks = source.ca_marks, final_exam_marks = source.final_exam_marks, final_total_marks = source.final_total_marks,
+               ca_eligible = source.ca_eligible, grade_letter = source.grade_letter, grade_point = source.grade_point
+WHEN NOT MATCHED THEN
+    INSERT (grade_id, student_id, course_id, semester_number, academic_year, ca_marks, final_exam_marks, final_total_marks, ca_eligible, grade_letter, grade_point)
+    VALUES (source.grade_id, source.student_id, source.course_id, source.semester_number, source.academic_year, source.ca_marks, source.final_exam_marks, source.final_total_marks, source.ca_eligible, source.grade_letter, source.grade_point);
+
+SET IDENTITY_INSERT dbo.grades OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 12. dbo.results (10 Semester GPA Results)
+-- ------------------------------------------------------------------------------
+PRINT '12. Feeding dbo.results (10 records)...';
+SET IDENTITY_INSERT dbo.results ON;
+
+MERGE INTO dbo.results AS target
+USING (VALUES
+    (1, 7, 1, N'2025/2026', CAST(3.850 AS DECIMAL(4,3)), CAST(3.850 AS DECIMAL(4,3)), 15, 15, N'First Class Honours Standing'),
+    (2, 7, 2, N'2025/2026', CAST(3.920 AS DECIMAL(4,3)), CAST(3.885 AS DECIMAL(4,3)), 15, 15, N'First Class Honours Standing'),
+    (3, 8, 1, N'2025/2026', CAST(3.120 AS DECIMAL(4,3)), CAST(3.120 AS DECIMAL(4,3)), 15, 15, N'Second Upper Honours Standing'),
+    (4, 8, 2, N'2025/2026', CAST(3.250 AS DECIMAL(4,3)), CAST(3.185 AS DECIMAL(4,3)), 15, 15, N'Second Upper Honours Standing'),
+    (5, 9, 1, N'2025/2026', CAST(2.150 AS DECIMAL(4,3)), CAST(2.150 AS DECIMAL(4,3)), 15, 15, N'Good Standing'),
+    (6, 9, 2, N'2025/2026', CAST(2.300 AS DECIMAL(4,3)), CAST(2.225 AS DECIMAL(4,3)), 15, 15, N'Good Standing'),
+    (7, 10, 1, N'2025/2026', CAST(1.450 AS DECIMAL(4,3)), CAST(1.450 AS DECIMAL(4,3)), 15, 8, N'Academic Warning - Repeat Required'),
+    (8, 10, 2, N'2025/2026', CAST(1.600 AS DECIMAL(4,3)), CAST(1.525 AS DECIMAL(4,3)), 15, 9, N'Academic Probation - Repeat Required'),
+    (9, 7, 1, N'2024/2025', CAST(3.780 AS DECIMAL(4,3)), CAST(3.780 AS DECIMAL(4,3)), 16, 16, N'Dean''s List / First Class Standing'),
+    (10, 8, 1, N'2024/2025', CAST(3.050 AS DECIMAL(4,3)), CAST(3.050 AS DECIMAL(4,3)), 16, 16, N'Good Standing')
+) AS source (result_id, student_id, semester_number, academic_year, sgpa, cgpa, credits_attempted, credits_completed, academic_status)
+ON target.result_id = source.result_id
+WHEN MATCHED THEN
+    UPDATE SET student_id = source.student_id, semester_number = source.semester_number,
+               academic_year = source.academic_year, sgpa = source.sgpa, cgpa = source.cgpa,
+               credits_attempted = source.credits_attempted, credits_completed = source.credits_completed,
+               academic_status = source.academic_status
+WHEN NOT MATCHED THEN
+    INSERT (result_id, student_id, semester_number, academic_year, sgpa, cgpa, credits_attempted, credits_completed, academic_status)
+    VALUES (source.result_id, source.student_id, source.semester_number, source.academic_year, source.sgpa, source.cgpa, source.credits_attempted, source.credits_completed, source.academic_status);
+
+SET IDENTITY_INSERT dbo.results OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 13. dbo.attendance_sessions (10 Attendance Sessions)
+-- ------------------------------------------------------------------------------
+PRINT '13. Feeding dbo.attendance_sessions (10 records)...';
+SET IDENTITY_INSERT dbo.attendance_sessions ON;
+
+MERGE INTO dbo.attendance_sessions AS target
+USING (VALUES
+    (1, N'ICT2112', N'THEORY', 1, CAST('2026-06-08' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 5),
+    (2, N'ICT2112', N'THEORY', 2, CAST('2026-06-15' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 5),
+    (3, N'ICT2112', N'THEORY', 3, CAST('2026-06-22' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 5),
+    (4, N'ICT2112', N'THEORY', 4, CAST('2026-06-29' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 5),
+    (5, N'ICT2112', N'PRACTICAL', 1, CAST('2026-06-10' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 6),
+    (6, N'ICT2112', N'PRACTICAL', 2, CAST('2026-06-17' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 6),
+    (7, N'ICT2123', N'THEORY', 1, CAST('2026-06-09' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 5),
+    (8, N'ICT2123', N'THEORY', 2, CAST('2026-06-16' AS DATE), CAST(2.0 AS DECIMAL(3,1)), 5),
+    (9, N'ICT2123', N'PRACTICAL', 1, CAST('2026-06-11' AS DATE), CAST(3.0 AS DECIMAL(3,1)), 6),
+    (10, N'ICT2132', N'PRACTICAL', 1, CAST('2026-06-12' AS DATE), CAST(3.0 AS DECIMAL(3,1)), 6)
+) AS source (session_id, course_id, session_type, session_number, session_date, hours, created_by)
+ON target.session_id = source.session_id
+WHEN MATCHED THEN
+    UPDATE SET course_id = source.course_id, session_type = source.session_type,
+               session_number = source.session_number, session_date = source.session_date,
+               hours = source.hours, created_by = source.created_by
+WHEN NOT MATCHED THEN
+    INSERT (session_id, course_id, session_type, session_number, session_date, hours, created_by)
+    VALUES (source.session_id, source.course_id, source.session_type, source.session_number, source.session_date, source.hours, source.created_by);
+
+SET IDENTITY_INSERT dbo.attendance_sessions OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 14. dbo.attendance_records (10 Student Attendance Records)
+-- ------------------------------------------------------------------------------
+PRINT '14. Feeding dbo.attendance_records (10 records)...';
+SET IDENTITY_INSERT dbo.attendance_records ON;
+
+MERGE INTO dbo.attendance_records AS target
+USING (VALUES
+    (1, 1, 1, 7, 1, N'PRESENT', 15, 15, 15, 15), -- Kasun: Session 1
+    (2, 2, 2, 7, 1, N'PRESENT', 15, 15, 15, 15), -- Kasun: Session 2
+    (3, 3, 1, 8, 1, N'PRESENT', 14, 15, 14, 15), -- Nuwan: Session 1
+    (4, 4, 2, 8, 1, N'PRESENT', 14, 15, 14, 15), -- Nuwan: Session 2
+    (5, 5, 1, 9, 1, N'PRESENT', 12, 15, 12, 15), -- Dinuka: Session 1
+    (6, 6, 2, 9, 1, N'ABSENT', 12, 15, 12, 15),  -- Dinuka: Session 2 (Absent)
+    (7, 7, 1, 10, 1, N'ABSENT', 7, 15, 8, 15),   -- Sajith: Session 1 (Absent)
+    (8, 8, 2, 10, 1, N'ABSENT', 7, 15, 8, 15),   -- Sajith: Session 2 (Absent)
+    (9, 9, 5, 7, 1, N'PRESENT', 15, 15, 15, 15), -- Kasun: Practical 1
+    (10, 10, 5, 8, 1, N'PRESENT', 14, 15, 14, 15) -- Nuwan: Practical 1
+) AS source (attendance_id, record_id, session_id, student_id, course_id, status, theory_attended, theory_total, practical_attended, practical_total)
+ON target.attendance_id = source.attendance_id
+WHEN MATCHED THEN
+    UPDATE SET record_id = source.record_id, session_id = source.session_id, student_id = source.student_id,
+               course_id = source.course_id, status = source.status, theory_attended = source.theory_attended,
+               theory_total = source.theory_total, practical_attended = source.practical_attended, practical_total = source.practical_total
+WHEN NOT MATCHED THEN
+    INSERT (attendance_id, record_id, session_id, student_id, course_id, status, theory_attended, theory_total, practical_attended, practical_total)
+    VALUES (source.attendance_id, source.record_id, source.session_id, source.student_id, source.course_id, source.status, source.theory_attended, source.theory_total, source.practical_attended, source.practical_total);
+
+SET IDENTITY_INSERT dbo.attendance_records OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 15. dbo.medical_records (10 Medical Records - Technical Officer Module)
+-- ------------------------------------------------------------------------------
+PRINT '15. Feeding dbo.medical_records (10 records)...';
+SET IDENTITY_INSERT dbo.medical_records ON;
+
+MERGE INTO dbo.medical_records AS target
+USING (VALUES
+    (1, 8, N'ICT2112', 2, CAST('2026-06-15' AS DATE), N'Viral influenza with high fever admitted to Karapitiya Teaching Hospital', N'APPROVED', N'resources/medicals/med_001.pdf'),
+    (2, 8, N'ICT2112', 3, CAST('2026-06-22' AS DATE), N'Post-viral asthenia and clinical recovery prescribed by Physician', N'APPROVED', N'resources/medicals/med_002.pdf'),
+    (3, 9, N'ICT2112', 2, CAST('2026-06-15' AS DATE), N'Severe gastroenteritis and dehydration certified by University Medical Center', N'APPROVED', N'resources/medicals/med_003.pdf'),
+    (4, 9, N'ICT2123', 8, CAST('2026-06-16' AS DATE), N'Acute migraine and vestibular vertigo treated at Outpatient Clinic', N'APPROVED', N'resources/medicals/med_004.pdf'),
+    (5, 10, N'ICT2112', 1, CAST('2026-06-08' AS DATE), N'Dengue fever recovery with low platelet count monitoring', N'APPROVED', N'resources/medicals/med_005.pdf'),
+    (6, 10, N'ICT2112', 2, CAST('2026-06-15' AS DATE), N'Hospital admission for surgical removal of impacted wisdom tooth', N'APPROVED', N'resources/medicals/med_006.pdf'),
+    (7, 7, N'ICT2132', 10, CAST('2026-06-12' AS DATE), N'Fracture of right wrist sustained during inter-faculty badminton tournament', N'PENDING', N'resources/medicals/med_007.pdf'),
+    (8, 8, N'ICT2132', 10, CAST('2026-06-12' AS DATE), N'Severe eye infection and acute conjunctivitis requiring complete visual rest', N'PENDING', N'resources/medicals/med_008.pdf'),
+    (9, 9, N'ICT2112', 4, CAST('2026-06-29' AS DATE), N'Private clinic prescription note lacking official medical council registration number', N'REJECTED', N'resources/medicals/med_009.pdf'),
+    (10, 10, N'ICT2123', 7, CAST('2026-06-09' AS DATE), N'Submitted past mandatory 7-day regulation deadline without faculty dean authorization', N'REJECTED', N'resources/medicals/med_010.pdf')
+) AS source (medical_id, student_id, course_id, session_id, medical_date, reason, status, document_path)
+ON target.medical_id = source.medical_id
+WHEN MATCHED THEN
+    UPDATE SET student_id = source.student_id, course_id = source.course_id, session_id = source.session_id,
+               medical_date = source.medical_date, reason = source.reason, status = source.status, document_path = source.document_path
+WHEN NOT MATCHED THEN
+    INSERT (medical_id, student_id, course_id, session_id, medical_date, reason, status, document_path)
+    VALUES (source.medical_id, source.student_id, source.course_id, source.session_id, source.medical_date, source.reason, source.status, source.document_path);
+
+SET IDENTITY_INSERT dbo.medical_records OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 16. dbo.medical_submissions (10 Student Medical Submissions)
+-- ------------------------------------------------------------------------------
+PRINT '16. Feeding dbo.medical_submissions (10 records)...';
+SET IDENTITY_INSERT dbo.medical_submissions ON;
+
+MERGE INTO dbo.medical_submissions AS target
+USING (VALUES
+    (1, 8, 1, CAST('2026-06-14' AS DATE), CAST('2026-06-16' AS DATE), N'High fever and respiratory infection treated at Karapitiya Hospital', N'resources/medicals/sub_001.pdf', N'APPROVED'),
+    (2, 8, 1, CAST('2026-06-21' AS DATE), CAST('2026-06-23' AS DATE), N'Clinical follow-up and physician mandated medical leave', N'resources/medicals/sub_002.pdf', N'APPROVED'),
+    (3, 9, 1, CAST('2026-06-14' AS DATE), CAST('2026-06-16' AS DATE), N'Acute food poisoning dehydration treated by University MO', N'resources/medicals/sub_003.pdf', N'APPROVED'),
+    (4, 9, 2, CAST('2026-06-15' AS DATE), CAST('2026-06-17' AS DATE), N'Severe migraine headache certified by Medical Officer', N'resources/medicals/sub_004.pdf', N'APPROVED'),
+    (5, 10, 1, CAST('2026-06-07' AS DATE), CAST('2026-06-09' AS DATE), N'Dengue suspected fever under observation', N'resources/medicals/sub_005.pdf', N'APPROVED'),
+    (6, 10, 1, CAST('2026-06-14' AS DATE), CAST('2026-06-16' AS DATE), N'Emergency dental surgery at General Hospital', N'resources/medicals/sub_006.pdf', N'APPROVED'),
+    (7, 7, 3, CAST('2026-06-11' AS DATE), CAST('2026-06-13' AS DATE), N'Orthopedic wrist splint and rehabilitation', N'resources/medicals/sub_007.pdf', N'PENDING'),
+    (8, 8, 3, CAST('2026-06-11' AS DATE), CAST('2026-06-13' AS DATE), N'Ophthalmological consultation and medical leave certificate', N'resources/medicals/sub_008.pdf', N'PENDING'),
+    (9, 9, 1, CAST('2026-06-28' AS DATE), CAST('2026-06-30' AS DATE), N'Uncertified Ayurvedic tonic prescription note', N'resources/medicals/sub_009.pdf', N'REJECTED'),
+    (10, 10, 2, CAST('2026-06-08' AS DATE), CAST('2026-06-10' AS DATE), N'Late submission past 14 days without extenuating evidence', N'resources/medicals/sub_010.pdf', N'REJECTED')
+) AS source (medical_id, student_id, course_id, start_date, end_date, reason, document_path, status)
+ON target.medical_id = source.medical_id
+WHEN MATCHED THEN
+    UPDATE SET student_id = source.student_id, course_id = source.course_id,
+               start_date = source.start_date, end_date = source.end_date, reason = source.reason,
+               document_path = source.document_path, status = source.status
+WHEN NOT MATCHED THEN
+    INSERT (medical_id, student_id, course_id, start_date, end_date, reason, document_path, status)
+    VALUES (source.medical_id, source.student_id, source.course_id, source.start_date, source.end_date, source.reason, source.document_path, source.status);
+
+SET IDENTITY_INSERT dbo.medical_submissions OFF;
+GO
+
+-- ------------------------------------------------------------------------------
+-- 17. dbo.notices (10 Faculty Notices)
+-- ------------------------------------------------------------------------------
+PRINT '17. Feeding dbo.notices (10 records)...';
+SET IDENTITY_INSERT dbo.notices ON;
+
+MERGE INTO dbo.notices AS target
+USING (VALUES
+    (1, N'Semester 2 Final Examination Timetable Released', N'The official examination schedule for Semester 2 (Academic Year 2025/2026) has been published on the faculty notice board and portal. All students are requested to verify their registered course codes and admission numbers.', N'EXAMINATION', N'URGENT', N'Senior Assistant Registrar (Examinations)', CAST('2026-10-15' AS DATE)),
+    (2, N'Submission of Medical Certificates for Missed Practical Sessions', N'Undergraduates who were absent for practical or theory sessions due to medical illness must submit their certified medical slips to the Technical Officer room within 7 days of returning to the faculty.', N'ACADEMIC', N'URGENT', N'Office of the Dean, Faculty of Technology', CAST('2026-10-10' AS DATE)),
+    (3, N'Academic Calendar & Semester Recess Dates - 2026/2027', N'The University Senate has ratified the updated academic calendar for the 2026/2027 academic year. Lectures will resume on November 15, 2026 following the mid-year examination period.', N'GENERAL', N'NORMAL', N'Faculty Administration', CAST('2026-09-28' AS DATE)),
+    (4, N'Library & Digital Resource Center Extended Hours', N'The Faculty of Technology library will remain open until 20:00 hrs on weekdays and from 09:00 to 17:00 hrs on Saturdays to facilitate student preparation for upcoming continuous assessments.', N'GENERAL', N'INFO', N'Library Committee', CAST('2026-09-20' AS DATE)),
+    (5, N'Scheduled Campus Network & Server Maintenance Notice', N'The IT Division will conduct scheduled network infrastructure upgrades on Saturday from 22:00 to 04:00 hrs. Access to the online faculty portal will be intermittently unavailable during this maintenance window.', N'GENERAL', N'NORMAL', N'IT Division & System Administration', CAST('2026-09-15' AS DATE)),
+    (6, N'Continuous Assessment CA Eligibility Requirement Reminder', N'Students are formally reminded that maintaining a minimum of 40% in Continuous Assessment (CA) components is mandatory to be eligible to sit for the end-semester final theory examination in each subject.', N'ACADEMIC', N'URGENT', N'Faculty Examination Board', CAST('2026-09-10' AS DATE)),
+    (7, N'Guest Lecture: Industrial Cloud Computing & Microservices Architecture', N'Dr. Athula Rajapakse from Virtusa Colombo will deliver a guest seminar on Cloud Microservices and Kubernetes orchestration for 2nd and 3rd year ICT undergraduates at the Main Auditorium on Friday at 14:00 hrs.', N'EVENT', N'INFO', N'Department of Information & Communication Technology', CAST('2026-09-05' AS DATE)),
+    (8, N'Re-scheduling of Thursday Laboratory Sessions', N'Due to public holiday observance, all Thursday practical laboratory sessions for ICT2112 and ICT2123 have been rescheduled to the following Monday morning as announced in the updated departmental timetable.', N'TIMETABLE', N'NORMAL', N'Academic Timetable Coordinator', CAST('2026-08-25' AS DATE)),
+    (9, N'Annual Dean''s Award for Academic Excellence Ceremony', N'Nominations are now invited for the Dean''s Honours List and Academic Excellence Awards for the graduating class of 2025. Students with SGPA >= 3.70 across both semesters are eligible to apply.', N'EVENT', N'INFO', N'Dean''s Office', CAST('2026-08-15' AS DATE)),
+    (10, N'Student Attendance Shortage Warning Notice (Semester 2)', N'Students whose cumulative attendance falls below the mandatory 80% threshold across theory and practical modules must meet their academic advisors and submit legitimate medical reasons before the deadline.', N'ACADEMIC', N'URGENT', N'Faculty Student Affairs Committee', CAST('2026-08-01' AS DATE))
+) AS source (notice_id, title, content, category, priority, posted_by, posted_date)
+ON target.notice_id = source.notice_id
+WHEN MATCHED THEN
+    UPDATE SET title = source.title, content = source.content, category = source.category,
+               priority = source.priority, posted_by = source.posted_by, posted_date = source.posted_date
+WHEN NOT MATCHED THEN
+    INSERT (notice_id, title, content, category, priority, posted_by, posted_date)
+    VALUES (source.notice_id, source.title, source.content, source.category, source.priority, source.posted_by, source.posted_date);
+
+SET IDENTITY_INSERT dbo.notices OFF;
+GO
+
+PRINT '==============================================================================';
+PRINT '>>> Data feed completed successfully! All 17 tables populated with 10 records.';
+PRINT '==============================================================================';
+GO
+
+-- Verification query
+SELECT 'roles' AS [Table], COUNT(*) AS [RecordCount] FROM dbo.roles
+UNION ALL SELECT 'users', COUNT(*) FROM dbo.users
+UNION ALL SELECT 'courses', COUNT(*) FROM dbo.courses
+UNION ALL SELECT 'course_lecturers', COUNT(*) FROM dbo.course_lecturers
+UNION ALL SELECT 'course_materials', COUNT(*) FROM dbo.course_materials
+UNION ALL SELECT 'evaluations', COUNT(*) FROM dbo.evaluations
+UNION ALL SELECT 'enrollments', COUNT(*) FROM dbo.enrollments
+UNION ALL SELECT 'marks', COUNT(*) FROM dbo.marks
+UNION ALL SELECT 'eligibility', COUNT(*) FROM dbo.eligibility
+UNION ALL SELECT 'timetable', COUNT(*) FROM dbo.timetable
+UNION ALL SELECT 'grades', COUNT(*) FROM dbo.grades
+UNION ALL SELECT 'results', COUNT(*) FROM dbo.results
+UNION ALL SELECT 'attendance_sessions', COUNT(*) FROM dbo.attendance_sessions
+UNION ALL SELECT 'attendance_records', COUNT(*) FROM dbo.attendance_records
+UNION ALL SELECT 'medical_records', COUNT(*) FROM dbo.medical_records
+UNION ALL SELECT 'medical_submissions', COUNT(*) FROM dbo.medical_submissions
+UNION ALL SELECT 'notices', COUNT(*) FROM dbo.notices;
+GO
