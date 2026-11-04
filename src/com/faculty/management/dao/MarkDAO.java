@@ -49,6 +49,41 @@ public class MarkDAO {
     }
 
     /**
+     * Resolves student ID from either integer user_id or username (e.g. tg2021001, Rashkan).
+     */
+    public int resolveStudentId(Connection conn, String studentIdentifier) {
+        if (studentIdentifier == null || studentIdentifier.trim().isEmpty()) {
+            return 0;
+        }
+        String trimmed = studentIdentifier.trim();
+        try {
+            int parsed = Integer.parseInt(trimmed);
+            if (parsed > 0) {
+                String checkSql = "SELECT user_id FROM users WHERE user_id = ?";
+                try (PreparedStatement stmt = conn.prepareStatement(checkSql)) {
+                    stmt.setInt(1, parsed);
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (rs.next()) return parsed;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        String userSql = "SELECT user_id FROM users WHERE LOWER(username) = LOWER(?)";
+        try (PreparedStatement stmt = conn.prepareStatement(userSql)) {
+            stmt.setString(1, trimmed);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("user_id");
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return 0;
+    }
+
+    /**
      * Inserts a new student mark entry into the database.
      */
     public boolean insertMark(Mark mark) throws DatabaseException, SQLException {
@@ -62,6 +97,11 @@ public class MarkDAO {
                 mark.setCourseId(courseId);
             }
 
+            int studentIdInt = resolveStudentId(conn, mark.getStudentId());
+            if (studentIdInt <= 0) {
+                studentIdInt = mark.getStudentIdAsInt();
+            }
+
             boolean hasCourseId = hasColumn(conn, "marks", "course_id");
             String sql;
             if (hasCourseId && courseId > 0) {
@@ -70,14 +110,21 @@ public class MarkDAO {
                 sql = "INSERT INTO marks (student_id, evaluation_id, marks_obtained) VALUES (?, ?, ?)";
             }
 
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, mark.getStudentIdAsInt());
+            try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setInt(1, studentIdInt);
                 stmt.setInt(2, mark.getEvaluationId());
                 stmt.setDouble(3, mark.getMarksObtained());
                 if (hasCourseId && courseId > 0) {
                     stmt.setInt(4, courseId);
                 }
-                return stmt.executeUpdate() > 0;
+                int affected = stmt.executeUpdate();
+                if (affected > 0) {
+                    try (ResultSet rs = stmt.getGeneratedKeys()) {
+                        if (rs.next()) mark.setMarkId(rs.getInt(1));
+                    }
+                    return true;
+                }
+                return false;
             } catch (SQLException e) {
                 throw new DatabaseException("Failed to insert evaluation mark: " + e.getMessage(), e);
             }
@@ -92,13 +139,31 @@ public class MarkDAO {
      */
     public boolean updateMark(Mark mark) throws DatabaseException, SQLException {
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
 
+        // If mark_id is provided, update by primary key directly
+        if (mark.getMarkId() > 0) {
+            String sql = "UPDATE marks SET marks_obtained = ? WHERE mark_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setDouble(1, mark.getMarksObtained());
+                stmt.setInt(2, mark.getMarkId());
+                if (stmt.executeUpdate() > 0) {
+                    return true;
+                }
+            } catch (SQLException ignored) {
+            }
+        }
+
+        int studentIdInt = resolveStudentId(conn, mark.getStudentId());
+        if (studentIdInt <= 0) {
+            studentIdInt = mark.getStudentIdAsInt();
+        }
+
+        boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
         if (hasEvalId) {
             String sql = "UPDATE marks SET marks_obtained = ? WHERE student_id = ? AND evaluation_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setDouble(1, mark.getMarksObtained());
-                stmt.setInt(2, mark.getStudentIdAsInt());
+                stmt.setInt(2, studentIdInt);
                 stmt.setInt(3, mark.getEvaluationId());
                 return stmt.executeUpdate() > 0;
             } catch (SQLException e) {
@@ -106,6 +171,38 @@ public class MarkDAO {
             }
         } else {
             return upsertComponentMark(conn, mark);
+        }
+    }
+
+    /**
+     * Updates a mark directly by its primary key mark_id.
+     */
+    public boolean updateMarkById(int markId, double marksObtained) throws DatabaseException, SQLException {
+        if (marksObtained < 0.0 || marksObtained > 100.0) {
+            throw new IllegalArgumentException("Marks must be between 0 and 100.");
+        }
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        String sql = "UPDATE marks SET marks_obtained = ? WHERE mark_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDouble(1, marksObtained);
+            stmt.setInt(2, markId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update mark by ID: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Deletes a mark directly by its primary key mark_id.
+     */
+    public boolean deleteMarkById(int markId) throws DatabaseException, SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        String sql = "DELETE FROM marks WHERE mark_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, markId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to delete mark by ID: " + e.getMessage(), e);
         }
     }
 
@@ -118,11 +215,27 @@ public class MarkDAO {
         boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
 
         if (hasEvalId) {
-            String sql = "SELECT m.mark_id, m.student_id, m.evaluation_id, m.marks_obtained, m.course_id, " +
-                    "e.title AS eval_title, e.type AS eval_type, e.max_marks, c.course_code " +
+            String sql = "SELECT m.mark_id, " +
+                    "m.student_id, " +
+                    "u.username AS student_username, " +
+                    "u.first_name, " +
+                    "u.last_name, " +
+                    "COALESCE(NULLIF(m.course_id, 0), e.course_id, 0) AS resolved_course_id, " +
+                    "c.course_code, " +
+                    "c.course_name, " +
+                    "c.semester_number, " +
+                    "c.semester, " +
+                    "COALESCE(en.academic_year, c.academic_year, '2025/2026') AS batch, " +
+                    "m.evaluation_id, " +
+                    "e.title AS eval_title, " +
+                    "e.type AS eval_type, " +
+                    "e.max_marks, " +
+                    "m.marks_obtained " +
                     "FROM marks m " +
+                    "LEFT JOIN users u ON m.student_id = u.user_id " +
                     "LEFT JOIN evaluations e ON m.evaluation_id = e.evaluation_id " +
-                    "LEFT JOIN courses c ON (m.course_id = c.course_id OR e.course_id = c.course_id) " +
+                    "LEFT JOIN courses c ON c.course_id = COALESCE(NULLIF(m.course_id, 0), e.course_id) " +
+                    "LEFT JOIN enrollments en ON (m.student_id = en.student_id AND en.course_id = c.course_id) " +
                     "ORDER BY m.mark_id DESC";
             try (PreparedStatement stmt = conn.prepareStatement(sql);
                  ResultSet rs = stmt.executeQuery()) {
@@ -134,10 +247,17 @@ public class MarkDAO {
                                 rs.getDouble("marks_obtained")
                         );
                         mark.setMarkId(rs.getInt("mark_id"));
-                        mark.setCourseId(rs.getInt("course_id"));
+                        mark.setStudentUsername(rs.getString("student_username"));
+                        String fn = rs.getString("first_name");
+                        String ln = rs.getString("last_name");
+                        mark.setStudentName(((fn != null ? fn : "") + " " + (ln != null ? ln : "")).trim());
+                        mark.setCourseId(rs.getInt("resolved_course_id"));
+                        mark.setCourseCode(rs.getString("course_code"));
+                        mark.setCourseName(rs.getString("course_name"));
+                        mark.setSemesterNumber(rs.getInt("semester_number"));
+                        mark.setBatch(rs.getString("batch"));
                         mark.setEvaluationTitle(rs.getString("eval_title"));
                         mark.setEvaluationType(rs.getString("eval_type"));
-                        mark.setCourseCode(rs.getString("course_code"));
                         double mx = rs.getDouble("max_marks");
                         mark.setMaxMarks(mx > 0 ? mx : 100.0);
                         marksList.add(mark);
@@ -164,6 +284,65 @@ public class MarkDAO {
             }
         }
         return marksList;
+    }
+
+    /**
+     * Gets existing evaluation for course or creates a standard evaluation if absent.
+     */
+    public int getOrCreateEvaluation(Connection conn, int courseId, String title, String type, double maxMarks) {
+        String selectSql = "SELECT evaluation_id FROM evaluations WHERE course_id = ? AND UPPER(title) = UPPER(?)";
+        try (PreparedStatement stmt = conn.prepareStatement(selectSql)) {
+            stmt.setInt(1, courseId);
+            stmt.setString(2, title.trim());
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getInt("evaluation_id");
+            }
+        } catch (SQLException ignored) {
+        }
+
+        String insertSql = "INSERT INTO evaluations (course_id, title, type, weightage, max_marks) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setInt(1, courseId);
+            stmt.setString(2, title.trim());
+            stmt.setString(3, type != null ? type : "ASSESSMENT");
+            stmt.setDouble(4, 20.0);
+            stmt.setDouble(5, maxMarks > 0 ? maxMarks : 100.0);
+            stmt.executeUpdate();
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException ignored) {
+        }
+        return 1;
+    }
+
+    /**
+     * Returns available distinct batches / academic years from database.
+     */
+    public List<String> getAvailableBatches() {
+        List<String> batches = new ArrayList<>();
+        batches.add("All Batches");
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            String sql = "SELECT DISTINCT academic_year FROM enrollments WHERE academic_year IS NOT NULL AND academic_year != '' " +
+                    "UNION SELECT DISTINCT academic_year FROM courses WHERE academic_year IS NOT NULL AND academic_year != '' " +
+                    "ORDER BY academic_year DESC";
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(sql)) {
+                while (rs.next()) {
+                    String b = rs.getString(1);
+                    if (b != null && !b.trim().isEmpty() && !batches.contains(b.trim())) {
+                        batches.add(b.trim());
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        String[] defaults = {"2025/2026", "2024/2025", "2023/2024", "2022/2023", "2021/2022"};
+        for (String d : defaults) {
+            if (!batches.contains(d)) batches.add(d);
+        }
+        return batches;
     }
 
     /**

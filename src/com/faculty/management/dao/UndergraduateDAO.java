@@ -39,7 +39,8 @@ public class UndergraduateDAO {
 
     public List<Undergraduate> findAll() throws DatabaseException {
         String sql = "SELECT u.*, r.role_name, r.description AS role_description FROM users u " +
-                     "JOIN roles r ON u.role_id = r.role_id WHERE r.role_name = 'UNDERGRADUATE' " +
+                     "JOIN roles r ON u.role_id = r.role_id " +
+                     "WHERE UPPER(r.role_name) IN ('UNDERGRADUATE', 'STUDENT') OR u.role_id = 4 " +
                      "ORDER BY u.first_name, u.last_name";
         List<Undergraduate> students = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();

@@ -143,8 +143,7 @@ public class CourseDAO {
      */
     public List<Course> getAllCourses() throws DatabaseException {
         List<Course> courses = new ArrayList<>();
-        String sql = "SELECT course_id, course_code, course_name, credit_value, theory_hours, practical_hours, " +
-                     "department, semester, description FROM courses ORDER BY course_code ASC";
+        String sql = "SELECT * FROM courses ORDER BY course_code ASC";
 
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
@@ -626,6 +625,16 @@ public class CourseDAO {
             }
         } catch (SQLException ignored) {
             // Column may not exist in pure MySQL table
+        }
+
+        if (c.getSemesterNumber() <= 0 && c.getSemester() != null) {
+            String s = c.getSemester().replaceAll("[^0-9]", "");
+            if (!s.isEmpty()) {
+                try {
+                    c.setSemesterNumber(Integer.parseInt(s));
+                } catch (Exception ignored) {
+                }
+            }
         }
 
         try {

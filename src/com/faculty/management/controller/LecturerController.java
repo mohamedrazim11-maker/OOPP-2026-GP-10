@@ -118,6 +118,40 @@ public class LecturerController {
         }
     }
 
+    public boolean updateMarkById(int markId, double marks) {
+        try {
+            return markService.updateMarkById(markId, marks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteMarkById(int markId) {
+        try {
+            return markService.deleteMarkById(markId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<String> getAvailableBatches() {
+        try {
+            return markService.getAvailableBatches();
+        } catch (Exception e) {
+            return java.util.Arrays.asList("All Batches", "2025/2026", "2024/2025", "2023/2024");
+        }
+    }
+
+    public int getOrCreateEvaluation(int courseId, String title, String type, double maxMarks) {
+        try {
+            return markService.getOrCreateEvaluation(courseId, title, type, maxMarks);
+        } catch (Exception e) {
+            return 1;
+        }
+    }
+
     public boolean deleteMark(String studentId, int evaluationId) {
         return removeMark(studentId, evaluationId);
     }

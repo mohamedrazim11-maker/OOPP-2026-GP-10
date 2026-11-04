@@ -40,6 +40,31 @@ public class MarkService {
         return true;
     }
 
+    public boolean updateMarkById(int markId, double marks)
+            throws InvalidMarkException, DatabaseException, SQLException {
+        if (marks < 0.0 || marks > 100.0) {
+            throw new InvalidMarkException("Marks must be between 0 and 100.");
+        }
+        return markDAO.updateMarkById(markId, marks);
+    }
+
+    public boolean deleteMarkById(int markId) throws DatabaseException, SQLException {
+        return markDAO.deleteMarkById(markId);
+    }
+
+    public List<String> getAvailableBatches() {
+        return markDAO.getAvailableBatches();
+    }
+
+    public int getOrCreateEvaluation(int courseId, String title, String type, double maxMarks) {
+        try {
+            java.sql.Connection conn = com.faculty.management.config.DatabaseConnection.getInstance().getConnection();
+            return markDAO.getOrCreateEvaluation(conn, courseId, title, type, maxMarks);
+        } catch (Exception e) {
+            return 1;
+        }
+    }
+
     /**
      * Saves or updates all evaluation components for a student in a course (Requirement 4: Quiz, Assessment, Mid-sem, Practical, Final).
      */

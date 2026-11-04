@@ -18,6 +18,11 @@ public class Mark {
     // Component marks for course CA & Final calculations (Requirement 4)
     private int courseId;
     private String courseCode;
+    private String courseName;
+    private int semesterNumber;
+    private String batch;
+    private String studentUsername;
+    private String studentName;
     private String evaluationTitle;
     private String evaluationType;
     private double maxMarks = 100.0;
@@ -239,5 +244,45 @@ public class Mark {
 
     public void setFinalExamMarks(Double finalExamMarks) {
         this.finalExamMarks = finalExamMarks;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public int getSemesterNumber() {
+        return semesterNumber;
+    }
+
+    public void setSemesterNumber(int semesterNumber) {
+        this.semesterNumber = semesterNumber;
+    }
+
+    public String getBatch() {
+        return batch;
+    }
+
+    public void setBatch(String batch) {
+        this.batch = batch;
+    }
+
+    public String getStudentUsername() {
+        return (studentUsername != null && !studentUsername.trim().isEmpty()) ? studentUsername : studentId;
+    }
+
+    public void setStudentUsername(String studentUsername) {
+        this.studentUsername = studentUsername;
+    }
+
+    public String getStudentName() {
+        return studentName != null ? studentName : "";
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
 }

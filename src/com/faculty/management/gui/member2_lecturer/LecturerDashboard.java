@@ -133,8 +133,8 @@ public class LecturerDashboard extends JFrame {
         UITheme.styleTabbedPane(tabbedPane);
 
         profilePanel = new LecturerProfilePanel(currentLecturer);
-        materialsPanel = new CourseMaterialsPanel();
-        marksPanel = new MarkManagementPanel();
+        materialsPanel = new CourseMaterialsPanel(currentLecturer);
+        marksPanel = new MarkManagementPanel(currentLecturer);
         caPanel = new CAEligibilityWorkspacePanel();
 
         tabbedPane.addTab(NAV_TITLES[0], createHomeOverviewPanel());
