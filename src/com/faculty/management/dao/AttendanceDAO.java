@@ -256,20 +256,41 @@ public class AttendanceDAO {
     public boolean saveBatchAttendance(int sessionId, Map<Integer, String> studentAttendance)
             throws SQLException, DatabaseException {
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        String upsertSql = "INSERT INTO attendance_records (session_id, student_id, status) VALUES (?, ?, ?) " +
-                           "ON DUPLICATE KEY UPDATE status = VALUES(status)";
+        boolean isSqlServer = DatabaseConnection.getInstance().isSqlServer();
 
         boolean oldAutoCommit = conn.getAutoCommit();
         try {
             conn.setAutoCommit(false);
-            try (PreparedStatement stmt = conn.prepareStatement(upsertSql)) {
-                for (Map.Entry<Integer, String> entry : studentAttendance.entrySet()) {
-                    stmt.setInt(1, sessionId);
-                    stmt.setInt(2, entry.getKey());
-                    stmt.setString(3, entry.getValue());
-                    stmt.addBatch();
+            if (isSqlServer) {
+                String updateSql = "UPDATE attendance_records SET status = ? WHERE session_id = ? AND student_id = ?";
+                String insertSql = "INSERT INTO attendance_records (session_id, student_id, status) VALUES (?, ?, ?)";
+                try (PreparedStatement updateStmt = conn.prepareStatement(updateSql);
+                     PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    for (Map.Entry<Integer, String> entry : studentAttendance.entrySet()) {
+                        updateStmt.setString(1, entry.getValue());
+                        updateStmt.setInt(2, sessionId);
+                        updateStmt.setInt(3, entry.getKey());
+                        int updated = updateStmt.executeUpdate();
+                        if (updated == 0) {
+                            insertStmt.setInt(1, sessionId);
+                            insertStmt.setInt(2, entry.getKey());
+                            insertStmt.setString(3, entry.getValue());
+                            insertStmt.executeUpdate();
+                        }
+                    }
                 }
-                stmt.executeBatch();
+            } else {
+                String upsertSql = "INSERT INTO attendance_records (session_id, student_id, status) VALUES (?, ?, ?) " +
+                                   "ON DUPLICATE KEY UPDATE status = VALUES(status)";
+                try (PreparedStatement stmt = conn.prepareStatement(upsertSql)) {
+                    for (Map.Entry<Integer, String> entry : studentAttendance.entrySet()) {
+                        stmt.setInt(1, sessionId);
+                        stmt.setInt(2, entry.getKey());
+                        stmt.setString(3, entry.getValue());
+                        stmt.addBatch();
+                    }
+                    stmt.executeBatch();
+                }
             }
             conn.commit();
             return true;

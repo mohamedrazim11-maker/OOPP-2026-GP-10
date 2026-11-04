@@ -51,30 +51,32 @@ Example:
 
 4. DATABASE SETUP (DUAL DATABASE SUPPORT)
 --------------------------------------------------------------------------------
-The system automatically detects whichever database server is running:
+The system features automatic dual-database detection (configured via database/local.properties).
+You can use EITHER MySQL (XAMPP) OR Microsoft SQL Server (SSMS), or switch freely between them:
 
->>> OPTION 1: Using Microsoft SQL Server (SSMS) [Already configured & ready]
-- If SQL Server / SQLEXPRESS is running on your PC, the database 'faculty_management_db'
-  is already created and seeded!
-- To run or re-seed using sqlcmd:
-  sqlcmd -S "localhost,1433" -E -i "database\00_setup_sqlserver.sql"
+>>> OPTION 1: Using MySQL / XAMPP (phpMyAdmin)
+1) Open XAMPP Control Panel and start "Apache" and "MySQL".
+2) Open your browser to: http://localhost/phpmyadmin
+3) Go to the "SQL" tab (or click "Import").
+4) Copy the entire contents of "database/text/mysql.txt" (or import "database/00_setup_mysql.sql")
+   and click "Go".
+   - This creates `faculty_management_db`, all 17 tables, and all seed data in one single step!
+5) In "database/local.properties", leave:
+   db.type=auto (or set db.type=mysql)
 
->>> OPTION 2: Using MySQL / XAMPP
-a. Start Apache & MySQL in XAMPP Control Panel.
-b. Open phpMyAdmin in your browser (http://localhost/phpmyadmin).
-c. Import the SQL scripts located in the 'database/' folder in this order:
-   1) database/01_create_database.sql
-   2) database/02_create_tables.sql
-   3) database/03_insert_roles.sql
-   4) database/04_insert_users.sql
-   5) database/05_insert_courses.sql
-   6) database/06_insert_attendance_medical.sql
-   7) database/M4_01_create_tables.sql
-   8) database/M4_02_seed_data.sql
+>>> OPTION 2: Using Microsoft SQL Server (SSMS)
+1) Open SQL Server Management Studio (SSMS).
+2) Connect to your server (e.g., localhost, .\SQLEXPRESS, or (local)).
+3) Open file "database/text/sqlserver.txt" (or "database/00_setup_sqlserver.sql").
+4) Click "Execute" (F5).
+   - This creates `faculty_management_db`, login `fms_user`, all 17 tables, and all seed data!
+5) In "database/local.properties", leave:
+   db.type=auto (or set db.type=sqlserver)
 
-* Database Configuration:
-  Check or customize 'database/local.properties':
-  db.type=auto (or 'mysql' or 'sqlserver')
+* Automatic Switching:
+  When db.type=auto (the default), the application checks port 3306 for XAMPP (MySQL).
+  If MySQL is running, it connects to XAMPP. If MySQL is offline, it automatically falls back
+  to Microsoft SQL Server (SSMS). You can also explicitly set db.type=mysql or db.type=sqlserver.
 
 
 5. COMPILE & RUN THE PROJECT
