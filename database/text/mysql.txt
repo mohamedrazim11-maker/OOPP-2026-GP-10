@@ -1169,3 +1169,60 @@ SELECT 'Database setup completed successfully!' AS status,
        (SELECT COUNT(*) FROM courses) AS courses_count,
        (SELECT COUNT(*) FROM marks) AS marks_count,
        (SELECT COUNT(*) FROM notices) AS notices_count;
+
+-- ==============================================================================
+-- TARGETED USERS & ROLE DATA (Aysha, Rashkan, Hansika)
+-- ==============================================================================
+INSERT INTO users (username, password, email, irst_name, last_name, ole_id, contact_no, status)
+VALUES 
+('Aysha', '123456', 'aysha@fot.ruh.ac.lk', 'Aysha', 'Ahamed', 2, '0779988776', 'ACTIVE'),
+('Rashkan', '123456', 'rashkan@fot.ruh.ac.lk', 'Mohamed', 'Rashkan', 4, '0707788990', 'ACTIVE'),
+('Hansika', '123456', 'hansika@fot.ruh.ac.lk', 'Hansika', 'Perera', 3, '0765544332', 'ACTIVE')
+ON DUPLICATE KEY UPDATE password = VALUES(password), ole_id = VALUES(ole_id), status = VALUES(status);
+
+SET @aysha_id = (SELECT user_id FROM users WHERE username = 'Aysha' LIMIT 1);
+SET @rashkan_id = (SELECT user_id FROM users WHERE username = 'Rashkan' LIMIT 1);
+SET @hansika_id = (SELECT user_id FROM users WHERE username = 'Hansika' LIMIT 1);
+SET @c_ict2112 = (SELECT course_id FROM courses WHERE course_code = 'ICT2112' LIMIT 1);
+SET @c_ict2123 = (SELECT course_id FROM courses WHERE course_code = 'ICT2123' LIMIT 1);
+
+-- Aysha Lecturer Course Materials
+INSERT INTO course_materials (course_id, uploaded_by, 	itle, ile_path, uploaded_at)
+VALUES 
+(@c_ict2112, @aysha_id, 'Lecture 01 - Asymptotic Complexity & Big-O Notation', 'resources/course_materials/ICT2112_Lecture01.pdf', NOW()),
+(@c_ict2112, @aysha_id, 'Lecture 02 - Linear Data Structures: Linked Lists & Stacks', 'resources/course_materials/ICT2112_Lecture02.pdf', NOW()),
+(@c_ict2123, @aysha_id, 'Lecture 01 - Relational Schema Design & Normalization', 'resources/course_materials/ICT2123_Lecture01.pdf', NOW())
+ON DUPLICATE KEY UPDATE 	itle = VALUES(	itle);
+
+-- Rashkan Enrollments
+INSERT INTO enrollments (student_id, course_id, semester_number, cademic_year, status)
+VALUES 
+(@rashkan_id, @c_ict2112, 1, '2025/2026', 'ONGOING'),
+(@rashkan_id, @c_ict2123, 1, '2025/2026', 'ONGOING')
+ON DUPLICATE KEY UPDATE status = VALUES(status);
+
+-- Rashkan CA Eligibility
+INSERT INTO eligibility (student_id, course_id, ca_percentage, is_eligible)
+VALUES 
+(@rashkan_id, @c_ict2112, 85.78, 1),
+(@rashkan_id, @c_ict2123, 83.50, 1)
+ON DUPLICATE KEY UPDATE ca_percentage = VALUES(ca_percentage), is_eligible = VALUES(is_eligible);
+
+-- Rashkan Grades & Results
+INSERT INTO grades (student_id, course_id, semester_number, cademic_year, ca_marks, inal_exam_marks, inal_total_marks, ca_eligible, grade_letter, grade_point)
+VALUES 
+(@rashkan_id, @c_ict2112, 1, '2025/2026', 85.78, 86.00, 85.85, 1, 'A', 4.00),
+(@rashkan_id, @c_ict2123, 1, '2025/2026', 83.50, 84.00, 83.75, 1, 'A-', 3.70)
+ON DUPLICATE KEY UPDATE inal_total_marks = VALUES(inal_total_marks);
+
+INSERT INTO esults (student_id, semester_number, cademic_year, sgpa, credits_attempted, credits_completed)
+VALUES 
+(@rashkan_id, 1, '2025/2026', 3.850, 15, 15),
+(@rashkan_id, 2, '2025/2026', 3.900, 15, 15)
+ON DUPLICATE KEY UPDATE sgpa = VALUES(sgpa);
+
+-- Rashkan Medicals
+INSERT INTO medical_records (student_id, course_id, medical_date, eason, status, document_path)
+VALUES 
+(@rashkan_id, 'ICT2112', '2026-06-15', 'High fever and viral influenza treated at Karapitiya Hospital', 'APPROVED', 'resources/medicals/rashkan_med01.pdf')
+ON DUPLICATE KEY UPDATE status = VALUES(status);
