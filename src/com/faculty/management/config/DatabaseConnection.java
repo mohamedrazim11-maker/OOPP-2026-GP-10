@@ -60,8 +60,21 @@ public class DatabaseConnection {
      * Loads database configuration from database/local.properties if present.
      */
     private void loadConfiguration() {
-        File configFile = new File("database/local.properties");
-        if (configFile.exists()) {
+        File[] candidates = new File[] {
+            new File("database/local.properties"),
+            new File("../database/local.properties"),
+            new File("local.properties")
+        };
+
+        File configFile = null;
+        for (File f : candidates) {
+            if (f.exists() && f.isFile()) {
+                configFile = f;
+                break;
+            }
+        }
+
+        if (configFile != null) {
             try (FileInputStream fis = new FileInputStream(configFile)) {
                 Properties props = new Properties();
                 props.load(fis);
@@ -101,7 +114,7 @@ public class DatabaseConnection {
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Note: Could not read database/local.properties: " + e.getMessage());
+                System.err.println("Note: Could not read " + configFile.getPath() + ": " + e.getMessage());
             }
         }
     }
@@ -136,11 +149,13 @@ public class DatabaseConnection {
                 activeUser = mysqlUser;
                 activePassword = mysqlPassword;
                 activeDatabaseType = "MySQL";
+                System.out.println("[DatabaseConnection] Connected to MySQL (XAMPP) at " + mysqlUrl);
                 return connection;
             } catch (SQLException e) {
                 activeDatabaseType = "None";
-                throw new DatabaseException("Cannot connect to MySQL database on localhost:3306. " +
-                        "Please start MySQL in XAMPP and import 'faculty_management_db'.", e);
+                throw new DatabaseException("Cannot connect to MySQL database on localhost:3306.\n" +
+                        "1. Open XAMPP Control Panel and start 'MySQL'.\n" +
+                        "2. Ensure database 'faculty_management_db' is imported using 'database/text/mysql.txt' in phpMyAdmin.", e);
             }
         }
 
@@ -152,37 +167,68 @@ public class DatabaseConnection {
                 activeUser = sqlServerUser;
                 activePassword = sqlServerPassword;
                 activeDatabaseType = "SQL Server";
+                System.out.println("[DatabaseConnection] Connected to Microsoft SQL Server at " + sqlServerUrl);
                 return connection;
             } catch (SQLException e) {
+                // Also attempt standard port 1433 fallback if sqlServerUrl was on a dynamic port
+                if (!sqlServerUrl.contains(":1433;") && !sqlServerUrl.contains(":1433/")) {
+                    try {
+                        String fallbackUrl = "jdbc:sqlserver://localhost:1433;databaseName=faculty_management_db;user=" + sqlServerUser + ";password=" + sqlServerPassword + ";encrypt=true;trustServerCertificate=true;loginTimeout=3;";
+                        connection = DriverManager.getConnection(fallbackUrl, sqlServerUser, sqlServerPassword);
+                        activeUrl = fallbackUrl;
+                        activeUser = sqlServerUser;
+                        activePassword = sqlServerPassword;
+                        activeDatabaseType = "SQL Server";
+                        System.out.println("[DatabaseConnection] Connected to Microsoft SQL Server via port 1433 fallback");
+                        return connection;
+                    } catch (SQLException ignored) {}
+                }
                 activeDatabaseType = "None";
-                throw new DatabaseException("Cannot connect to Microsoft SQL Server on localhost:1433. " +
-                        "Please ensure SQL Server is running and 'faculty_management_db' is imported.", e);
+                throw new DatabaseException("Cannot connect to Microsoft SQL Server.\n" +
+                        "1. Ensure SQL Server (SQLEXPRESS) service is running.\n" +
+                        "2. Ensure database 'faculty_management_db' is created using 'database/text/sqlserver.txt' in SSMS.", e);
             }
         }
 
-        // 3. Auto-detection mode: Try MySQL first; fallback to SQL Server
+        // 3. Auto-detection mode: Try MySQL first (XAMPP); fallback to SQL Server (SSMS)
         try {
             connection = DriverManager.getConnection(mysqlUrl, mysqlUser, mysqlPassword);
             activeUrl = mysqlUrl;
             activeUser = mysqlUser;
             activePassword = mysqlPassword;
             activeDatabaseType = "MySQL";
+            System.out.println("[DatabaseConnection] Auto-detected: Connected to MySQL (XAMPP) at localhost:3306");
             return connection;
         } catch (SQLException mysqlEx) {
-            // Try Microsoft SQL Server
+            // MySQL offline -> Try Microsoft SQL Server (configured url)
             try {
                 connection = DriverManager.getConnection(sqlServerUrl, sqlServerUser, sqlServerPassword);
                 activeUrl = sqlServerUrl;
                 activeUser = sqlServerUser;
                 activePassword = sqlServerPassword;
                 activeDatabaseType = "SQL Server";
+                System.out.println("[DatabaseConnection] Auto-detected: Connected to Microsoft SQL Server (SSMS) at " + sqlServerUrl);
                 return connection;
             } catch (SQLException sqlServerEx) {
+                // Fallback attempt on standard port 1433 if configured url was a dynamic port
+                if (!sqlServerUrl.contains(":1433;") && !sqlServerUrl.contains(":1433/")) {
+                    try {
+                        String fallbackUrl = "jdbc:sqlserver://localhost:1433;databaseName=faculty_management_db;user=" + sqlServerUser + ";password=" + sqlServerPassword + ";encrypt=true;trustServerCertificate=true;loginTimeout=3;";
+                        connection = DriverManager.getConnection(fallbackUrl, sqlServerUser, sqlServerPassword);
+                        activeUrl = fallbackUrl;
+                        activeUser = sqlServerUser;
+                        activePassword = sqlServerPassword;
+                        activeDatabaseType = "SQL Server";
+                        System.out.println("[DatabaseConnection] Auto-detected: Connected to Microsoft SQL Server (SSMS) at localhost:1433");
+                        return connection;
+                    } catch (SQLException ignored) {}
+                }
+
                 activeDatabaseType = "None";
                 throw new DatabaseException("No active database detected.\n" +
-                        "• For MySQL: Start MySQL in XAMPP.\n" +
-                        "• For SQL Server: Ensure SQL Server service is running.\n" +
-                        "Make sure 'faculty_management_db' exists.", mysqlEx);
+                        "• Option 1 (XAMPP): Start MySQL in XAMPP Control Panel on port 3306.\n" +
+                        "• Option 2 (SSMS): Ensure Microsoft SQL Server service is running.\n" +
+                        "Make sure 'faculty_management_db' exists in either database.", mysqlEx);
             }
         }
     }
