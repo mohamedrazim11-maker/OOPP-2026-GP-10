@@ -49,18 +49,9 @@ Example:
    git checkout person-1
 
 
-4. DATABASE SETUP (DUAL DATABASE SUPPORT)
+4. DATABASE SETUP (XAMPP / MYSQL)
 --------------------------------------------------------------------------------
-The system automatically detects whichever database server is running:
-
->>> OPTION 1: Using Microsoft SQL Server (SSMS) [Already configured & ready]
-- If SQL Server / SQLEXPRESS is running on your PC, the database 'faculty_management_db'
-  is already created and seeded!
-- To run or re-seed using sqlcmd:
-  sqlcmd -S "localhost,1433" -E -i "database\00_setup_sqlserver.sql"
-
->>> OPTION 2: Using MySQL / XAMPP
-a. Start Apache & MySQL in XAMPP Control Panel.
+a. Start MySQL in XAMPP Control Panel. Start Apache too if you are using phpMyAdmin.
 b. Open phpMyAdmin in your browser (http://localhost/phpmyadmin).
 c. Import the SQL scripts located in the 'database/' folder in this order:
    1) database/01_create_database.sql
@@ -73,12 +64,19 @@ c. Import the SQL scripts located in the 'database/' folder in this order:
    8) database/M4_02_seed_data.sql
 
 * Database Configuration:
-  Check or customize 'database/local.properties':
-  db.type=auto (or 'mysql' or 'sqlserver')
+  This project is configured for XAMPP/MySQL in 'database/local.properties':
+  db.type=mysql
+  The default XAMPP connection uses localhost:3306, username 'root', and no password.
+  If you changed the MySQL port or root password, update the mysql.* properties there.
+  SQL Server remains supported in code but is not selected for this XAMPP setup.
 
 
 5. COMPILE & RUN THE PROJECT
 --------------------------------------------------------------------------------
+
+>>> RECOMMENDED: Using Maven
+mvn clean package
+mvn exec:java -Dexec.mainClass="com.faculty.management.Main"
 
 >>> OPTION A: Using PowerShell (VS Code Terminal)
 

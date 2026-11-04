@@ -40,12 +40,14 @@ STEP 2: Import the Database
    - database/05_insert_courses.sql
    - database/06_insert_attendance_medical.sql
 
-STEP 3: Check MySQL Password
-----------------------------
-Open: src/com/faculty/management/config/DatabaseConnection.java
-- XAMPP default has NO password:
-    private static final String PASSWORD = "";
-  (Leave it empty unless you created a password in XAMPP).
+STEP 3: Check MySQL Connection Settings
+----------------------------------------
+The project is configured for XAMPP in database/local.properties:
+    db.type=mysql
+    mysql.username=root
+    mysql.password=
+XAMPP's default MySQL account has no password. If you changed the port or
+password, update the matching mysql.* properties in database/local.properties.
 
 
 ================================================================================
@@ -71,16 +73,19 @@ STEP 2: Import the Database in MySQL Workbench
    - database/05_insert_courses.sql
    - database/06_insert_attendance_medical.sql
 
-STEP 3: Set Your Password in Code
-----------------------------------
-Open: src/com/faculty/management/config/DatabaseConnection.java
-Change the PASSWORD line to the password you created during MySQL installation:
-    private static final String PASSWORD = "your_mysql_password";
+STEP 3: Set Your MySQL Password
+--------------------------------
+Open database/local.properties and set mysql.password to the password you
+created for the MySQL root account.
 
 
 ================================================================================
 HOW TO COMPILE & RUN THE APP
 ================================================================================
+
+Recommended (Maven):
+  mvn clean package
+  mvn exec:java -Dexec.mainClass="com.faculty.management.Main"
 
 OPTION A: Using an IDE (IntelliJ IDEA / Eclipse / VS Code) - Recommended
 ------------------------------------------------------------------------
