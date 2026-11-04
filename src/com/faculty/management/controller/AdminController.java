@@ -5,6 +5,7 @@ import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.*;
 import com.faculty.management.service.CourseService;
 import com.faculty.management.service.NoticeService;
+import com.faculty.management.service.TimetableService;
 import com.faculty.management.service.UserService;
 
 import java.util.List;
@@ -19,29 +20,34 @@ public class AdminController {
     private final UserService userService;
     private final CourseService courseService;
     private final NoticeService noticeService;
+    private final TimetableService timetableService;
 
     public AdminController() {
         this.userService = new UserService();
         this.courseService = new CourseService();
         this.noticeService = new NoticeService();
+        this.timetableService = new TimetableService();
     }
 
     public AdminController(UserService userService) {
         this.userService = userService;
         this.courseService = new CourseService();
         this.noticeService = new NoticeService();
+        this.timetableService = new TimetableService();
     }
 
     public AdminController(UserService userService, CourseService courseService) {
         this.userService = userService;
         this.courseService = courseService;
         this.noticeService = new NoticeService();
+        this.timetableService = new TimetableService();
     }
 
     public AdminController(UserService userService, CourseService courseService, NoticeService noticeService) {
         this.userService = userService;
         this.courseService = courseService;
         this.noticeService = (noticeService != null) ? noticeService : new NoticeService();
+        this.timetableService = new TimetableService();
     }
 
     /**
@@ -740,5 +746,81 @@ public class AdminController {
      */
     public int handleGetNoticeCount() throws DatabaseException {
         return noticeService.getNoticeCount();
+    }
+
+    // =========================================================================
+    // TIMETABLE MANAGEMENT BACKEND METHODS
+    // =========================================================================
+
+    /**
+     * Retrieves all timetable entries across all departments and semesters.
+     */
+    public List<TimetableEntry> handleGetAllTimetables() throws DatabaseException {
+        return timetableService.getAllTimetableEntries();
+    }
+
+    /**
+     * Retrieves timetable entries filtered by semester and academic year.
+     */
+    public List<TimetableEntry> handleGetTimetablesBySemester(int semesterNumber, String academicYear) throws DatabaseException {
+        return timetableService.getFullTimetable(semesterNumber, academicYear);
+    }
+
+    /**
+     * Retrieves a timetable entry by ID.
+     */
+    public TimetableEntry handleGetTimetableById(int timetableId) throws DatabaseException {
+        return timetableService.getTimetableById(timetableId);
+    }
+
+    /**
+     * Creates a new timetable slot.
+     */
+    public boolean handleCreateTimetable(TimetableEntry entry) throws ValidationException, DatabaseException {
+        return timetableService.createTimetableEntry(entry);
+    }
+
+    /**
+     * Overload to create a new timetable slot from individual field parameters.
+     */
+    public boolean handleCreateTimetable(int courseId, String dayOfWeek, java.time.LocalTime startTime,
+                                         java.time.LocalTime endTime, String sessionType,
+                                         String lecturerName, String venue, int semesterNumber,
+                                         String academicYear) throws ValidationException, DatabaseException {
+        Course course = courseService.getCourseById(courseId);
+        if (course == null) {
+            throw new ValidationException("Selected course (ID: " + courseId + ") not found.");
+        }
+        TimetableEntry entry = new TimetableEntry(0, course, dayOfWeek, startTime, endTime, sessionType, lecturerName, venue, semesterNumber, academicYear);
+        return timetableService.createTimetableEntry(entry);
+    }
+
+    /**
+     * Updates an existing timetable slot.
+     */
+    public boolean handleUpdateTimetable(TimetableEntry entry) throws ValidationException, DatabaseException {
+        return timetableService.updateTimetableEntry(entry);
+    }
+
+    /**
+     * Overload to update an existing timetable slot from individual field parameters.
+     */
+    public boolean handleUpdateTimetable(int timetableId, int courseId, String dayOfWeek,
+                                         java.time.LocalTime startTime, java.time.LocalTime endTime,
+                                         String sessionType, String lecturerName, String venue,
+                                         int semesterNumber, String academicYear) throws ValidationException, DatabaseException {
+        Course course = courseService.getCourseById(courseId);
+        if (course == null) {
+            throw new ValidationException("Selected course (ID: " + courseId + ") not found.");
+        }
+        TimetableEntry entry = new TimetableEntry(timetableId, course, dayOfWeek, startTime, endTime, sessionType, lecturerName, venue, semesterNumber, academicYear);
+        return timetableService.updateTimetableEntry(entry);
+    }
+
+    /**
+     * Deletes a timetable slot.
+     */
+    public boolean handleDeleteTimetable(int timetableId) throws DatabaseException {
+        return timetableService.deleteTimetableEntry(timetableId);
     }
 }

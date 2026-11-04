@@ -76,6 +76,7 @@ public class AdminDashboard extends JFrame {
     private UserManagementPanel userManagementPanel;
     private CourseManagementPanel courseManagementPanel;
     private NoticeManagementPanel noticeManagementPanel;
+    private TimetableManagementPanel timetableManagementPanel;
 
     // Overview widgets (filled with real database data)
     private JPanel topHeaderRow;
@@ -177,12 +178,13 @@ public class AdminDashboard extends JFrame {
         userManagementPanel = new UserManagementPanel(adminController);
         courseManagementPanel = new CourseManagementPanel(adminController);
         noticeManagementPanel = new NoticeManagementPanel(adminController);
+        timetableManagementPanel = new TimetableManagementPanel(adminController);
 
         cardsContainer.add(wrapInScrollPane(createOverviewPanel()), TAB_NAMES[0]);
         cardsContainer.add(userManagementPanel, TAB_NAMES[1]);
         cardsContainer.add(courseManagementPanel, TAB_NAMES[2]);
         cardsContainer.add(noticeManagementPanel, TAB_NAMES[3]);
-        cardsContainer.add(wrapInScrollPane(createTimetablePanel()), TAB_NAMES[4]);
+        cardsContainer.add(timetableManagementPanel, TAB_NAMES[4]);
         add(cardsContainer, BorderLayout.CENTER);
 
         // Bottom: footer
@@ -568,6 +570,8 @@ public class AdminDashboard extends JFrame {
             courseManagementPanel.loadCourseTable();
         } else if (index == 3) {
             noticeManagementPanel.loadNotices();
+        } else if (index == 4) {
+            timetableManagementPanel.loadTimetableData();
         }
 
         cardLayout.show(cardsContainer, TAB_NAMES[index]);
