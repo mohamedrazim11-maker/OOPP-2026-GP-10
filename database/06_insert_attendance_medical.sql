@@ -15,6 +15,54 @@
 USE faculty_management_db;
 
 -- --------------------------------------------------------------------------------
+-- 0. Ensure tables exist before inserting records
+-- --------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id VARCHAR(20) NOT NULL,
+    session_type ENUM('THEORY', 'PRACTICAL') NOT NULL,
+    session_number INT DEFAULT 1,
+    session_date DATE NOT NULL,
+    hours DECIMAL(3,1) DEFAULT 2.0,
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_att_sess_user FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS attendance_records (
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    attendance_id INT NULL,
+    session_id INT NULL,
+    student_id INT NOT NULL,
+    course_id INT NULL,
+    status ENUM('PRESENT', 'ABSENT') DEFAULT 'PRESENT',
+    theory_attended INT NOT NULL DEFAULT 0,
+    theory_total INT NOT NULL DEFAULT 0,
+    practical_attended INT NOT NULL DEFAULT 0,
+    practical_total INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_att_rec_session FOREIGN KEY (session_id) REFERENCES attendance_sessions(session_id) ON DELETE CASCADE,
+    CONSTRAINT fk_att_rec_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_att_rec_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_session_student (session_id, student_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS medical_records (
+    medical_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    course_id VARCHAR(20) NOT NULL,
+    session_id INT NULL,
+    medical_date DATE NOT NULL,
+    reason TEXT NOT NULL,
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+    document_path VARCHAR(255) NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_med_rec_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_med_rec_session FOREIGN KEY (session_id) REFERENCES attendance_sessions(session_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- --------------------------------------------------------------------------------
 -- 1. Ensure `session_number` column exists in `attendance_sessions`
 -- --------------------------------------------------------------------------------
 SET @col_exists = (SELECT COUNT(*) FROM information_schema.COLUMNS 

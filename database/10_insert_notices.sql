@@ -5,6 +5,17 @@
 
 USE faculty_management_db;
 
+CREATE TABLE IF NOT EXISTS notices (
+    notice_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    category ENUM('ACADEMIC', 'EXAMINATION', 'TIMETABLE', 'GENERAL', 'EVENT') DEFAULT 'GENERAL',
+    priority ENUM('NORMAL', 'URGENT', 'INFO') DEFAULT 'NORMAL',
+    posted_by VARCHAR(100) NOT NULL,
+    posted_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 INSERT INTO notices (title, content, category, priority, posted_by, posted_date) VALUES
 ('Mandatory 80% Attendance Requirement for Semester 2 Examinations', 'All undergraduates of the Faculty of Technology are hereby reminded that an overall attendance of at least 80% in both theory lectures and laboratory sessions is mandatory to be deemed eligible to sit for the upcoming semester final examinations. Students falling below 80% must immediately verify that all medical certificates have been formally lodged with the Technical Officer.', 'ACADEMIC', 'URGENT', 'Department of Information and Communication Technology', CURDATE()),
 ('Continuous Assessment (CA >= 40%) Eligibility Lists Published', 'The provisional Continuous Assessment (CA) scores and eligibility statuses for Level II Semester I modules (CS201, CS202, CS203, CS204, MA201) have been compiled. In accordance with university curriculum criteria, students must achieve a minimum CA score of 40% out of 100 to sit for the respective end-semester exam. Please check your individual grade transcript.', 'EXAMINATION', 'URGENT', 'Examination Division & Course Coordinators', CURDATE()),

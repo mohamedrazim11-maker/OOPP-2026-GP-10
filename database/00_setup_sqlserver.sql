@@ -69,6 +69,51 @@ BEGIN
 END
 GO
 
+-- 3a. Course Materials Table (Member 2)
+IF OBJECT_ID(N'dbo.course_materials', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.course_materials (
+        material_id INT IDENTITY(1,1) PRIMARY KEY,
+        course_id INT NOT NULL,
+        uploaded_by INT NOT NULL,
+        title NVARCHAR(150) NOT NULL,
+        file_path NVARCHAR(255) NOT NULL,
+        uploaded_at DATETIME2 DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_materials_course FOREIGN KEY (course_id) REFERENCES dbo.courses(course_id) ON DELETE CASCADE,
+        CONSTRAINT fk_materials_lecturer FOREIGN KEY (uploaded_by) REFERENCES dbo.users(user_id)
+    );
+END
+GO
+
+-- 3b. Course Lecturers Mapping Table (Member 2)
+IF OBJECT_ID(N'dbo.course_lecturers', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.course_lecturers (
+        course_id INT NOT NULL,
+        lecturer_id INT NOT NULL,
+        PRIMARY KEY (course_id, lecturer_id),
+        CONSTRAINT fk_cl_course FOREIGN KEY (course_id) REFERENCES dbo.courses(course_id) ON DELETE CASCADE,
+        CONSTRAINT fk_cl_lecturer FOREIGN KEY (lecturer_id) REFERENCES dbo.users(user_id) ON DELETE CASCADE
+    );
+END
+GO
+
+-- 3c. Evaluations Table (Member 2)
+IF OBJECT_ID(N'dbo.evaluations', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.evaluations (
+        evaluation_id INT IDENTITY(1,1) PRIMARY KEY,
+        course_id INT NOT NULL,
+        title NVARCHAR(100) NOT NULL,
+        type NVARCHAR(20) NOT NULL,
+        weightage FLOAT NOT NULL,
+        max_marks FLOAT DEFAULT 100,
+        created_at DATETIME2 DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_evaluations_course FOREIGN KEY (course_id) REFERENCES dbo.courses(course_id) ON DELETE CASCADE
+    );
+END
+GO
+
 -- 4. Enrollments Table
 IF OBJECT_ID(N'dbo.enrollments', N'U') IS NULL
 BEGIN
@@ -87,13 +132,15 @@ BEGIN
 END
 GO
 
--- 5. Marks Table
+-- 5. Unified Marks Table (Supports Member 2 evaluation marks and Member 4 component marks)
 IF OBJECT_ID(N'dbo.marks', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.marks (
         mark_id INT IDENTITY(1,1) PRIMARY KEY,
         student_id INT NOT NULL,
-        course_id INT NOT NULL,
+        course_id INT NULL,
+        evaluation_id INT NULL,
+        marks_obtained DECIMAL(5,2) NULL,
         quiz_marks DECIMAL(5,2) NULL,
         assignment_marks DECIMAL(5,2) NULL,
         mid_sem_marks DECIMAL(5,2) NULL,
@@ -102,7 +149,43 @@ BEGIN
         updated_at DATETIME2 DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_marks_student FOREIGN KEY (student_id) REFERENCES dbo.users(user_id) ON DELETE CASCADE,
         CONSTRAINT fk_marks_course FOREIGN KEY (course_id) REFERENCES dbo.courses(course_id) ON DELETE CASCADE,
-        CONSTRAINT uq_marks UNIQUE (student_id, course_id)
+        CONSTRAINT fk_marks_eval FOREIGN KEY (evaluation_id) REFERENCES dbo.evaluations(evaluation_id) ON DELETE CASCADE
+    );
+END
+ELSE
+BEGIN
+    IF COL_LENGTH(N'dbo.marks', N'evaluation_id') IS NULL
+        ALTER TABLE dbo.marks ADD evaluation_id INT NULL;
+    IF COL_LENGTH(N'dbo.marks', N'marks_obtained') IS NULL
+        ALTER TABLE dbo.marks ADD marks_obtained DECIMAL(5,2) NULL;
+    IF COL_LENGTH(N'dbo.marks', N'course_id') IS NULL
+        ALTER TABLE dbo.marks ADD course_id INT NULL;
+    IF COL_LENGTH(N'dbo.marks', N'quiz_marks') IS NULL
+        ALTER TABLE dbo.marks ADD quiz_marks DECIMAL(5,2) NULL;
+    IF COL_LENGTH(N'dbo.marks', N'assignment_marks') IS NULL
+        ALTER TABLE dbo.marks ADD assignment_marks DECIMAL(5,2) NULL;
+    IF COL_LENGTH(N'dbo.marks', N'mid_sem_marks') IS NULL
+        ALTER TABLE dbo.marks ADD mid_sem_marks DECIMAL(5,2) NULL;
+    IF COL_LENGTH(N'dbo.marks', N'practical_marks') IS NULL
+        ALTER TABLE dbo.marks ADD practical_marks DECIMAL(5,2) NULL;
+    IF COL_LENGTH(N'dbo.marks', N'final_exam_marks') IS NULL
+        ALTER TABLE dbo.marks ADD final_exam_marks DECIMAL(5,2) NULL;
+END
+GO
+
+-- 5a. CA Eligibility Table (Member 2)
+IF OBJECT_ID(N'dbo.eligibility', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.eligibility (
+        eligibility_id INT IDENTITY(1,1) PRIMARY KEY,
+        student_id INT NOT NULL,
+        course_id INT NOT NULL,
+        ca_percentage FLOAT NOT NULL,
+        is_eligible BIT NOT NULL,
+        updated_at DATETIME2 DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_eligibility_student FOREIGN KEY (student_id) REFERENCES dbo.users(user_id) ON DELETE CASCADE,
+        CONSTRAINT fk_eligibility_course FOREIGN KEY (course_id) REFERENCES dbo.courses(course_id) ON DELETE CASCADE,
+        CONSTRAINT uq_eligibility UNIQUE (student_id, course_id)
     );
 END
 GO
@@ -168,13 +251,33 @@ BEGIN
 END
 GO
 
--- 9. Attendance Records Table
+-- 8a. Attendance Sessions Table (Member 3)
+IF OBJECT_ID(N'dbo.attendance_sessions', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.attendance_sessions (
+        session_id INT IDENTITY(1,1) PRIMARY KEY,
+        course_id NVARCHAR(20) NOT NULL,
+        session_type NVARCHAR(20) NOT NULL,
+        session_number INT DEFAULT 1,
+        session_date DATE NOT NULL,
+        hours DECIMAL(3,1) DEFAULT 2.0,
+        created_by INT,
+        created_at DATETIME2 DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_att_sess_user FOREIGN KEY (created_by) REFERENCES dbo.users(user_id) ON DELETE SET NULL
+    );
+END
+GO
+
+-- 9. Unified Attendance Records Table (Member 3 session records + Member 4 course summaries)
 IF OBJECT_ID(N'dbo.attendance_records', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.attendance_records (
         attendance_id INT IDENTITY(1,1) PRIMARY KEY,
+        record_id INT NULL,
+        session_id INT NULL,
         student_id INT NOT NULL,
-        course_id INT NOT NULL,
+        course_id INT NULL,
+        status NVARCHAR(20) DEFAULT 'PRESENT',
         theory_attended INT NOT NULL DEFAULT 0,
         theory_total INT NOT NULL DEFAULT 0,
         practical_attended INT NOT NULL DEFAULT 0,
@@ -182,12 +285,48 @@ BEGIN
         updated_at DATETIME2 DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES dbo.users(user_id) ON DELETE CASCADE,
         CONSTRAINT fk_attendance_course FOREIGN KEY (course_id) REFERENCES dbo.courses(course_id) ON DELETE CASCADE,
-        CONSTRAINT uq_attendance UNIQUE (student_id, course_id)
+        CONSTRAINT fk_attendance_session FOREIGN KEY (session_id) REFERENCES dbo.attendance_sessions(session_id) ON DELETE CASCADE
+    );
+END
+ELSE
+BEGIN
+    IF COL_LENGTH(N'dbo.attendance_records', N'session_id') IS NULL
+        ALTER TABLE dbo.attendance_records ADD session_id INT NULL;
+    IF COL_LENGTH(N'dbo.attendance_records', N'status') IS NULL
+        ALTER TABLE dbo.attendance_records ADD status NVARCHAR(20) DEFAULT 'PRESENT';
+    IF COL_LENGTH(N'dbo.attendance_records', N'record_id') IS NULL
+        ALTER TABLE dbo.attendance_records ADD record_id INT NULL;
+    IF COL_LENGTH(N'dbo.attendance_records', N'theory_attended') IS NULL
+        ALTER TABLE dbo.attendance_records ADD theory_attended INT NOT NULL DEFAULT 0;
+    IF COL_LENGTH(N'dbo.attendance_records', N'theory_total') IS NULL
+        ALTER TABLE dbo.attendance_records ADD theory_total INT NOT NULL DEFAULT 0;
+    IF COL_LENGTH(N'dbo.attendance_records', N'practical_attended') IS NULL
+        ALTER TABLE dbo.attendance_records ADD practical_attended INT NOT NULL DEFAULT 0;
+    IF COL_LENGTH(N'dbo.attendance_records', N'practical_total') IS NULL
+        ALTER TABLE dbo.attendance_records ADD practical_total INT NOT NULL DEFAULT 0;
+END
+GO
+
+-- 9a. Medical Records Table (Member 3)
+IF OBJECT_ID(N'dbo.medical_records', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.medical_records (
+        medical_id INT IDENTITY(1,1) PRIMARY KEY,
+        student_id INT NOT NULL,
+        course_id NVARCHAR(20) NOT NULL,
+        session_id INT NULL,
+        medical_date DATE NOT NULL,
+        reason NVARCHAR(MAX) NOT NULL,
+        status NVARCHAR(20) DEFAULT 'PENDING',
+        document_path NVARCHAR(255) NULL,
+        submitted_at DATETIME2 DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_med_rec_student FOREIGN KEY (student_id) REFERENCES dbo.users(user_id) ON DELETE CASCADE,
+        CONSTRAINT fk_med_rec_session FOREIGN KEY (session_id) REFERENCES dbo.attendance_sessions(session_id) ON DELETE SET NULL
     );
 END
 GO
 
--- 10. Medical Submissions Table
+-- 10. Medical Submissions Table (Member 4)
 IF OBJECT_ID(N'dbo.medical_submissions', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.medical_submissions (
@@ -309,6 +448,51 @@ WHEN NOT MATCHED THEN
     VALUES (source.course_code, source.course_name, source.credit_value, source.credits, source.theory_hours, source.practical_hours, source.theory_sessions, source.practical_sessions, source.department, source.semester, source.semester_number, source.academic_year, source.description);
 GO
 
+-- 3a. Course Lecturers Seed
+MERGE INTO dbo.course_lecturers AS target
+USING (VALUES
+    (1, 2), (2, 2), (3, 3), (4, 4), (5, 5), (6, 2), (7, 5), (8, 3), (9, 4), (10, 6)
+) AS source (course_id, lecturer_id)
+ON target.course_id = source.course_id AND target.lecturer_id = source.lecturer_id
+WHEN NOT MATCHED THEN
+    INSERT (course_id, lecturer_id) VALUES (source.course_id, source.lecturer_id);
+GO
+
+-- 3b. Course Materials Seed
+IF NOT EXISTS (SELECT 1 FROM dbo.course_materials)
+BEGIN
+    INSERT INTO dbo.course_materials (course_id, uploaded_by, title, file_path) VALUES
+    (6, 2, N'Lecture 01 - Algorithm Analysis & Big-O Notation', N'resources/course_materials/CS201_Lecture01.pdf'),
+    (6, 2, N'Tutorial 01 - Linked Lists & Stacks Problem Set', N'resources/course_materials/CS201_Tutorial01.pdf'),
+    (7, 5, N'Practicum Guide - Swing GUI & MVC Architecture', N'resources/course_materials/CS202_SwingGuide.pdf'),
+    (8, 3, N'Lecture 01 - Relational Algebra & Normalization', N'resources/course_materials/CS203_Lecture01.pdf'),
+    (8, 3, N'Lab Sheet 01 - Complex SQL Queries & Joins', N'resources/course_materials/CS203_Lab01.pdf');
+END
+GO
+
+-- 3c. Evaluations Seed
+SET IDENTITY_INSERT dbo.evaluations ON;
+MERGE INTO dbo.evaluations AS target
+USING (VALUES
+    (1, 6, N'Quiz 1 - Stacks and Queues', N'QUIZ', 10.0, 100.0),
+    (2, 6, N'Continuous Assessment 1', N'ASSESSMENT', 15.0, 100.0),
+    (3, 6, N'Mid-Semester Theory Examination', N'MID_TERM', 25.0, 100.0),
+    (4, 6, N'Practical Lab Test', N'PRACTICAL', 20.0, 100.0),
+    (5, 6, N'End-Semester Final Examination', N'FINAL', 30.0, 100.0),
+    (6, 7, N'OOP Quiz - Inheritance & Polymorphism', N'QUIZ', 10.0, 100.0),
+    (7, 7, N'Mini Project Milestone 1', N'ASSESSMENT', 20.0, 100.0),
+    (8, 7, N'Mid Practicum Exam', N'MID_TERM', 20.0, 100.0),
+    (9, 7, N'Final Project & Viva', N'FINAL', 50.0, 100.0)
+) AS source (evaluation_id, course_id, title, type, weightage, max_marks)
+ON target.evaluation_id = source.evaluation_id
+WHEN MATCHED THEN
+    UPDATE SET title = source.title, weightage = source.weightage
+WHEN NOT MATCHED THEN
+    INSERT (evaluation_id, course_id, title, type, weightage, max_marks)
+    VALUES (source.evaluation_id, source.course_id, source.title, source.type, source.weightage, source.max_marks);
+SET IDENTITY_INSERT dbo.evaluations OFF;
+GO
+
 -- 4. Enrollments Seed (20 students x 10 courses)
 MERGE INTO dbo.enrollments AS target
 USING (
@@ -349,25 +533,183 @@ WHEN NOT MATCHED THEN
     VALUES (source.course_id, source.day_of_week, source.start_time, source.end_time, source.session_type, source.lecturer_name, source.venue, source.semester_number, source.academic_year);
 GO
 
--- 6. Attendance Summary Seed
-MERGE INTO dbo.attendance_records AS target
-USING (
+-- 6. Marks Seed (Component Marks + Evaluation Marks)
+IF NOT EXISTS (SELECT 1 FROM dbo.marks)
+BEGIN
+    -- Seed component marks for students 11 to 30
+    INSERT INTO dbo.marks (student_id, course_id, quiz_marks, assignment_marks, mid_sem_marks, practical_marks, final_exam_marks)
     SELECT e.student_id, e.course_id,
-           CASE WHEN c.theory_sessions >= 2 THEN c.theory_sessions - 2 ELSE 0 END AS theory_attended,
-           c.theory_sessions AS theory_total,
-           CASE WHEN c.practical_sessions >= 1 THEN c.practical_sessions - 1 ELSE 0 END AS practical_attended,
-           c.practical_sessions AS practical_total
-    FROM dbo.enrollments e JOIN dbo.courses c ON c.course_id = e.course_id
-) AS source
-ON target.student_id = source.student_id AND target.course_id = source.course_id
-WHEN MATCHED THEN
-    UPDATE SET theory_attended = source.theory_attended, theory_total = source.theory_total, practical_attended = source.practical_attended, practical_total = source.practical_total
-WHEN NOT MATCHED THEN
-    INSERT (student_id, course_id, theory_attended, theory_total, practical_attended, practical_total)
-    VALUES (source.student_id, source.course_id, source.theory_attended, source.theory_total, source.practical_attended, source.practical_total);
+           CAST(50 + (e.student_id * 3 + e.course_id * 5) % 45 AS DECIMAL(5,2)),
+           CAST(55 + (e.student_id * 4 + e.course_id * 3) % 40 AS DECIMAL(5,2)),
+           CAST(45 + (e.student_id * 2 + e.course_id * 7) % 50 AS DECIMAL(5,2)),
+           CAST(60 + (e.student_id * 5 + e.course_id * 2) % 35 AS DECIMAL(5,2)),
+           CAST(50 + (e.student_id * 7 + e.course_id * 4) % 45 AS DECIMAL(5,2))
+    FROM dbo.enrollments e;
+
+    -- Seed evaluation-specific marks for Member 2 UI demonstration
+    INSERT INTO dbo.marks (student_id, evaluation_id, marks_obtained) VALUES
+    (11, 1, 85.0), (11, 2, 78.0), (11, 3, 72.0), (11, 4, 80.0), (11, 5, 88.0),
+    (12, 1, 65.0), (12, 2, 60.0), (12, 3, 58.0), (12, 4, 70.0), (12, 5, 62.0),
+    (13, 1, 45.0), (13, 2, 42.0), (13, 3, 40.0), (13, 4, 48.0), (13, 5, 50.0),
+    (14, 1, 28.0), (14, 2, 32.0), (14, 3, 25.0), (14, 4, 30.0), (14, 5, 35.0),
+    (15, 1, 92.0), (15, 2, 88.0), (15, 3, 85.0), (15, 4, 90.0), (15, 5, 86.0);
+END
 GO
 
--- 7. Notices Seed
+-- 6a. Eligibility Seed (Member 2)
+IF NOT EXISTS (SELECT 1 FROM dbo.eligibility)
+BEGIN
+    INSERT INTO dbo.eligibility (student_id, course_id, ca_percentage, is_eligible) VALUES
+    (11, 6, 78.75, 1),
+    (12, 6, 63.25, 1),
+    (13, 6, 43.75, 1),
+    (14, 6, 28.75, 0),
+    (15, 6, 88.75, 1),
+    (11, 8, 82.00, 1),
+    (12, 8, 67.50, 1),
+    (14, 8, 34.00, 0);
+END
+GO
+
+-- 7. Attendance Sessions Seed (Member 3)
+IF NOT EXISTS (SELECT 1 FROM dbo.attendance_sessions)
+BEGIN
+    INSERT INTO dbo.attendance_sessions (course_id, session_type, session_number, session_date, hours, created_by) VALUES
+    (N'CS201', N'THEORY', 1, '2026-06-08', 2.0, 7),
+    (N'CS201', N'THEORY', 2, '2026-06-15', 2.0, 7),
+    (N'CS201', N'THEORY', 3, '2026-06-22', 2.0, 7),
+    (N'CS201', N'THEORY', 4, '2026-06-29', 2.0, 7),
+    (N'CS201', N'THEORY', 5, '2026-07-06', 2.0, 7),
+    (N'CS201', N'THEORY', 6, '2026-07-13', 2.0, 7),
+    (N'CS201', N'THEORY', 7, '2026-07-20', 2.0, 7),
+    (N'CS201', N'THEORY', 8, '2026-07-27', 2.0, 7),
+    (N'CS201', N'THEORY', 9, '2026-08-03', 2.0, 7),
+    (N'CS201', N'THEORY', 10, '2026-08-10', 2.0, 7),
+    (N'CS201', N'THEORY', 11, '2026-08-17', 2.0, 7),
+    (N'CS201', N'THEORY', 12, '2026-08-24', 2.0, 7),
+    (N'CS201', N'THEORY', 13, '2026-08-31', 2.0, 7),
+    (N'CS201', N'THEORY', 14, '2026-09-07', 2.0, 7),
+    (N'CS201', N'THEORY', 15, '2026-09-14', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 1, '2026-06-10', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 2, '2026-06-17', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 3, '2026-06-24', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 4, '2026-07-01', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 5, '2026-07-08', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 6, '2026-07-15', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 7, '2026-07-22', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 8, '2026-07-29', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 9, '2026-08-05', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 10, '2026-08-12', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 11, '2026-08-19', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 12, '2026-08-26', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 13, '2026-09-02', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 14, '2026-09-09', 2.0, 7),
+    (N'CS201', N'PRACTICAL', 15, '2026-09-16', 2.0, 7);
+END
+GO
+
+-- 8. Attendance Summary & Session Records Seed
+IF NOT EXISTS (SELECT 1 FROM dbo.attendance_records WHERE course_id IS NOT NULL)
+BEGIN
+    INSERT INTO dbo.attendance_records (student_id, course_id, theory_attended, theory_total, practical_attended, practical_total)
+    SELECT e.student_id, e.course_id,
+           CASE WHEN c.theory_sessions >= 2 THEN c.theory_sessions - 2 ELSE 0 END,
+           c.theory_sessions,
+           CASE WHEN c.practical_sessions >= 1 THEN c.practical_sessions - 1 ELSE 0 END,
+           c.practical_sessions
+    FROM dbo.enrollments e JOIN dbo.courses c ON c.course_id = e.course_id;
+END
+GO
+
+-- Session-level attendance records
+IF NOT EXISTS (SELECT 1 FROM dbo.attendance_records WHERE session_id IS NOT NULL)
+BEGIN
+    INSERT INTO dbo.attendance_records (session_id, student_id, status)
+    SELECT s.session_id, u.user_id,
+           CASE 
+               WHEN u.user_id IN (11, 12) THEN N'PRESENT'
+               WHEN u.user_id IN (13, 14) AND s.session_number = 15 THEN N'ABSENT'
+               WHEN u.user_id IN (15, 16, 17) AND s.session_number > 12 THEN N'ABSENT'
+               WHEN u.user_id IN (18, 19, 20, 21) AND s.session_number > 9 THEN N'ABSENT'
+               WHEN u.user_id IN (22, 23, 24) AND s.session_number > 13 THEN N'ABSENT'
+               WHEN u.user_id IN (25, 26, 27) AND s.session_number > 10 THEN N'ABSENT'
+               WHEN u.user_id IN (28, 29, 30) AND s.session_number > 7 THEN N'ABSENT'
+               ELSE N'PRESENT'
+           END
+    FROM dbo.attendance_sessions s CROSS JOIN dbo.users u
+    WHERE u.user_id BETWEEN 11 AND 30;
+END
+GO
+
+-- 9. Medical Records Seed (Member 3)
+IF NOT EXISTS (SELECT 1 FROM dbo.medical_records)
+BEGIN
+    INSERT INTO dbo.medical_records (student_id, course_id, session_id, medical_date, reason, status) VALUES
+    (22, N'CS201', 14, '2026-09-07', N'Acute tonsillitis - Treated at General Hospital', N'APPROVED'),
+    (23, N'CS201', 15, '2026-09-14', N'Severe tooth extraction recovery and pain management', N'APPROVED'),
+    (24, N'CS201', 15, '2026-09-14', N'Sprained ankle during inter-faculty tournament', N'APPROVED'),
+    (25, N'CS201', 11, '2026-08-17', N'Viral influenza with high fever', N'APPROVED'),
+    (25, N'CS201', 12, '2026-08-24', N'Post-viral asthenia and convalescence', N'APPROVED'),
+    (25, N'CS201', 13, '2026-08-31', N'Follow-up clinical examination', N'APPROVED'),
+    (28, N'CS201', 13, '2026-08-31', N'Severe allergic reaction - Under review', N'PENDING'),
+    (29, N'CS201', 10, '2026-08-10', N'Private clinic prescription without doctor stamp', N'REJECTED');
+END
+GO
+
+-- 10. Medical Submissions Seed (Member 4)
+IF NOT EXISTS (SELECT 1 FROM dbo.medical_submissions)
+BEGIN
+    INSERT INTO dbo.medical_submissions (student_id, course_id, start_date, end_date, reason, document_path, status) VALUES
+    (11, 6, '2026-08-01', '2026-08-05', N'High fever and physician-advised rest', N'uploads/medical/std11_cert.pdf', N'APPROVED'),
+    (12, 6, '2026-08-10', '2026-08-12', N'Food poisoning and outpatient hospital care', N'uploads/medical/std12_cert.pdf', N'APPROVED'),
+    (13, 7, '2026-08-15', '2026-08-18', N'Dental extraction and post-procedure recovery', N'uploads/medical/std13_cert.pdf', N'PENDING'),
+    (14, 8, '2026-08-20', '2026-08-22', N'Migraine aura episode requiring clinic observation', N'uploads/medical/std14_cert.pdf', N'REJECTED');
+END
+GO
+
+-- 11. Grades Seed (Member 4)
+IF NOT EXISTS (SELECT 1 FROM dbo.grades)
+BEGIN
+    INSERT INTO dbo.grades (student_id, course_id, semester_number, academic_year, ca_marks, final_exam_marks, final_total_marks, ca_eligible, grade_letter, grade_point)
+    SELECT e.student_id, e.course_id, e.semester_number, e.academic_year,
+           CAST(65.0 + (e.student_id * 2) % 30 AS DECIMAL(5,2)),
+           CAST(60.0 + (e.student_id * 3) % 35 AS DECIMAL(5,2)),
+           CAST(62.0 + (e.student_id * 2.5) % 32 AS DECIMAL(5,2)),
+           1,
+           CASE 
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 80 THEN N'A+'
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 75 THEN N'A'
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 70 THEN N'A-'
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 65 THEN N'B+'
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 60 THEN N'B'
+               ELSE N'C+'
+           END,
+           CASE 
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 80 THEN 4.00
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 75 THEN 4.00
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 70 THEN 3.70
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 65 THEN 3.30
+               WHEN (62 + (e.student_id * 2.5) % 32) >= 60 THEN 3.00
+               ELSE 2.30
+           END
+    FROM dbo.enrollments e
+    WHERE e.semester_number = 1;
+END
+GO
+
+-- 12. Results Seed (Member 4)
+IF NOT EXISTS (SELECT 1 FROM dbo.results)
+BEGIN
+    INSERT INTO dbo.results (student_id, semester_number, academic_year, sgpa, credits_attempted, credits_completed)
+    SELECT u.user_id, 1, N'2024/2025',
+           CAST(3.000 + ((u.user_id * 7) % 100) / 100.0 AS DECIMAL(4,3)),
+           13, 13
+    FROM dbo.users u
+    WHERE u.user_id BETWEEN 11 AND 30;
+END
+GO
+
+-- 13. Notices Seed
 IF NOT EXISTS (SELECT 1 FROM dbo.notices)
 BEGIN
     INSERT INTO dbo.notices (title, content, category, priority, posted_by, posted_date)

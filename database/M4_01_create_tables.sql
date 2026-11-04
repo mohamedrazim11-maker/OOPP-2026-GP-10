@@ -3,12 +3,9 @@
 -- Faculty Management System | ICT2132 Mini Project
 --
 -- NOTE ON SHARED TABLES:
---   `courses`, `enrollments` and `marks` are logically shared with
---   Member 1 (courses) and Member 2 (marks). They are created here
---   with IF NOT EXISTS + minimal columns so Member 4's module can be
---   demoed independently while the group's other modules are still
---   being built. If Member 1/2 later create richer versions of these
---   tables, merge the column sets — do not just drop this script.
+--   `courses`, `enrollments`, `marks` and `attendance_records` are logically shared.
+--   They are created here with IF NOT EXISTS + dynamic ALTER upgrades so Member 4's
+--   module runs independently or cleanly on top of existing group tables without collision.
 -- =======================================================
 
 USE faculty_management_db;
@@ -30,8 +27,6 @@ CREATE TABLE IF NOT EXISTS courses (
 ) ENGINE=InnoDB;
 
 -- 1a. Upgrade an existing courses table created by 02_create_tables.sql.
--- CREATE TABLE IF NOT EXISTS does not add the Member 4 columns to an
--- already-existing shared courses table, so add each missing column safely.
 SET @fms_add_course_credits = (
     SELECT IF(COUNT(*) = 0,
         'ALTER TABLE courses ADD COLUMN credits INT NOT NULL DEFAULT 3',
@@ -89,7 +84,6 @@ DEALLOCATE PREPARE fms_stmt;
 
 -- ---------------------------------------------------------
 -- 2. Enrollments — links a student to a course for a semester
---    (owned by Member 4: drives SGPA/CGPA grouping)
 -- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS enrollments (
     enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -105,14 +99,14 @@ CREATE TABLE IF NOT EXISTS enrollments (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 3. Marks (shared reference table — owned by Member 2)
---    CA components are out of 100 each; CA% is the average of
---    the components that were actually entered.
+-- 3. Marks (shared reference table — owned by Member 2 / 4)
 -- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS marks (
     mark_id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
-    course_id INT NOT NULL,
+    course_id INT NULL,
+    evaluation_id INT NULL,
+    marks_obtained DOUBLE NULL,
     quiz_marks DECIMAL(5,2) DEFAULT NULL,
     assignment_marks DECIMAL(5,2) DEFAULT NULL,
     mid_sem_marks DECIMAL(5,2) DEFAULT NULL,
@@ -123,6 +117,96 @@ CREATE TABLE IF NOT EXISTS marks (
     CONSTRAINT fk_marks_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
     CONSTRAINT uq_marks UNIQUE (student_id, course_id)
 ) ENGINE=InnoDB;
+
+-- 3a. Upgrade existing marks table with Member 4 columns if created earlier by Member 2
+SET @fms_add_marks_course_id = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE marks ADD COLUMN course_id INT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'course_id'
+);
+PREPARE fms_stmt FROM @fms_add_marks_course_id;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_marks_quiz = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE marks ADD COLUMN quiz_marks DECIMAL(5,2) DEFAULT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'quiz_marks'
+);
+PREPARE fms_stmt FROM @fms_add_marks_quiz;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_marks_assignment = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE marks ADD COLUMN assignment_marks DECIMAL(5,2) DEFAULT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'assignment_marks'
+);
+PREPARE fms_stmt FROM @fms_add_marks_assignment;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_marks_mid_sem = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE marks ADD COLUMN mid_sem_marks DECIMAL(5,2) DEFAULT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'mid_sem_marks'
+);
+PREPARE fms_stmt FROM @fms_add_marks_mid_sem;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_marks_practical = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE marks ADD COLUMN practical_marks DECIMAL(5,2) DEFAULT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'practical_marks'
+);
+PREPARE fms_stmt FROM @fms_add_marks_practical;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_marks_final = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE marks ADD COLUMN final_exam_marks DECIMAL(5,2) DEFAULT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'final_exam_marks'
+);
+PREPARE fms_stmt FROM @fms_add_marks_final;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+-- Make evaluation_id and marks_obtained nullable if they were created NOT NULL by Member 2
+SET @fms_mod_eval_id = (
+    SELECT IF(COUNT(*) > 0 AND IS_NULLABLE = 'NO',
+        'ALTER TABLE marks MODIFY COLUMN evaluation_id INT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'evaluation_id'
+);
+PREPARE fms_stmt FROM @fms_mod_eval_id;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_mod_marks_obt = (
+    SELECT IF(COUNT(*) > 0 AND IS_NULLABLE = 'NO',
+        'ALTER TABLE marks MODIFY COLUMN marks_obtained DOUBLE NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'marks' AND COLUMN_NAME = 'marks_obtained'
+);
+PREPARE fms_stmt FROM @fms_mod_marks_obt;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
 
 -- ---------------------------------------------------------
 -- 4. Timetable (owned by Member 4 — viewing side; Admin/Member 1 maintains)
@@ -164,7 +248,6 @@ CREATE TABLE IF NOT EXISTS grades (
 
 -- ---------------------------------------------------------
 -- 6. Results — published SGPA summary per student per semester
---    (owned by Member 4)
 -- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS results (
     result_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -180,12 +263,15 @@ CREATE TABLE IF NOT EXISTS results (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 7. Attendance â€” student-facing read-only summary per course
+-- 7. Attendance — student-facing read-only summary per course
 -- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS attendance_records (
-    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    record_id INT AUTO_INCREMENT PRIMARY KEY,
+    attendance_id INT NULL,
+    session_id INT NULL,
     student_id INT NOT NULL,
-    course_id INT NOT NULL,
+    course_id INT NULL,
+    status ENUM('PRESENT', 'ABSENT') DEFAULT 'PRESENT',
     theory_attended INT NOT NULL DEFAULT 0,
     theory_total INT NOT NULL DEFAULT 0,
     practical_attended INT NOT NULL DEFAULT 0,
@@ -193,11 +279,78 @@ CREATE TABLE IF NOT EXISTS attendance_records (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_attendance_student FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_attendance_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
-    CONSTRAINT uq_attendance UNIQUE (student_id, course_id)
+    UNIQUE KEY uq_attendance (student_id, course_id)
 ) ENGINE=InnoDB;
 
+-- 7a. Upgrade existing attendance_records if created by Member 3 (which had only session_id, student_id, status)
+SET @fms_add_att_course_id = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE attendance_records ADD COLUMN course_id INT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records' AND COLUMN_NAME = 'course_id'
+);
+PREPARE fms_stmt FROM @fms_add_att_course_id;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_att_theory_att = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE attendance_records ADD COLUMN theory_attended INT NOT NULL DEFAULT 0',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records' AND COLUMN_NAME = 'theory_attended'
+);
+PREPARE fms_stmt FROM @fms_add_att_theory_att;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_att_theory_tot = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE attendance_records ADD COLUMN theory_total INT NOT NULL DEFAULT 0',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records' AND COLUMN_NAME = 'theory_total'
+);
+PREPARE fms_stmt FROM @fms_add_att_theory_tot;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_att_prac_att = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE attendance_records ADD COLUMN practical_attended INT NOT NULL DEFAULT 0',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records' AND COLUMN_NAME = 'practical_attended'
+);
+PREPARE fms_stmt FROM @fms_add_att_prac_att;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_add_att_prac_tot = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE attendance_records ADD COLUMN practical_total INT NOT NULL DEFAULT 0',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records' AND COLUMN_NAME = 'practical_total'
+);
+PREPARE fms_stmt FROM @fms_add_att_prac_tot;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
+SET @fms_mod_att_sess_id = (
+    SELECT IF(COUNT(*) > 0 AND IS_NULLABLE = 'NO',
+        'ALTER TABLE attendance_records MODIFY COLUMN session_id INT NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'attendance_records' AND COLUMN_NAME = 'session_id'
+);
+PREPARE fms_stmt FROM @fms_mod_att_sess_id;
+EXECUTE fms_stmt;
+DEALLOCATE PREPARE fms_stmt;
+
 -- ---------------------------------------------------------
--- 8. Medical submissions â€” students submit; status is read-only to them
+-- 8. Medical submissions — students submit; status is read-only to them
 -- ---------------------------------------------------------
 CREATE TABLE IF NOT EXISTS medical_submissions (
     medical_id INT AUTO_INCREMENT PRIMARY KEY,
