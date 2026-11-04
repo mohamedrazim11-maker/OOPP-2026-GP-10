@@ -58,7 +58,7 @@ public class UserFormDialog extends JDialog {
     private JTextField emailField;
     private JTextField contactField;
     private JComboBox<String> departmentComboBox;
-    private JTextField batchField;
+    private JComboBox<String> batchComboBox;
     private JComboBox<String> statusComboBox;
     private JLabel errorLabel;
     private JButton saveButton;
@@ -236,10 +236,28 @@ public class UserFormDialog extends JDialog {
 
         // Batch / Intake
         JLabel batchLabel = createFieldLabel("Batch / Intake");
-        batchField = createStyledTextField();
-        batchField.setText("");
+        DefaultComboBoxModel<String> batchModel = new DefaultComboBoxModel<>();
+        batchModel.addElement("-- Select Batch --");
+        try {
+            java.util.List<String> batches = adminController.getAvailableBatches();
+            if (batches != null) {
+                for (String b : batches) {
+                    if (b != null && !b.trim().isEmpty() && !b.equalsIgnoreCase("All Batches") && !b.equalsIgnoreCase("-- Select Batch --")) {
+                        batchModel.addElement(b.trim());
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        if (batchModel.getSize() <= 1) {
+            for (String defB : new String[]{"2025/2026", "2024/2025", "2023/2024", "2022/2023", "2021/2022", "2020/2021"}) {
+                batchModel.addElement(defB);
+            }
+        }
+        batchComboBox = new JComboBox<>(batchModel);
+        batchComboBox.setEditable(true);
+        styleComboBox(batchComboBox);
         gbc.gridx = 0; gbc.gridy = 11; formPanel.add(batchLabel, gbc);
-        gbc.gridx = 1; gbc.gridy = 11; formPanel.add(batchField, gbc);
+        gbc.gridx = 1; gbc.gridy = 11; formPanel.add(batchComboBox, gbc);
 
         // Status
         JLabel statusLabel = createFieldLabel("Status *");
@@ -317,7 +335,7 @@ public class UserFormDialog extends JDialog {
                 emailField.setEditable(false);
                 contactField.setEditable(false);
                 departmentComboBox.setEnabled(false);
-                batchField.setEditable(false);
+                batchComboBox.setEnabled(false);
                 statusComboBox.setEnabled(false);
                 passwordField.setText("********");
                 confirmPasswordField.setText("********");
@@ -334,7 +352,7 @@ public class UserFormDialog extends JDialog {
                 emailField.setEditable(false);
                 contactField.setEditable(false);
                 departmentComboBox.setEnabled(true);
-                batchField.setEnabled(true);
+                batchComboBox.setEnabled(true);
                 statusComboBox.setEnabled(false);
                 break;
 
@@ -355,7 +373,7 @@ public class UserFormDialog extends JDialog {
                 emailField.setEditable(false);
                 contactField.setEditable(false);
                 departmentComboBox.setEnabled(false);
-                batchField.setEditable(false);
+                batchComboBox.setEnabled(false);
                 statusComboBox.setEnabled(false);
                 break;
 
@@ -374,13 +392,13 @@ public class UserFormDialog extends JDialog {
 
     private void onRoleChanged(String selectedRole) {
         if ("Undergraduate".equalsIgnoreCase(selectedRole)) {
-            batchField.setEnabled(true);
+            batchComboBox.setEnabled(true);
             departmentComboBox.setEnabled(true);
         } else if ("Lecturer".equalsIgnoreCase(selectedRole) || "Technical Officer".equalsIgnoreCase(selectedRole)) {
-            batchField.setEnabled(false);
+            batchComboBox.setEnabled(false);
             departmentComboBox.setEnabled(true);
         } else {
-            batchField.setEnabled(false);
+            batchComboBox.setEnabled(false);
             departmentComboBox.setEnabled(false);
         }
     }
@@ -393,6 +411,10 @@ public class UserFormDialog extends JDialog {
         if (data.length > 5 && data[5] != null) emailField.setText(data[5].toString());
         if (data.length > 6 && data[6] != null) contactField.setText(data[6].toString());
         if (data.length > 7 && data[7] != null) statusComboBox.setSelectedItem(data[7].toString());
+        if (data.length > 8 && data[8] != null) {
+            String b = data[8].toString();
+            batchComboBox.setSelectedItem(b);
+        }
     }
 
     /**
@@ -415,7 +437,21 @@ public class UserFormDialog extends JDialog {
         if (user instanceof com.faculty.management.model.Undergraduate) {
             com.faculty.management.model.Undergraduate u = (com.faculty.management.model.Undergraduate) user;
             if (u.getDepartment() != null) departmentComboBox.setSelectedItem(u.getDepartment());
-            if (u.getBatch() != null) batchField.setText(u.getBatch());
+            if (u.getBatch() != null && !u.getBatch().trim().isEmpty()) {
+                String b = u.getBatch().trim();
+                boolean found = false;
+                for (int i = 0; i < batchComboBox.getItemCount(); i++) {
+                    if (b.equalsIgnoreCase(batchComboBox.getItemAt(i))) {
+                        batchComboBox.setSelectedIndex(i);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    batchComboBox.addItem(b);
+                    batchComboBox.setSelectedItem(b);
+                }
+            }
         } else if (user instanceof com.faculty.management.model.Lecturer) {
             com.faculty.management.model.Lecturer l = (com.faculty.management.model.Lecturer) user;
             if (l.getDepartment() != null) departmentComboBox.setSelectedItem(l.getDepartment());
@@ -450,7 +486,10 @@ public class UserFormDialog extends JDialog {
         String contact = contactField.getText().trim();
         String status = (String) statusComboBox.getSelectedItem();
         String department = (String) departmentComboBox.getSelectedItem();
-        String batch = batchField.getText().trim();
+        String batch = (batchComboBox.getSelectedItem() != null) ? batchComboBox.getSelectedItem().toString().trim() : "";
+        if ("-- Select Batch --".equalsIgnoreCase(batch)) {
+            batch = "";
+        }
 
         try {
             if (mode == FormMode.CREATE) {

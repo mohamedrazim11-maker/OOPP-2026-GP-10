@@ -78,9 +78,12 @@ public class UndergraduateDAO {
 
     private Undergraduate mapRow(ResultSet rs) throws SQLException {
         Role role = new Role(rs.getInt("role_id"), rs.getString("role_name"), rs.getString("role_description"));
-        return new Undergraduate(
+        Undergraduate u = new Undergraduate(
                 rs.getInt("user_id"), rs.getString("username"), rs.getString("password"), rs.getString("email"),
                 rs.getString("first_name"), rs.getString("last_name"), role, rs.getString("contact_no"),
                 rs.getString("profile_pic"), rs.getString("status"));
+        try { u.setBatch(rs.getString("batch")); } catch (Exception ignored) {}
+        try { u.setDepartment(rs.getString("department")); } catch (Exception ignored) {}
+        return u;
     }
 }

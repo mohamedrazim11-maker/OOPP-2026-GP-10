@@ -3,10 +3,7 @@ package com.faculty.management.controller;
 import com.faculty.management.exception.DatabaseException;
 import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.*;
-import com.faculty.management.service.CourseService;
-import com.faculty.management.service.NoticeService;
-import com.faculty.management.service.TimetableService;
-import com.faculty.management.service.UserService;
+import com.faculty.management.service.*;
 
 import java.util.List;
 
@@ -21,12 +18,14 @@ public class AdminController {
     private final CourseService courseService;
     private final NoticeService noticeService;
     private final TimetableService timetableService;
+    private final BatchService batchService;
 
     public AdminController() {
         this.userService = new UserService();
         this.courseService = new CourseService();
         this.noticeService = new NoticeService();
         this.timetableService = new TimetableService();
+        this.batchService = new BatchService();
     }
 
     public AdminController(UserService userService) {
@@ -34,6 +33,7 @@ public class AdminController {
         this.courseService = new CourseService();
         this.noticeService = new NoticeService();
         this.timetableService = new TimetableService();
+        this.batchService = new BatchService();
     }
 
     public AdminController(UserService userService, CourseService courseService) {
@@ -41,6 +41,7 @@ public class AdminController {
         this.courseService = courseService;
         this.noticeService = new NoticeService();
         this.timetableService = new TimetableService();
+        this.batchService = new BatchService();
     }
 
     public AdminController(UserService userService, CourseService courseService, NoticeService noticeService) {
@@ -48,6 +49,7 @@ public class AdminController {
         this.courseService = courseService;
         this.noticeService = (noticeService != null) ? noticeService : new NoticeService();
         this.timetableService = new TimetableService();
+        this.batchService = new BatchService();
     }
 
     /**
@@ -822,5 +824,55 @@ public class AdminController {
      */
     public boolean handleDeleteTimetable(int timetableId) throws DatabaseException {
         return timetableService.deleteTimetableEntry(timetableId);
+    }
+
+    // =========================================================================
+    // UNDERGRADUATE BATCH MANAGEMENT OPERATIONS
+    // =========================================================================
+
+    /**
+     * Retrieves all undergraduate batches from backend.
+     */
+    public List<Batch> loadAllBatches() throws DatabaseException {
+        return batchService.getAllBatches();
+    }
+
+    /**
+     * Retrieves all available batch names for selection in forms and filters.
+     */
+    public List<String> getAvailableBatches() {
+        return batchService.getAvailableBatchNames();
+    }
+
+    /**
+     * Handles creating a new undergraduate batch.
+     */
+    public Batch handleCreateBatch(String batchName, String academicYear, String description, String status)
+            throws ValidationException, DatabaseException {
+        Batch b = new Batch(0, batchName, academicYear, description, status);
+        return batchService.createBatch(b);
+    }
+
+    /**
+     * Handles updating an existing undergraduate batch.
+     */
+    public boolean handleUpdateBatch(int batchId, String batchName, String academicYear, String description, String status)
+            throws ValidationException, DatabaseException {
+        Batch b = new Batch(batchId, batchName, academicYear, description, status);
+        return batchService.updateBatch(b);
+    }
+
+    /**
+     * Handles deleting an undergraduate batch (only allowed if no students assigned).
+     */
+    public boolean handleDeleteBatch(int batchId) throws ValidationException, DatabaseException {
+        return batchService.deleteBatch(batchId);
+    }
+
+    /**
+     * Retrieves all undergraduates assigned to a specific batch.
+     */
+    public List<Undergraduate> getStudentsInBatch(String batchName) throws DatabaseException {
+        return batchService.getUndergraduatesInBatch(batchName);
     }
 }

@@ -74,6 +74,7 @@ public class AdminDashboard extends JFrame {
 
     // Tab panels
     private UserManagementPanel userManagementPanel;
+    private BatchManagementPanel batchManagementPanel;
     private CourseManagementPanel courseManagementPanel;
     private NoticeManagementPanel noticeManagementPanel;
     private TimetableManagementPanel timetableManagementPanel;
@@ -108,6 +109,7 @@ public class AdminDashboard extends JFrame {
     private static final String[] TAB_NAMES = {
             "Overview",
             "User Management",
+            "Batch Management",
             "Course Management",
             "Notice Board",
             "Timetable"
@@ -176,15 +178,17 @@ public class AdminDashboard extends JFrame {
         cardsContainer.setOpaque(false);
 
         userManagementPanel = new UserManagementPanel(adminController);
+        batchManagementPanel = new BatchManagementPanel(adminController);
         courseManagementPanel = new CourseManagementPanel(adminController);
         noticeManagementPanel = new NoticeManagementPanel(adminController);
         timetableManagementPanel = new TimetableManagementPanel(adminController);
 
         cardsContainer.add(wrapInScrollPane(createOverviewPanel()), TAB_NAMES[0]);
         cardsContainer.add(userManagementPanel, TAB_NAMES[1]);
-        cardsContainer.add(courseManagementPanel, TAB_NAMES[2]);
-        cardsContainer.add(noticeManagementPanel, TAB_NAMES[3]);
-        cardsContainer.add(timetableManagementPanel, TAB_NAMES[4]);
+        cardsContainer.add(batchManagementPanel, TAB_NAMES[2]);
+        cardsContainer.add(courseManagementPanel, TAB_NAMES[3]);
+        cardsContainer.add(noticeManagementPanel, TAB_NAMES[4]);
+        cardsContainer.add(timetableManagementPanel, TAB_NAMES[5]);
         add(cardsContainer, BorderLayout.CENTER);
 
         // Bottom: footer
@@ -496,6 +500,7 @@ public class AdminDashboard extends JFrame {
         Icon[] activeIcons = {
                 new HomeIcon(15, Color.WHITE),
                 new UserGroupIcon(15, Color.WHITE),
+                new GradCapIcon(15, Color.WHITE),
                 new BookIcon(15, Color.WHITE),
                 new MegaphoneIcon(15, Color.WHITE),
                 new CalendarIcon(15, Color.WHITE)
@@ -503,6 +508,7 @@ public class AdminDashboard extends JFrame {
         Icon[] inactiveIcons = {
                 new HomeIcon(15, COLOR_NAV_TEXT),
                 new UserGroupIcon(15, COLOR_NAV_TEXT),
+                new GradCapIcon(15, COLOR_NAV_TEXT),
                 new BookIcon(15, COLOR_NAV_TEXT),
                 new MegaphoneIcon(15, COLOR_NAV_TEXT),
                 new CalendarIcon(15, COLOR_NAV_TEXT)
@@ -567,10 +573,12 @@ public class AdminDashboard extends JFrame {
         } else if (index == 1) {
             userManagementPanel.loadUserDataFromBackend();
         } else if (index == 2) {
-            courseManagementPanel.loadCourseTable();
+            batchManagementPanel.loadBatchData();
         } else if (index == 3) {
-            noticeManagementPanel.loadNotices();
+            courseManagementPanel.loadCourseTable();
         } else if (index == 4) {
+            noticeManagementPanel.loadNotices();
+        } else if (index == 5) {
             timetableManagementPanel.loadTimetableData();
         }
 

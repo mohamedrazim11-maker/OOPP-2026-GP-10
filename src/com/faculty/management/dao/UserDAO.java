@@ -22,8 +22,21 @@ public class UserDAO {
      * @throws DatabaseException If a database error occurs during insert
      */
     public User createUser(User user) throws DatabaseException {
-        String sql = "INSERT INTO users (username, password, email, first_name, last_name, role_id, contact_no, profile_pic, status) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        new BatchDAO().ensureSchema();
+
+        String dept = null;
+        String batch = null;
+        if (user instanceof com.faculty.management.model.Undergraduate) {
+            dept = ((com.faculty.management.model.Undergraduate) user).getDepartment();
+            batch = ((com.faculty.management.model.Undergraduate) user).getBatch();
+        } else if (user instanceof com.faculty.management.model.Lecturer) {
+            dept = ((com.faculty.management.model.Lecturer) user).getDepartment();
+        } else if (user instanceof com.faculty.management.model.TechnicalOfficer) {
+            dept = ((com.faculty.management.model.TechnicalOfficer) user).getDepartment();
+        }
+
+        String sql = "INSERT INTO users (username, password, email, first_name, last_name, role_id, contact_no, profile_pic, status, department, batch) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
@@ -37,6 +50,8 @@ public class UserDAO {
             stmt.setString(7, user.getContactNo());
             stmt.setString(8, user.getProfilePic());
             stmt.setString(9, user.getStatus() != null ? user.getStatus() : "ACTIVE");
+            stmt.setString(10, dept);
+            stmt.setString(11, batch);
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -64,9 +79,7 @@ public class UserDAO {
      * @throws DatabaseException If a database error occurs
      */
     public User findByUsername(String username) throws DatabaseException {
-        String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
-                     "u.role_id, u.contact_no, u.profile_pic, u.status, " +
-                     "r.role_name, r.description AS role_description " +
+        String sql = "SELECT u.*, r.role_name, r.description AS role_description " +
                      "FROM users u " +
                      "JOIN roles r ON u.role_id = r.role_id " +
                      "WHERE u.username = ?";
@@ -95,9 +108,7 @@ public class UserDAO {
      * @throws DatabaseException If database error occurs
      */
     public User findById(int userId) throws DatabaseException {
-        String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
-                     "u.role_id, u.contact_no, u.profile_pic, u.status, " +
-                     "r.role_name, r.description AS role_description " +
+        String sql = "SELECT u.*, r.role_name, r.description AS role_description " +
                      "FROM users u " +
                      "JOIN roles r ON u.role_id = r.role_id " +
                      "WHERE u.user_id = ?";
@@ -216,8 +227,7 @@ public class UserDAO {
      */
     public List<User> getAllUsers() throws DatabaseException {
         List<User> userList = new ArrayList<>();
-        String sql = "SELECT u.user_id, u.username, u.password, u.email, u.first_name, u.last_name, " +
-                     "u.role_id, u.contact_no, u.profile_pic, u.status, " +
+        String sql = "SELECT u.*, " +
                      "r.role_name, r.description AS role_description " +
                      "FROM users u " +
                      "JOIN roles r ON u.role_id = r.role_id " +
@@ -246,7 +256,20 @@ public class UserDAO {
      * @throws DatabaseException If database error occurs
      */
     public boolean updateUser(User user) throws DatabaseException {
-        String sql = "UPDATE users SET first_name = ?, last_name = ?, email = ?, contact_no = ?, role_id = ?, status = ? " +
+        new BatchDAO().ensureSchema();
+
+        String dept = null;
+        String batch = null;
+        if (user instanceof com.faculty.management.model.Undergraduate) {
+            dept = ((com.faculty.management.model.Undergraduate) user).getDepartment();
+            batch = ((com.faculty.management.model.Undergraduate) user).getBatch();
+        } else if (user instanceof com.faculty.management.model.Lecturer) {
+            dept = ((com.faculty.management.model.Lecturer) user).getDepartment();
+        } else if (user instanceof com.faculty.management.model.TechnicalOfficer) {
+            dept = ((com.faculty.management.model.TechnicalOfficer) user).getDepartment();
+        }
+
+        String sql = "UPDATE users SET first_name = ?, last_name = ?, email = ?, contact_no = ?, role_id = ?, status = ?, department = ?, batch = ? " +
                      "WHERE user_id = ?";
 
         Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -258,7 +281,9 @@ public class UserDAO {
             stmt.setString(4, user.getContactNo());
             stmt.setInt(5, user.getRole() != null ? user.getRole().getRoleId() : 4);
             stmt.setString(6, user.getStatus());
-            stmt.setInt(7, user.getUserId());
+            stmt.setString(7, dept);
+            stmt.setString(8, batch);
+            stmt.setInt(9, user.getUserId());
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -490,17 +515,32 @@ public class UserDAO {
         Role role = new Role(roleId, roleName, roleDesc);
         User user;
 
+        String dept = null;
+        try { dept = rs.getString("department"); } catch (Exception ignored) {}
+        String batch = null;
+        try { batch = rs.getString("batch"); } catch (Exception ignored) {}
+
         if (Role.ADMIN.equalsIgnoreCase(roleName)) {
             user = new Admin(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
         } else if (Role.LECTURER.equalsIgnoreCase(roleName)) {
-            user = new Lecturer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            Lecturer l = new Lecturer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            l.setDepartment(dept);
+            user = l;
         } else if (Role.TECHNICAL_OFFICER.equalsIgnoreCase(roleName)) {
-            user = new TechnicalOfficer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            TechnicalOfficer to = new TechnicalOfficer(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            to.setDepartment(dept);
+            user = to;
         } else if (Role.UNDERGRADUATE.equalsIgnoreCase(roleName) || "STUDENT".equalsIgnoreCase(roleName)) {
-            user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            Undergraduate u = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            u.setDepartment(dept);
+            u.setBatch(batch);
+            user = u;
         } else {
             // Default to Undergraduate / Student
-            user = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            Undergraduate u = new Undergraduate(userId, username, password, email, firstName, lastName, role, contactNo, profilePic, status);
+            u.setDepartment(dept);
+            u.setBatch(batch);
+            user = u;
         }
 
         return user;
