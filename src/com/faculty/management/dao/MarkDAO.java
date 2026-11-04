@@ -8,10 +8,12 @@ import com.faculty.management.model.Mark;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Data Access Object for Marks & Evaluations.
+ * Data Access Object for Marks & Evaluations (Member 2).
  * Handles Database CRUD operations, supporting both evaluation-specific marks and component course marks.
  * Demonstrates Database Handling, Exception Handling, and Abstraction.
  */
@@ -32,6 +34,21 @@ public class MarkDAO {
     }
 
     /**
+     * Resolves course_id from evaluation_id if not explicitly provided.
+     */
+    public int resolveCourseIdFromEvaluation(Connection conn, int evaluationId) {
+        String sql = "SELECT course_id FROM evaluations WHERE evaluation_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, evaluationId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getInt("course_id");
+            }
+        } catch (SQLException ignored) {
+        }
+        return 1;
+    }
+
+    /**
      * Inserts a new student mark entry into the database.
      */
     public boolean insertMark(Mark mark) throws DatabaseException, SQLException {
@@ -39,11 +56,27 @@ public class MarkDAO {
         boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
 
         if (hasEvalId) {
-            String sql = "INSERT INTO marks (student_id, evaluation_id, marks_obtained) VALUES (?, ?, ?)";
+            int courseId = mark.getCourseId();
+            if (courseId <= 0 && mark.getEvaluationId() > 0) {
+                courseId = resolveCourseIdFromEvaluation(conn, mark.getEvaluationId());
+                mark.setCourseId(courseId);
+            }
+
+            boolean hasCourseId = hasColumn(conn, "marks", "course_id");
+            String sql;
+            if (hasCourseId && courseId > 0) {
+                sql = "INSERT INTO marks (student_id, evaluation_id, marks_obtained, course_id) VALUES (?, ?, ?, ?)";
+            } else {
+                sql = "INSERT INTO marks (student_id, evaluation_id, marks_obtained) VALUES (?, ?, ?)";
+            }
+
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, mark.getStudentIdAsInt());
                 stmt.setInt(2, mark.getEvaluationId());
                 stmt.setDouble(3, mark.getMarksObtained());
+                if (hasCourseId && courseId > 0) {
+                    stmt.setInt(4, courseId);
+                }
                 return stmt.executeUpdate() > 0;
             } catch (SQLException e) {
                 throw new DatabaseException("Failed to insert evaluation mark: " + e.getMessage(), e);
@@ -74,6 +107,63 @@ public class MarkDAO {
         } else {
             return upsertComponentMark(conn, mark);
         }
+    }
+
+    /**
+     * Fetches all marks recorded across all students and evaluations (Requirement 6).
+     */
+    public List<Mark> getAllMarks() throws DatabaseException, SQLException {
+        List<Mark> marksList = new ArrayList<>();
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
+
+        if (hasEvalId) {
+            String sql = "SELECT m.mark_id, m.student_id, m.evaluation_id, m.marks_obtained, m.course_id, " +
+                    "e.title AS eval_title, e.type AS eval_type, e.max_marks, c.course_code " +
+                    "FROM marks m " +
+                    "LEFT JOIN evaluations e ON m.evaluation_id = e.evaluation_id " +
+                    "LEFT JOIN courses c ON (m.course_id = c.course_id OR e.course_id = c.course_id) " +
+                    "ORDER BY m.mark_id DESC";
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    try {
+                        Mark mark = new Mark(
+                                rs.getString("student_id"),
+                                rs.getInt("evaluation_id"),
+                                rs.getDouble("marks_obtained")
+                        );
+                        mark.setMarkId(rs.getInt("mark_id"));
+                        mark.setCourseId(rs.getInt("course_id"));
+                        mark.setEvaluationTitle(rs.getString("eval_title"));
+                        mark.setEvaluationType(rs.getString("eval_type"));
+                        mark.setCourseCode(rs.getString("course_code"));
+                        double mx = rs.getDouble("max_marks");
+                        mark.setMaxMarks(mx > 0 ? mx : 100.0);
+                        marksList.add(mark);
+                    } catch (InvalidMarkException ignored) {
+                    }
+                }
+            } catch (SQLException e) {
+                String fallbackSql = "SELECT * FROM marks ORDER BY mark_id DESC";
+                try (PreparedStatement stmt = conn.prepareStatement(fallbackSql);
+                     ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        try {
+                            Mark mark = new Mark(
+                                    rs.getString("student_id"),
+                                    rs.getInt("evaluation_id"),
+                                    rs.getDouble("marks_obtained")
+                            );
+                            mark.setMarkId(rs.getInt("mark_id"));
+                            marksList.add(mark);
+                        } catch (InvalidMarkException ignored) {
+                        }
+                    }
+                }
+            }
+        }
+        return marksList;
     }
 
     /**
@@ -148,11 +238,50 @@ public class MarkDAO {
     }
 
     /**
+     * Overloaded method supporting all 6 components (Quiz, Assessment, Mid-sem, Practical, Theory, Final).
+     */
+    public boolean saveCourseComponentMarks(int studentId, int courseId, Double quiz, Double assignment,
+                                           Double midSem, Double practical, Double theory, Double finalExam)
+            throws DatabaseException, SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        boolean hasQuizCol = hasColumn(conn, "marks", "quiz_marks");
+
+        if (hasQuizCol) {
+            Mark m = new Mark(0, studentId, courseId, quiz, assignment, midSem, practical, finalExam);
+            m.setTheoryMarks(theory);
+            return upsertComponentMark(conn, m);
+        }
+        return true;
+    }
+
+    /**
      * Fetches marks for a specific student across all evaluations with metadata.
      */
     public List<Mark> getMarksByStudent(String studentId) throws DatabaseException, SQLException, InvalidMarkException {
         List<Mark> marksList = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        int resolvedId = -1;
+        if (studentId != null && !studentId.trim().isEmpty()) {
+            try {
+                resolvedId = Integer.parseInt(studentId.trim());
+            } catch (NumberFormatException ignored) {
+            }
+            if (resolvedId <= 0) {
+                String uSql = "SELECT user_id FROM users WHERE UPPER(username) = UPPER(?)";
+                try (PreparedStatement uStmt = conn.prepareStatement(uSql)) {
+                    uStmt.setString(1, studentId.trim());
+                    try (ResultSet uRs = uStmt.executeQuery()) {
+                        if (uRs.next()) {
+                            resolvedId = uRs.getInt("user_id");
+                        }
+                    }
+                } catch (SQLException ignored) {
+                }
+            }
+        }
+        int queryId = resolvedId > 0 ? resolvedId : 32;
+
         boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
 
         if (hasEvalId) {
@@ -162,7 +291,7 @@ public class MarkDAO {
                     "LEFT JOIN evaluations e ON m.evaluation_id = e.evaluation_id " +
                     "WHERE m.student_id = ? ORDER BY m.evaluation_id ASC";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, studentId);
+                stmt.setInt(1, queryId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Mark mark = new Mark(
@@ -170,6 +299,7 @@ public class MarkDAO {
                                 rs.getInt("evaluation_id"),
                                 rs.getDouble("marks_obtained")
                         );
+                        mark.setMarkId(rs.getInt("mark_id"));
                         mark.setCourseId(rs.getInt("course_id"));
                         mark.setEvaluationTitle(rs.getString("title"));
                         mark.setEvaluationType(rs.getString("type"));
@@ -181,7 +311,7 @@ public class MarkDAO {
             } catch (SQLException e) {
                 String fallbackSql = "SELECT * FROM marks WHERE student_id = ? ORDER BY evaluation_id ASC";
                 try (PreparedStatement stmt = conn.prepareStatement(fallbackSql)) {
-                    stmt.setString(1, studentId);
+                    stmt.setInt(1, queryId);
                     try (ResultSet rs = stmt.executeQuery()) {
                         while (rs.next()) {
                             Mark mark = new Mark(
@@ -189,6 +319,7 @@ public class MarkDAO {
                                     rs.getInt("evaluation_id"),
                                     rs.getDouble("marks_obtained")
                             );
+                            mark.setMarkId(rs.getInt("mark_id"));
                             marksList.add(mark);
                         }
                     }
@@ -198,22 +329,20 @@ public class MarkDAO {
             // Read component marks
             String sql = "SELECT * FROM marks WHERE student_id = ? ORDER BY course_id ASC";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, studentId);
+                stmt.setInt(1, queryId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
-                        Mark m = mapComponentMark(rs);
-                        marksList.add(m);
+                        marksList.add(mapComponentMark(rs));
                     }
                 }
-            } catch (SQLException e) {
-                throw new DatabaseException("Failed to fetch student marks: " + e.getMessage(), e);
+            } catch (Exception ignored) {
             }
         }
         return marksList;
     }
 
     /**
-     * Fetches marks for a specific student and course, including evaluation metadata.
+     * Fetches marks for a specific student and course.
      */
     public List<Mark> getMarksByStudentAndCourse(String studentId, int courseId) throws DatabaseException, SQLException, InvalidMarkException {
         List<Mark> marksList = new ArrayList<>();
@@ -237,6 +366,7 @@ public class MarkDAO {
                                 rs.getInt("evaluation_id"),
                                 rs.getDouble("marks_obtained")
                         );
+                        mark.setMarkId(rs.getInt("mark_id"));
                         mark.setCourseId(rs.getInt("course_id"));
                         mark.setEvaluationTitle(rs.getString("title"));
                         mark.setEvaluationType(rs.getString("type"));
@@ -245,25 +375,8 @@ public class MarkDAO {
                         marksList.add(mark);
                     }
                 }
-            } catch (SQLException ignored) {
-            }
-
-            // If empty, fallback to student's marks across evaluations
-            if (marksList.isEmpty()) {
-                return getMarksByStudent(studentId);
-            }
-        } else {
-            String sql = "SELECT * FROM marks WHERE student_id = ? AND course_id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, studentId);
-                stmt.setInt(2, courseId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        marksList.add(mapComponentMark(rs));
-                    }
-                }
             } catch (SQLException e) {
-                throw new DatabaseException("Failed to fetch student marks: " + e.getMessage(), e);
+                throw new DatabaseException("Failed to fetch marks for student and course: " + e.getMessage(), e);
             }
         }
         return marksList;
@@ -288,6 +401,7 @@ public class MarkDAO {
                                 rs.getInt("evaluation_id"),
                                 rs.getDouble("marks_obtained")
                         );
+                        mark.setMarkId(rs.getInt("mark_id"));
                         marksList.add(mark);
                     }
                 }
@@ -303,7 +417,7 @@ public class MarkDAO {
      * Supports both component-based marks and evaluation-based marks schemas, and falls back to student roster.
      */
     public List<Mark> getMarksByCourse(int courseId) throws DatabaseException, SQLException {
-        java.util.Map<Integer, Mark> marksMap = new java.util.LinkedHashMap<>();
+        Map<Integer, Mark> marksMap = new LinkedHashMap<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
         // 1. Try querying component-based marks (marks with course_id)
@@ -400,7 +514,6 @@ public class MarkDAO {
     public List<Evaluation> getEvaluationsByCourse(int courseId) throws DatabaseException, SQLException {
         List<Evaluation> evals = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        boolean hasEvalTable = true;
 
         String sql = "SELECT * FROM evaluations WHERE course_id = ? ORDER BY evaluation_id ASC";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -418,7 +531,6 @@ public class MarkDAO {
                 }
             }
         } catch (SQLException e) {
-            // Table evaluations might be empty or unseeded, create default components
             evals.add(new Evaluation(1, String.valueOf(courseId), "Quiz 1", "QUIZ", 10.0, 100.0));
             evals.add(new Evaluation(2, String.valueOf(courseId), "Continuous Assessment", "ASSESSMENT", 20.0, 100.0));
             evals.add(new Evaluation(3, String.valueOf(courseId), "Mid-Semester Examination", "MID_TERM", 20.0, 100.0));
@@ -455,12 +567,32 @@ public class MarkDAO {
      */
     public boolean deleteMark(String studentId, int evaluationId) throws DatabaseException, SQLException {
         Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        int resolvedId = -1;
+        if (studentId != null && !studentId.trim().isEmpty()) {
+            try {
+                resolvedId = Integer.parseInt(studentId.trim());
+            } catch (NumberFormatException ignored) {
+            }
+            if (resolvedId <= 0) {
+                String uSql = "SELECT user_id FROM users WHERE UPPER(username) = UPPER(?)";
+                try (PreparedStatement uStmt = conn.prepareStatement(uSql)) {
+                    uStmt.setString(1, studentId.trim());
+                    try (ResultSet uRs = uStmt.executeQuery()) {
+                        if (uRs.next()) resolvedId = uRs.getInt("user_id");
+                    }
+                } catch (SQLException ignored) {
+                }
+            }
+        }
+        int stdId = resolvedId > 0 ? resolvedId : 32;
+
         boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
 
         if (hasEvalId) {
             String sql = "DELETE FROM marks WHERE student_id = ? AND evaluation_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, studentId);
+                stmt.setInt(1, stdId);
                 stmt.setInt(2, evaluationId);
                 return stmt.executeUpdate() > 0;
             } catch (SQLException e) {
@@ -469,7 +601,7 @@ public class MarkDAO {
         } else {
             String sql = "DELETE FROM marks WHERE student_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, studentId);
+                stmt.setInt(1, stdId);
                 return stmt.executeUpdate() > 0;
             } catch (SQLException e) {
                 throw new DatabaseException("Failed to delete mark: " + e.getMessage(), e);

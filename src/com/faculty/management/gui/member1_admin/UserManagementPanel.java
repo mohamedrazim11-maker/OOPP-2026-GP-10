@@ -1,8 +1,6 @@
 package com.faculty.management.gui.member1_admin;
 
 import com.faculty.management.controller.AdminController;
-import com.faculty.management.exception.DatabaseException;
-import com.faculty.management.exception.ValidationException;
 import com.faculty.management.model.User;
 
 import javax.swing.*;
@@ -12,43 +10,75 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static com.faculty.management.gui.member1_admin.AdminUIComponents.*;
 
 /**
- * User Management Panel for Member 1 (Administrator).
- * Strictly implements the UI/UX design from Page 2 of the FMS Specification.
+ * User Management Panel for the Administrator (Member 1).
  *
- * Demonstrates Core OOP Principles:
- * - Classes & Objects: Encapsulation of UI components, models, and controller.
- * - Inheritance: Extends JPanel to integrate cleanly into Swing container hierarchy.
- * - Abstraction: Business logic isolated inside AdminController and UserService.
- * - Polymorphism: Dynamic table renderers for User Avatar, Role pills, and Status pills.
- * - Encapsulation: Private member variables with controlled public accessors.
- * - Error & Exception Handling: Catches ValidationException & DatabaseException with feedback.
- * - Database Handling: Connects to MySQL with backend data persistence.
+ * <p>Drop-in replacement: same package, same constructors, same public
+ * {@link #loadUserDataFromBackend()} method used by AdminDashboard.</p>
+ *
+ * <ul>
+ *   <li><b>Real data only</b> - users are read from the database through
+ *       {@link AdminController} on a background thread. No sample values: the table shows
+ *       loading, empty, "no match" and error states instead.</li>
+ *   <li><b>Responsive</b> - on wide windows the user table sits beside the detail card;
+ *       on narrower windows the card moves under the table, the page scrolls, and the
+ *       ID / Email columns are hidden (the details stay in the card).</li>
+ *   <li><b>Same design language</b> as the dashboard: burgundy and gold, cream selection,
+ *       rounded white cards, role and status pills.</li>
+ * </ul>
+ *
+ * <p>OOP: encapsulation (private state), inheritance (extends JPanel), polymorphism
+ * (custom table cell renderers), abstraction (logic stays in AdminController) and
+ * structured exception handling.</p>
  */
 public class UserManagementPanel extends JPanel {
 
-    // Encapsulated Controller & Models
+    // ---------------------------------------------------------------------
+    // Controller, data and table
+    // ---------------------------------------------------------------------
     private final AdminController adminController;
     private List<User> allUsers = new ArrayList<>();
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> rowSorter;
     private JTable userTable;
 
-    // Filter controls
+    // Table area states: "table" or "message"
+    private CardLayout tableCards;
+    private JPanel tableArea;
+    private JLabel messageLabel;
+    private WhiteOutlineButton messageRetryBtn;
+
+    // Loading state
+    private boolean loading = false;
+    private String loadError = null;
+
+    // Filters
     private SearchTextField searchField;
     private JComboBox<String> roleFilterBox;
     private JLabel showingCountLabel;
 
-    // Right Sidebar Detail Components
+    // Layout pieces that change with the window width
+    private JPanel mainContent;
+    private JPanel detailHolder;
+    private JPanel actionStack;
+    private Boolean stackedMode = null;
+    private Boolean idColumnHidden = null;
+    private Boolean emailColumnHidden = null;
+
+    // Detail card
     private JPanel userDetailCard;
     private JLabel detailAvatarLabel;
     private JLabel detailNameLabel;
@@ -59,14 +89,25 @@ public class UserManagementPanel extends JPanel {
     private JLabel detailEmailVal;
     private JLabel detailContactVal;
 
-    // Detail Action Buttons
+    // Detail action buttons
     private WhiteOutlineButton updateUserBtn;
     private WhiteOutlineButton assignRoleBtn;
     private WhiteOutlineButton maintainCredsBtn;
     private DangerOutlineButton deleteUserBtn;
 
-    // Currently selected user reference
+    // Currently selected user
     private User selectedUser;
+
+    private static final String EM_DASH = "—";
+    private static final Color SELECTION_BG = new Color(254, 249, 235);
+    private static final int DETAIL_WIDTH = 300;
+    private static final int STACK_BREAKPOINT = 980;
+    private static final int HIDE_ID_BREAKPOINT = 900;
+    private static final int HIDE_EMAIL_BREAKPOINT = 720;
+
+    // ---------------------------------------------------------------------
+    // Constructors
+    // ---------------------------------------------------------------------
 
     public UserManagementPanel() {
         this(new AdminController());
@@ -79,12 +120,16 @@ public class UserManagementPanel extends JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(0, 16));
+        setLayout(new BorderLayout());
         setBackground(COLOR_PAGE_BG);
-        setBorder(new EmptyBorder(0, 28, 20, 28));
 
-        // 1. Header Section: Title, Subtitle, and "+ Create user" action button
-        JPanel headerPanel = new JPanel(new BorderLayout());
+        ScrollablePanel content = new ScrollablePanel(new BorderLayout(0, 16));
+        content.setOpaque(true);
+        content.setBackground(COLOR_PAGE_BG);
+        content.setBorder(new EmptyBorder(16, 28, 20, 28));
+
+        // ---- Header: title + "+ Create user" ----
+        JPanel headerPanel = new JPanel(new BorderLayout(12, 0));
         headerPanel.setOpaque(false);
 
         JPanel titleBox = new JPanel();
@@ -95,7 +140,7 @@ public class UserManagementPanel extends JPanel {
         pageTitle.setFont(FONT_PAGE_TITLE);
         pageTitle.setForeground(COLOR_TEXT_DARK);
 
-        JLabel pageSub = new JLabel("Create users, assign roles and maintain credentials.");
+        EllipsisLabel pageSub = new EllipsisLabel("Create users, assign roles and maintain credentials.");
         pageSub.setFont(FONT_PAGE_SUB);
         pageSub.setForeground(COLOR_TEXT_MUTED);
 
@@ -106,37 +151,115 @@ public class UserManagementPanel extends JPanel {
         BurgundyButton createUserBtn = new BurgundyButton("+ Create user");
         createUserBtn.setPreferredSize(new Dimension(145, 38));
         createUserBtn.addActionListener(e -> handleCreateUser());
+        JPanel createWrap = new JPanel(new GridBagLayout());
+        createWrap.setOpaque(false);
+        createWrap.add(createUserBtn);
 
-        headerPanel.add(titleBox, BorderLayout.WEST);
-        headerPanel.add(createUserBtn, BorderLayout.EAST);
+        headerPanel.add(titleBox, BorderLayout.CENTER);
+        headerPanel.add(createWrap, BorderLayout.EAST);
 
-        // 2. Main Content Split: Left (Table + Filters), Right (User Detail & Action Card)
-        JPanel mainContent = new JPanel(new BorderLayout(24, 0));
+        // ---- Main area: table (left / top) + detail card (right / bottom) ----
+        mainContent = new JPanel(new BorderLayout(24, 18));
         mainContent.setOpaque(false);
 
         JPanel leftPanel = createLeftTablePanel();
-        JPanel rightPanel = createRightDetailCard();
+        detailHolder = new JPanel(new BorderLayout());
+        detailHolder.setOpaque(false);
+        detailHolder.add(createRightDetailCard(), BorderLayout.CENTER);
 
         mainContent.add(leftPanel, BorderLayout.CENTER);
-        mainContent.add(rightPanel, BorderLayout.EAST);
+        mainContent.add(detailHolder, BorderLayout.EAST);
 
-        add(headerPanel, BorderLayout.NORTH);
-        add(mainContent, BorderLayout.CENTER);
+        content.add(headerPanel, BorderLayout.NORTH);
+        content.add(mainContent, BorderLayout.CENTER);
+
+        JScrollPane page = new JScrollPane(content,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        page.setBorder(null);
+        page.getViewport().setBackground(COLOR_PAGE_BG);
+        page.getVerticalScrollBar().setUnitIncrement(16);
+        add(page, BorderLayout.CENTER);
+
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                applyResponsiveLayout();
+            }
+        });
+
+        clearDetailCard();
+        updateTableView();
     }
 
-    /**
-     * Builds the left area containing the search bar, role dropdown, table, and count footer.
-     */
+    // =========================================================================
+    // RESPONSIVE LAYOUT
+    // =========================================================================
+
+    private void applyResponsiveLayout() {
+        int w = getWidth();
+        if (w <= 0) return;
+
+        boolean stacked = w < STACK_BREAKPOINT;
+        if (stackedMode == null || stackedMode != stacked) {
+            stackedMode = stacked;
+            mainContent.remove(detailHolder);
+            if (stacked) {
+                actionStack.setLayout(new GridLayout(0, 2, 10, 10));
+                detailHolder.setPreferredSize(null);
+                tableArea.setPreferredSize(new Dimension(0, 340));
+                mainContent.add(detailHolder, BorderLayout.SOUTH);
+            } else {
+                actionStack.setLayout(new GridLayout(0, 1, 0, 10));
+                tableArea.setPreferredSize(null);
+                detailHolder.setPreferredSize(new Dimension(DETAIL_WIDTH, userDetailCard.getPreferredSize().height));
+                mainContent.add(detailHolder, BorderLayout.EAST);
+            }
+            mainContent.revalidate();
+            mainContent.repaint();
+        }
+
+        boolean hideId = w < HIDE_ID_BREAKPOINT;
+        if (idColumnHidden == null || idColumnHidden != hideId) {
+            idColumnHidden = hideId;
+            setColumnHidden(0, hideId, 50);
+        }
+
+        boolean hideEmail = w < HIDE_EMAIL_BREAKPOINT;
+        if (emailColumnHidden == null || emailColumnHidden != hideEmail) {
+            emailColumnHidden = hideEmail;
+            setColumnHidden(3, hideEmail, 220);
+        }
+    }
+
+    private void setColumnHidden(int columnIndex, boolean hidden, int shownWidth) {
+        TableColumn col = userTable.getColumnModel().getColumn(columnIndex);
+        if (hidden) {
+            col.setMinWidth(0);
+            col.setMaxWidth(0);
+            col.setPreferredWidth(0);
+        } else {
+            col.setMinWidth(15);
+            col.setMaxWidth(Integer.MAX_VALUE);
+            col.setPreferredWidth(shownWidth);
+        }
+        userTable.revalidate();
+    }
+
+    // =========================================================================
+    // LEFT SIDE: filters + table
+    // =========================================================================
+
     private JPanel createLeftTablePanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 12));
         panel.setOpaque(false);
 
-        // Filters Toolbar
+        // ---- Filters toolbar: search grows, role + refresh stay on the right ----
         JPanel filterBar = new JPanel(new BorderLayout(10, 0));
         filterBar.setOpaque(false);
 
         searchField = new SearchTextField("Search by name, username or email...", 24);
-        searchField.setPreferredSize(new Dimension(280, 36));
+        searchField.setPreferredSize(new Dimension(200, 36));
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { applyFilters(); }
             public void removeUpdate(DocumentEvent e) { applyFilters(); }
@@ -146,7 +269,7 @@ public class UserManagementPanel extends JPanel {
         String[] roles = {"All roles", "Admin", "Lecturer", "Undergraduate", "Technical Officer"};
         roleFilterBox = new JComboBox<>(roles);
         styleComboBox(roleFilterBox);
-        roleFilterBox.setPreferredSize(new Dimension(140, 36));
+        roleFilterBox.setPreferredSize(new Dimension(150, 36));
         roleFilterBox.addActionListener(e -> applyFilters());
 
         WhiteOutlineButton refreshBtn = createRefreshButton();
@@ -157,15 +280,15 @@ public class UserManagementPanel extends JPanel {
             loadUserDataFromBackend();
         });
 
-        JPanel leftFilters = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        leftFilters.setOpaque(false);
-        leftFilters.add(searchField);
-        leftFilters.add(roleFilterBox);
+        JPanel rightFilters = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        rightFilters.setOpaque(false);
+        rightFilters.add(roleFilterBox);
+        rightFilters.add(refreshBtn);
 
-        filterBar.add(leftFilters, BorderLayout.WEST);
-        filterBar.add(refreshBtn, BorderLayout.EAST);
+        filterBar.add(searchField, BorderLayout.CENTER);
+        filterBar.add(rightFilters, BorderLayout.EAST);
 
-        // Table
+        // ---- Table ----
         String[] cols = {"ID", "USER", "ROLE", "EMAIL", "STATUS"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
@@ -175,30 +298,33 @@ public class UserManagementPanel extends JPanel {
         };
 
         userTable = new JTable(tableModel);
-        userTable.setRowHeight(52);
+        userTable.setRowHeight(56);
         userTable.setShowVerticalLines(false);
+        userTable.setShowHorizontalLines(true);
+        userTable.setIntercellSpacing(new Dimension(0, 1));
         userTable.setGridColor(new Color(243, 244, 246));
-        userTable.setSelectionBackground(new Color(254, 249, 235)); // Warm Cream selection
+        userTable.setSelectionBackground(SELECTION_BG);
         userTable.setSelectionForeground(COLOR_TEXT_DARK);
         userTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        userTable.setFillsViewportHeight(true);
         userTable.setFont(FONT_BODY);
 
-        // Header Styling
         JTableHeader th = userTable.getTableHeader();
         th.setFont(FONT_SMALL_BOLD);
         th.setForeground(COLOR_TEXT_MUTED);
         th.setBackground(Color.WHITE);
-        th.setPreferredSize(new Dimension(th.getPreferredSize().width, 36));
+        th.setReorderingAllowed(false);
+        th.setPreferredSize(new Dimension(th.getPreferredSize().width, 38));
         th.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_BORDER));
         ((DefaultTableCellRenderer) th.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 
-        // Column Renderers
-        userTable.getColumnModel().getColumn(0).setPreferredWidth(45);
+        // ID
+        userTable.getColumnModel().getColumn(0).setPreferredWidth(50);
         userTable.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
             { setHorizontalAlignment(JLabel.LEFT); }
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, false, row, col);
                 setForeground(COLOR_TEXT_MUTED);
                 setFont(FONT_BODY);
                 setBorder(new EmptyBorder(0, 12, 0, 0));
@@ -206,38 +332,40 @@ public class UserManagementPanel extends JPanel {
             }
         });
 
-        userTable.getColumnModel().getColumn(1).setPreferredWidth(210);
+        // USER (avatar + name + @username)
+        userTable.getColumnModel().getColumn(1).setPreferredWidth(220);
         userTable.getColumnModel().getColumn(1).setCellRenderer(new UserTableCellRenderer());
 
+        // ROLE (pill)
         userTable.getColumnModel().getColumn(2).setPreferredWidth(130);
         userTable.getColumnModel().getColumn(2).setCellRenderer(new RoleBadgeCellRenderer());
 
-        userTable.getColumnModel().getColumn(3).setPreferredWidth(210);
+        // EMAIL
+        userTable.getColumnModel().getColumn(3).setPreferredWidth(220);
         userTable.getColumnModel().getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, false, row, col);
                 setForeground(COLOR_TEXT_BODY);
                 setFont(FONT_BODY);
+                setToolTipText(value != null ? value.toString() : null);
                 return c;
             }
         });
 
-        userTable.getColumnModel().getColumn(4).setPreferredWidth(90);
+        // STATUS (pill)
+        userTable.getColumnModel().getColumn(4).setPreferredWidth(100);
         userTable.getColumnModel().getColumn(4).setCellRenderer(new StatusBadgeCellRenderer());
 
-        // Row Sorter
         rowSorter = new TableRowSorter<>(tableModel);
         userTable.setRowSorter(rowSorter);
 
-        // Selection Listener
         userTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateDetailCardFromSelection();
             }
         });
 
-        // Double click to view details
         userTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -249,54 +377,78 @@ public class UserManagementPanel extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(userTable);
         scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COLOR_BORDER, 1, true),
-                new EmptyBorder(0, 0, 0, 0)
-        ));
+        scrollPane.setBorder(BorderFactory.createLineBorder(COLOR_BORDER, 1, true));
 
-        // Footer showing count
+        // ---- Message view (loading / empty / no match / error) ----
+        JPanel messagePanel = new JPanel(new GridBagLayout());
+        messagePanel.setBackground(Color.WHITE);
+        messagePanel.setBorder(BorderFactory.createLineBorder(COLOR_BORDER, 1, true));
+
+        messageLabel = new JLabel("Loading users…", SwingConstants.CENTER);
+        messageLabel.setFont(FONT_BODY);
+        messageLabel.setForeground(COLOR_TEXT_MUTED);
+
+        messageRetryBtn = new WhiteOutlineButton("Retry");
+        messageRetryBtn.setPreferredSize(new Dimension(100, 36));
+        messageRetryBtn.addActionListener(e -> loadUserDataFromBackend());
+        messageRetryBtn.setVisible(false);
+
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridx = 0;
+        gc.gridy = 0;
+        gc.insets = new Insets(0, 24, 12, 24);
+        messagePanel.add(messageLabel, gc);
+        gc.gridy = 1;
+        gc.insets = new Insets(0, 0, 0, 0);
+        messagePanel.add(messageRetryBtn, gc);
+
+        tableCards = new CardLayout();
+        tableArea = new JPanel(tableCards);
+        tableArea.setOpaque(false);
+        tableArea.add(scrollPane, "table");
+        tableArea.add(messagePanel, "message");
+
+        // ---- Footer count ----
         showingCountLabel = new JLabel("Showing 0 of 0 users");
         showingCountLabel.setFont(FONT_SMALL);
         showingCountLabel.setForeground(COLOR_TEXT_MUTED);
-        showingCountLabel.setBorder(new EmptyBorder(4, 4, 4, 4));
+        showingCountLabel.setBorder(new EmptyBorder(2, 4, 2, 4));
 
         panel.add(filterBar, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(tableArea, BorderLayout.CENTER);
         panel.add(showingCountLabel, BorderLayout.SOUTH);
-
         return panel;
     }
 
-    /**
-     * Builds the right-hand User Detail & Action Card matching Page 2 of the PDF.
-     */
+    // =========================================================================
+    // RIGHT SIDE: user detail + actions
+    // =========================================================================
+
     private JPanel createRightDetailCard() {
         userDetailCard = new CardPanel();
-        userDetailCard.setPreferredSize(new Dimension(300, 520));
-        userDetailCard.setLayout(new BorderLayout());
+        userDetailCard.setLayout(new BorderLayout(0, 18));
         userDetailCard.setBorder(new EmptyBorder(22, 22, 22, 22));
 
-        JPanel contentBox = new JPanel();
-        contentBox.setLayout(new BoxLayout(contentBox, BoxLayout.Y_AXIS));
-        contentBox.setOpaque(false);
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+        top.setOpaque(false);
 
-        // Avatar + Name + Username Header
-        JPanel profileHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 0));
+        // Avatar + name + username
+        JPanel profileHeader = new JPanel(new BorderLayout(14, 0));
         profileHeader.setOpaque(false);
         profileHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        detailAvatarLabel = new JLabel();
-        detailAvatarLabel.setIcon(new AvatarIcon("AU", 46, new Color(254, 243, 199), new Color(146, 64, 14)));
+        detailAvatarLabel = new JLabel(new AvatarIcon("U", 46));
 
         JPanel nameBox = new JPanel();
         nameBox.setLayout(new BoxLayout(nameBox, BoxLayout.Y_AXIS));
         nameBox.setOpaque(false);
 
-        detailNameLabel = new JLabel("Admin User");
+        detailNameLabel = new EllipsisLabel("No User Selected");
         detailNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
         detailNameLabel.setForeground(COLOR_TEXT_DARK);
 
-        detailUsernameLabel = new JLabel("@admin");
+        detailUsernameLabel = new EllipsisLabel(EM_DASH);
         detailUsernameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         detailUsernameLabel.setForeground(COLOR_TEXT_MUTED);
 
@@ -304,45 +456,38 @@ public class UserManagementPanel extends JPanel {
         nameBox.add(Box.createVerticalStrut(2));
         nameBox.add(detailUsernameLabel);
 
-        profileHeader.add(detailAvatarLabel);
-        profileHeader.add(nameBox);
+        JPanel nameWrap = new JPanel(new GridBagLayout());
+        nameWrap.setOpaque(false);
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.weightx = 1;
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        nameWrap.add(nameBox, gc);
 
-        contentBox.add(profileHeader);
-        contentBox.add(Box.createVerticalStrut(20));
+        profileHeader.add(detailAvatarLabel, BorderLayout.WEST);
+        profileHeader.add(nameWrap, BorderLayout.CENTER);
 
-        // Info List (User ID, Role, Status, Email, Contact)
-        JPanel infoGrid = new JPanel(new GridLayout(5, 2, 8, 12));
-        infoGrid.setOpaque(false);
-        infoGrid.setAlignmentX(Component.LEFT_ALIGNMENT);
+        top.add(profileHeader);
+        top.add(Box.createVerticalStrut(20));
 
-        infoGrid.add(createDetailLabel("User ID"));
-        detailUserIdVal = createDetailValLabel("1");
-        infoGrid.add(detailUserIdVal);
+        detailUserIdVal = createDetailValLabel(EM_DASH);
+        detailRoleVal = createDetailValLabel(EM_DASH);
+        detailStatusVal = createDetailValLabel(EM_DASH);
+        detailEmailVal = createDetailValLabel(EM_DASH);
+        detailContactVal = createDetailValLabel(EM_DASH);
 
-        infoGrid.add(createDetailLabel("Role"));
-        detailRoleVal = createDetailValLabel("Admin");
-        infoGrid.add(detailRoleVal);
+        top.add(createDetailRow("User ID", detailUserIdVal));
+        top.add(Box.createVerticalStrut(12));
+        top.add(createDetailRow("Role", detailRoleVal));
+        top.add(Box.createVerticalStrut(12));
+        top.add(createDetailRow("Status", detailStatusVal));
+        top.add(Box.createVerticalStrut(12));
+        top.add(createDetailRow("Email", detailEmailVal));
+        top.add(Box.createVerticalStrut(12));
+        top.add(createDetailRow("Contact", detailContactVal));
 
-        infoGrid.add(createDetailLabel("Status"));
-        detailStatusVal = createDetailValLabel("Active");
-        detailStatusVal.setForeground(new Color(21, 128, 61));
-        infoGrid.add(detailStatusVal);
-
-        infoGrid.add(createDetailLabel("Email"));
-        detailEmailVal = createDetailValLabel("admin@fot.ruh.ac.lk");
-        infoGrid.add(detailEmailVal);
-
-        infoGrid.add(createDetailLabel("Contact"));
-        detailContactVal = createDetailValLabel("0771122334");
-        infoGrid.add(detailContactVal);
-
-        contentBox.add(infoGrid);
-        contentBox.add(Box.createVerticalGlue());
-
-        // 4 Action Buttons stacked vertically
-        JPanel actionStack = new JPanel(new GridLayout(4, 1, 0, 10));
+        // Actions
+        actionStack = new JPanel(new GridLayout(0, 1, 0, 10));
         actionStack.setOpaque(false);
-        actionStack.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         updateUserBtn = new WhiteOutlineButton("Update user");
         updateUserBtn.addActionListener(e -> handleUpdateUser());
@@ -361,61 +506,126 @@ public class UserManagementPanel extends JPanel {
         actionStack.add(maintainCredsBtn);
         actionStack.add(deleteUserBtn);
 
-        contentBox.add(Box.createVerticalStrut(18));
-        contentBox.add(actionStack);
-
-        userDetailCard.add(contentBox, BorderLayout.CENTER);
+        userDetailCard.add(top, BorderLayout.NORTH);
+        userDetailCard.add(actionStack, BorderLayout.SOUTH);
         return userDetailCard;
     }
 
-    private JLabel createDetailLabel(String text) {
-        JLabel l = new JLabel(text);
+    private JPanel createDetailRow(String label, JLabel value) {
+        JPanel row = new JPanel(new BorderLayout(8, 0));
+        row.setOpaque(false);
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel l = new JLabel(label);
         l.setFont(FONT_BODY);
         l.setForeground(COLOR_TEXT_MUTED);
-        return l;
+        l.setPreferredSize(new Dimension(64, l.getPreferredSize().height));
+
+        row.add(l, BorderLayout.WEST);
+        row.add(value, BorderLayout.CENTER);
+        return row;
     }
 
     private JLabel createDetailValLabel(String text) {
-        JLabel l = new JLabel(text);
+        EllipsisLabel l = new EllipsisLabel(text);
         l.setFont(FONT_BODY_BOLD);
         l.setForeground(COLOR_TEXT_DARK);
         return l;
     }
 
-    /**
-     * Loads all user data from backend service/database into the table.
-     */
+    private void clearDetailCard() {
+        selectedUser = null;
+        detailNameLabel.setText("No User Selected");
+        detailUsernameLabel.setText(EM_DASH);
+        setDetailValue(detailUserIdVal, EM_DASH, COLOR_TEXT_DARK);
+        setDetailValue(detailRoleVal, EM_DASH, COLOR_TEXT_DARK);
+        setDetailValue(detailStatusVal, EM_DASH, COLOR_TEXT_DARK);
+        setDetailValue(detailEmailVal, EM_DASH, COLOR_TEXT_DARK);
+        setDetailValue(detailContactVal, EM_DASH, COLOR_TEXT_DARK);
+        detailAvatarLabel.setIcon(new AvatarIcon("U", 46));
+    }
+
+    private void setDetailValue(JLabel label, String text, Color color) {
+        label.setText(text);
+        label.setToolTipText(EM_DASH.equals(text) ? null : text);
+        label.setForeground(color);
+    }
+
+    // =========================================================================
+    // DATA LOADING (background thread, real database data only)
+    // =========================================================================
+
+    /** Reloads users from the database without blocking the UI. */
     public void loadUserDataFromBackend() {
-        try {
-            allUsers = adminController.loadAllUsers();
-            tableModel.setRowCount(0);
+        if (loading) return;
+        loading = true;
+        loadError = null;
+        final int keepSelectedId = (selectedUser != null) ? selectedUser.getUserId() : -1;
+        updateTableView();
 
-            for (User u : allUsers) {
-                String roleTitle = (u.getRole() != null) ? u.getRole().getRoleName() : "Undergraduate";
-                roleTitle = formatRoleDisplay(roleTitle);
-
-                tableModel.addRow(new Object[]{
-                        u.getUserId(),
-                        u,
-                        roleTitle,
-                        u.getEmail(),
-                        u.getStatus() != null ? u.getStatus() : "ACTIVE"
-                });
+        new SwingWorker<List<User>, Void>() {
+            @Override
+            protected List<User> doInBackground() throws Exception {
+                List<User> users = adminController.loadAllUsers();
+                if (users == null) {
+                    throw new IllegalStateException("The database returned no data.");
+                }
+                return users;
             }
 
-            applyFilters();
-
-            // Automatically select first row if available
-            if (userTable.getRowCount() > 0) {
-                userTable.setRowSelectionInterval(0, 0);
+            @Override
+            protected void done() {
+                loading = false;
+                try {
+                    showUsers(get(), keepSelectedId);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    loadError = "Loading was interrupted.";
+                    updateTableView();
+                } catch (ExecutionException ex) {
+                    Throwable cause = (ex.getCause() != null) ? ex.getCause() : ex;
+                    String msg = (cause.getMessage() != null && !cause.getMessage().isEmpty())
+                            ? cause.getMessage() : cause.getClass().getSimpleName();
+                    loadError = "Could not load users from the database: " + msg;
+                    updateTableView();
+                }
             }
-        } catch (DatabaseException e) {
-            JOptionPane.showMessageDialog(this, "Failed to load users from database: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        }.execute();
+    }
+
+    private void showUsers(List<User> users, int keepSelectedId) {
+        allUsers = users;
+        tableModel.setRowCount(0);
+
+        for (User u : allUsers) {
+            String roleTitle = formatRoleDisplay(u.getRole() != null ? u.getRole().getRoleName() : null);
+            tableModel.addRow(new Object[]{
+                    u.getUserId(),
+                    u,
+                    roleTitle,
+                    u.getEmail(),
+                    u.getStatus() != null ? u.getStatus() : "ACTIVE"
+            });
         }
+
+        applyFilters();
+
+        // Keep the same user selected after a reload when possible
+        if (keepSelectedId != -1) {
+            for (int viewRow = 0; viewRow < userTable.getRowCount(); viewRow++) {
+                int modelRow = userTable.convertRowIndexToModel(viewRow);
+                Object id = tableModel.getValueAt(modelRow, 0);
+                if (id instanceof Integer && (Integer) id == keepSelectedId) {
+                    userTable.setRowSelectionInterval(viewRow, viewRow);
+                    break;
+                }
+            }
+        }
+        updateTableView();
     }
 
     private String formatRoleDisplay(String role) {
-        if (role == null) return "Undergraduate";
+        if (role == null) return "Unassigned";
         String r = role.replace("_", " ").trim();
         if (r.equalsIgnoreCase("ADMIN")) return "Admin";
         if (r.equalsIgnoreCase("LECTURER")) return "Lecturer";
@@ -424,9 +634,37 @@ public class UserManagementPanel extends JPanel {
         return r;
     }
 
-    /**
-     * Filters table rows based on search text and selected role.
-     */
+    /** Chooses between the table and the loading / empty / no-match / error message. */
+    private void updateTableView() {
+        if (tableCards == null) return;
+
+        String message = null;
+        boolean showRetry = false;
+
+        if (loadError != null && tableModel.getRowCount() == 0) {
+            message = loadError;
+            showRetry = true;
+        } else if (loading && tableModel.getRowCount() == 0) {
+            message = "Loading users…";
+        } else if (tableModel.getRowCount() == 0) {
+            message = "No users found in the database. Use “+ Create user” to add one.";
+        } else if (userTable.getRowCount() == 0) {
+            message = "No users match your search.";
+        }
+
+        if (message == null) {
+            tableCards.show(tableArea, "table");
+        } else {
+            messageLabel.setText(message);
+            messageRetryBtn.setVisible(showRetry);
+            tableCards.show(tableArea, "message");
+        }
+    }
+
+    // =========================================================================
+    // FILTERS
+    // =========================================================================
+
     private void applyFilters() {
         String query = searchField.getText().trim().toLowerCase();
         String selectedRole = (String) roleFilterBox.getSelectedItem();
@@ -434,7 +672,6 @@ public class UserManagementPanel extends JPanel {
         RowFilter<DefaultTableModel, Object> rf = new RowFilter<DefaultTableModel, Object>() {
             @Override
             public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
-                // Role filter check
                 if (selectedRole != null && !selectedRole.equals("All roles")) {
                     String rowRole = entry.getStringValue(2);
                     if (!rowRole.equalsIgnoreCase(selectedRole)) {
@@ -442,14 +679,13 @@ public class UserManagementPanel extends JPanel {
                     }
                 }
 
-                // Query search check (matches name, username, or email)
                 if (!query.isEmpty()) {
                     Object userObj = entry.getValue(1);
                     if (userObj instanceof User) {
                         User u = (User) userObj;
                         boolean match = (u.getFullName() != null && u.getFullName().toLowerCase().contains(query)) ||
-                                        (u.getUsername() != null && u.getUsername().toLowerCase().contains(query)) ||
-                                        (u.getEmail() != null && u.getEmail().toLowerCase().contains(query));
+                                (u.getUsername() != null && u.getUsername().toLowerCase().contains(query)) ||
+                                (u.getEmail() != null && u.getEmail().toLowerCase().contains(query));
                         if (!match) return false;
                     } else {
                         String idStr = entry.getStringValue(0);
@@ -470,28 +706,25 @@ public class UserManagementPanel extends JPanel {
 
         if (visibleCount > 0 && userTable.getSelectedRow() == -1) {
             userTable.setRowSelectionInterval(0, 0);
+        } else if (visibleCount == 0) {
+            clearDetailCard();
         }
+        updateTableView();
     }
 
-    /**
-     * Updates the right-hand User Detail Card based on the currently selected row.
-     */
+    // =========================================================================
+    // DETAIL CARD UPDATE
+    // =========================================================================
+
     private void updateDetailCardFromSelection() {
         int viewRow = userTable.getSelectedRow();
         if (viewRow == -1) {
-            selectedUser = null;
-            detailNameLabel.setText("No User Selected");
-            detailUsernameLabel.setText("-");
-            detailUserIdVal.setText("-");
-            detailRoleVal.setText("-");
-            detailStatusVal.setText("-");
-            detailEmailVal.setText("-");
-            detailContactVal.setText("-");
-            detailAvatarLabel.setIcon(new AvatarIcon("U", 46));
+            clearDetailCard();
             return;
         }
 
         int modelRow = userTable.convertRowIndexToModel(viewRow);
+        selectedUser = null;
         Object userObj = tableModel.getValueAt(modelRow, 1);
         if (userObj instanceof User) {
             selectedUser = (User) userObj;
@@ -505,30 +738,37 @@ public class UserManagementPanel extends JPanel {
             }
         }
 
-        if (selectedUser != null) {
-            String fullName = selectedUser.getFullName();
-            if (fullName == null || fullName.trim().isEmpty()) {
-                fullName = selectedUser.getUsername();
-            }
-            detailNameLabel.setText(fullName);
-            detailUsernameLabel.setText("@" + selectedUser.getUsername());
-            detailUserIdVal.setText(String.valueOf(selectedUser.getUserId()));
-
-            String roleName = (selectedUser.getRole() != null) ? formatRoleDisplay(selectedUser.getRole().getRoleName()) : "Undergraduate";
-            detailRoleVal.setText(roleName);
-
-            String status = selectedUser.getStatus() != null ? selectedUser.getStatus() : "ACTIVE";
-            detailStatusVal.setText(status.equalsIgnoreCase("ACTIVE") ? "Active" : "Inactive");
-            detailStatusVal.setForeground(status.equalsIgnoreCase("ACTIVE") ? new Color(21, 128, 61) : new Color(185, 28, 28));
-
-            detailEmailVal.setText(selectedUser.getEmail() != null ? selectedUser.getEmail() : "—");
-            detailContactVal.setText((selectedUser.getContactNo() != null && !selectedUser.getContactNo().isEmpty()) ? selectedUser.getContactNo() : "0771122334");
-
-            String initials = extractInitials(fullName);
-            Color avatarBg = getAvatarBgForRole(roleName);
-            Color avatarFg = getAvatarFgForRole(roleName);
-            detailAvatarLabel.setIcon(new AvatarIcon(initials, 46, avatarBg, avatarFg));
+        if (selectedUser == null) {
+            clearDetailCard();
+            return;
         }
+
+        String fullName = selectedUser.getFullName();
+        if (fullName == null || fullName.trim().isEmpty()) {
+            fullName = selectedUser.getUsername();
+        }
+        detailNameLabel.setText(fullName);
+        detailNameLabel.setToolTipText(fullName);
+        detailUsernameLabel.setText("@" + selectedUser.getUsername());
+
+        setDetailValue(detailUserIdVal, String.valueOf(selectedUser.getUserId()), COLOR_TEXT_DARK);
+
+        String roleName = formatRoleDisplay(selectedUser.getRole() != null ? selectedUser.getRole().getRoleName() : null);
+        setDetailValue(detailRoleVal, roleName, COLOR_TEXT_DARK);
+
+        String status = selectedUser.getStatus() != null ? selectedUser.getStatus() : "ACTIVE";
+        boolean active = status.equalsIgnoreCase("ACTIVE");
+        setDetailValue(detailStatusVal, active ? "Active" : "Inactive",
+                active ? new Color(21, 128, 61) : new Color(185, 28, 28));
+
+        String email = selectedUser.getEmail();
+        setDetailValue(detailEmailVal, (email != null && !email.isEmpty()) ? email : EM_DASH, COLOR_TEXT_DARK);
+
+        String contact = selectedUser.getContactNo();
+        setDetailValue(detailContactVal, (contact != null && !contact.isEmpty()) ? contact : EM_DASH, COLOR_TEXT_DARK);
+
+        detailAvatarLabel.setIcon(new AvatarIcon(extractInitials(fullName), 46,
+                getAvatarBgForRole(roleName), getAvatarFgForRole(roleName)));
     }
 
     private Color getAvatarBgForRole(String role) {
@@ -546,8 +786,21 @@ public class UserManagementPanel extends JPanel {
     }
 
     // =========================================================================
-    // ACTION HANDLERS (Delegates to AdminController & UserFormDialog)
+    // ACTION HANDLERS (unchanged behaviour: delegate to AdminController / UserFormDialog)
     // =========================================================================
+
+    private Object[] selectedUserRow() {
+        return new Object[]{
+                selectedUser.getUserId(),
+                selectedUser.getUsername(),
+                selectedUser.getFirstName(),
+                selectedUser.getLastName(),
+                selectedUser.getRole() != null ? selectedUser.getRole().getRoleName() : "Undergraduate",
+                selectedUser.getEmail(),
+                selectedUser.getContactNo(),
+                selectedUser.getStatus()
+        };
+    }
 
     private void handleCreateUser() {
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
@@ -580,19 +833,8 @@ public class UserManagementPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Please select a user to update.", "Selection Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        Object[] rowData = new Object[]{
-                selectedUser.getUserId(),
-                selectedUser.getUsername(),
-                selectedUser.getFirstName(),
-                selectedUser.getLastName(),
-                selectedUser.getRole() != null ? selectedUser.getRole().getRoleName() : "Undergraduate",
-                selectedUser.getEmail(),
-                selectedUser.getContactNo(),
-                selectedUser.getStatus()
-        };
-
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        UserFormDialog dialog = new UserFormDialog(parentFrame, "Update User Profile", UserFormDialog.FormMode.UPDATE, rowData, adminController);
+        UserFormDialog dialog = new UserFormDialog(parentFrame, "Update User Profile", UserFormDialog.FormMode.UPDATE, selectedUserRow(), adminController);
         dialog.setVisible(true);
 
         if (dialog.isSaved()) {
@@ -606,19 +848,8 @@ public class UserManagementPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Please select a user to assign role.", "Selection Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        Object[] rowData = new Object[]{
-                selectedUser.getUserId(),
-                selectedUser.getUsername(),
-                selectedUser.getFirstName(),
-                selectedUser.getLastName(),
-                selectedUser.getRole() != null ? selectedUser.getRole().getRoleName() : "Undergraduate",
-                selectedUser.getEmail(),
-                selectedUser.getContactNo(),
-                selectedUser.getStatus()
-        };
-
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        UserFormDialog dialog = new UserFormDialog(parentFrame, "Assign User Role", UserFormDialog.FormMode.ASSIGN_ROLE, rowData, adminController);
+        UserFormDialog dialog = new UserFormDialog(parentFrame, "Assign User Role", UserFormDialog.FormMode.ASSIGN_ROLE, selectedUserRow(), adminController);
         dialog.setVisible(true);
 
         if (dialog.isSaved()) {
@@ -632,19 +863,8 @@ public class UserManagementPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Please select a user to maintain credentials.", "Selection Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        Object[] rowData = new Object[]{
-                selectedUser.getUserId(),
-                selectedUser.getUsername(),
-                selectedUser.getFirstName(),
-                selectedUser.getLastName(),
-                selectedUser.getRole() != null ? selectedUser.getRole().getRoleName() : "Undergraduate",
-                selectedUser.getEmail(),
-                selectedUser.getContactNo(),
-                selectedUser.getStatus()
-        };
-
         JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-        UserFormDialog dialog = new UserFormDialog(parentFrame, "Maintain Credentials", UserFormDialog.FormMode.MAINTAIN_CREDENTIALS, rowData, adminController);
+        UserFormDialog dialog = new UserFormDialog(parentFrame, "Maintain Credentials", UserFormDialog.FormMode.MAINTAIN_CREDENTIALS, selectedUserRow(), adminController);
         dialog.setVisible(true);
 
         if (dialog.isSaved()) {
@@ -711,18 +931,65 @@ public class UserManagementPanel extends JPanel {
     }
 
     // =========================================================================
-    // TABLE CELL RENDERERS (Polymorphism & 2D Graphics)
+    // SMALL REUSABLE COMPONENTS
     // =========================================================================
 
-    /**
-     * Renders column 1 with circular avatar + Two-line text (Full Name and @username).
-     */
+    /** Page content that follows the viewport width (so it can reflow) and scrolls vertically. */
+    private static class ScrollablePanel extends JPanel implements Scrollable {
+        ScrollablePanel(LayoutManager layout) {
+            super(layout);
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return (orientation == SwingConstants.VERTICAL) ? Math.max(visibleRect.height - 32, 16) : visibleRect.width;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            Container parent = getParent();
+            return parent instanceof JViewport && parent.getHeight() > getPreferredSize().height;
+        }
+    }
+
+    /** A label that shrinks and shows "…" instead of forcing its parent wider. */
+    private static class EllipsisLabel extends JLabel {
+        EllipsisLabel(String text) {
+            super(text);
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return new Dimension(0, super.getPreferredSize().height);
+        }
+    }
+
+    // =========================================================================
+    // TABLE CELL RENDERERS
+    // =========================================================================
+
+    /** USER column: circular avatar + full name + @username. */
     private class UserTableCellRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
         private final JLabel avatarLabel = new JLabel();
-        private final JLabel nameLabel = new JLabel();
-        private final JLabel usernameLabel = new JLabel();
+        private final EllipsisLabel nameLabel = new EllipsisLabel("");
+        private final EllipsisLabel usernameLabel = new EllipsisLabel("");
 
-        public UserTableCellRenderer() {
+        UserTableCellRenderer() {
             setLayout(new BorderLayout(10, 0));
             setOpaque(true);
             setBorder(new EmptyBorder(6, 8, 6, 8));
@@ -738,17 +1005,20 @@ public class UserManagementPanel extends JPanel {
             textPanel.add(Box.createVerticalStrut(2));
             textPanel.add(usernameLabel);
 
+            JPanel textWrap = new JPanel(new GridBagLayout());
+            textWrap.setOpaque(false);
+            GridBagConstraints gc = new GridBagConstraints();
+            gc.weightx = 1;
+            gc.fill = GridBagConstraints.HORIZONTAL;
+            textWrap.add(textPanel, gc);
+
             add(avatarLabel, BorderLayout.WEST);
-            add(textPanel, BorderLayout.CENTER);
+            add(textWrap, BorderLayout.CENTER);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (isSelected) {
-                setBackground(new Color(254, 249, 235));
-            } else {
-                setBackground(Color.WHITE);
-            }
+            setBackground(isSelected ? SELECTION_BG : Color.WHITE);
 
             if (value instanceof User) {
                 User u = (User) value;
@@ -759,34 +1029,31 @@ public class UserManagementPanel extends JPanel {
                 usernameLabel.setText("@" + u.getUsername());
                 usernameLabel.setForeground(COLOR_TEXT_MUTED);
 
-                String initials = extractInitials(name);
-                String role = u.getRole() != null ? u.getRole().getRoleName() : "User";
-                avatarLabel.setIcon(new AvatarIcon(initials, 32, getAvatarBgForRole(role), getAvatarFgForRole(role)));
+                String role = formatRoleDisplay(u.getRole() != null ? u.getRole().getRoleName() : null);
+                avatarLabel.setIcon(new AvatarIcon(extractInitials(name), 34, getAvatarBgForRole(role), getAvatarFgForRole(role)));
             } else {
                 nameLabel.setText(value != null ? value.toString() : "");
                 usernameLabel.setText("");
-                avatarLabel.setIcon(new AvatarIcon("U", 32));
+                avatarLabel.setIcon(new AvatarIcon("U", 34));
             }
             return this;
         }
     }
 
-    /**
-     * Renders Role as a clean Pill Badge.
-     */
+    /** ROLE column: coloured pill. */
     private static class RoleBadgeCellRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
         private final PillBadge badge = new PillBadge("Role", Color.WHITE, Color.BLACK);
 
-        public RoleBadgeCellRenderer() {
-            setLayout(new FlowLayout(FlowLayout.LEFT, 4, 12));
+        RoleBadgeCellRenderer() {
+            setLayout(new FlowLayout(FlowLayout.LEFT, 4, 14));
             setOpaque(true);
             add(badge);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
-            String role = (value != null) ? value.toString() : "Undergraduate";
+            setBackground(isSelected ? SELECTION_BG : Color.WHITE);
+            String role = (value != null) ? value.toString() : "Unassigned";
             badge.setText(role);
 
             if ("Admin".equalsIgnoreCase(role)) {
@@ -806,21 +1073,19 @@ public class UserManagementPanel extends JPanel {
         }
     }
 
-    /**
-     * Renders Status as a Pill Badge (Active = Green pill, Inactive = Red pill).
-     */
+    /** STATUS column: green "Active" / red "Inactive" pill. */
     private static class StatusBadgeCellRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
         private final PillBadge badge = new PillBadge("Active", Color.WHITE, Color.BLACK);
 
-        public StatusBadgeCellRenderer() {
-            setLayout(new FlowLayout(FlowLayout.LEFT, 4, 12));
+        StatusBadgeCellRenderer() {
+            setLayout(new FlowLayout(FlowLayout.LEFT, 4, 14));
             setOpaque(true);
             add(badge);
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
+            setBackground(isSelected ? SELECTION_BG : Color.WHITE);
             String status = (value != null) ? value.toString() : "ACTIVE";
             boolean isActive = "ACTIVE".equalsIgnoreCase(status);
 

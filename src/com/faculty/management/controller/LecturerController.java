@@ -54,6 +54,15 @@ public class LecturerController {
     }
 
     // --- Course Materials ---
+    public boolean uploadCourseMaterial(String courseId, String title, File file, int lecturerId) {
+        try {
+            return materialService.uploadMaterial(courseId, title, file, lecturerId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean uploadCourseMaterial(String courseId, String title, File file) {
         try {
             return materialService.uploadMaterial(courseId, title, file);
@@ -84,6 +93,15 @@ public class LecturerController {
     public List<CourseMaterial> getCourseMaterials(String courseId) {
         try {
             return materialService.fetchMaterials(courseId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    public List<CourseMaterial> getAllCourseMaterials() {
+        try {
+            return materialService.fetchAllMaterials();
         } catch (Exception e) {
             e.printStackTrace();
             return Collections.emptyList();
@@ -134,6 +152,15 @@ public class LecturerController {
     public List<Mark> getCourseMarks(int courseId) {
         try {
             return markService.getMarksForCourse(courseId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Mark> getAllMarks() {
+        try {
+            return markService.getAllMarks();
         } catch (Exception e) {
             e.printStackTrace();
             return Collections.emptyList();

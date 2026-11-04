@@ -1,121 +1,136 @@
 package com.faculty.management.gui.member2_lecturer;
 
+import com.faculty.management.gui.common.DangerButton;
+import com.faculty.management.gui.common.PrimaryButton;
+import com.faculty.management.gui.common.UITheme;
 import com.faculty.management.model.Mark;
 import com.faculty.management.service.MarkService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.List;
-
-import static com.faculty.management.gui.member2_lecturer.LecturerUIComponents.*;
 
 /**
  * Marks Entry & Management Panel for Member 2.
- * Strictly implements Page 4 of the Ruhuna Lecturer Portal Specification.
+ * Strictly implements the exact UI and functions shown in the specification:
+ * - Search by Student ID (Search Student)
+ * - Search by Evaluation ID (Search Evaluation)
+ * - Show All / Refresh
+ * - Table: Student ID, Evaluation ID, Marks Obtained (fetches and displays real database data)
+ * - Actions: [+ Add Marks], [Edit Selected], [Delete Selected]
  */
 public class MarkManagementPanel extends JPanel {
 
-    private final MarkService markService = new MarkService();
+    private JTextField txtSearchStudent;
+    private JTextField txtSearchEval;
+    private JButton btnSearchStudent;
+    private JButton btnSearchEval;
+    private JButton btnShowAll;
 
-    private SearchTextField searchStudentField;
-    private SearchTextField searchEvalField;
     private JTable markTable;
     private DefaultTableModel tableModel;
-    private TableRowSorter<DefaultTableModel> rowSorter;
-    private JLabel footerSummaryLabel;
+
+    private JButton btnAddMark;
+    private JButton btnEditMark;
+    private JButton btnDeleteMark;
+
+    private final MarkService markService = new MarkService();
 
     public MarkManagementPanel() {
-        initComponents();
+        setLayout(new BorderLayout());
+        setBackground(UITheme.BG_PAGE);
+        setBorder(new EmptyBorder(15, 15, 15, 15));
+
+        initUI();
         loadAllMarks();
     }
 
-    private void initComponents() {
-        setLayout(new BorderLayout(0, 16));
-        setBackground(COLOR_PAGE_BG);
-        setBorder(new EmptyBorder(0, 28, 20, 28));
+    private void initUI() {
+        // 1. Top Toolbar Panel (Student Lookup & Filters)
+        JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        topToolbar.setOpaque(false);
 
-        // 1. Header: Title, Subtitle, and "+ Add marks" button
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setOpaque(false);
+        JLabel lblStudent = new JLabel("Student ID:");
+        lblStudent.setFont(UITheme.FONT_SMALL_BOLD);
+        lblStudent.setForeground(UITheme.TEXT_BODY);
 
-        JPanel titleBox = new JPanel();
-        titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
-        titleBox.setOpaque(false);
+        txtSearchStudent = new JTextField(10);
+        txtSearchStudent.setFont(UITheme.FONT_BODY);
+        txtSearchStudent.setPreferredSize(new Dimension(110, 32));
+        txtSearchStudent.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(2, 6, 2, 6)
+        ));
+        txtSearchStudent.addActionListener(e -> loadStudentMarks());
 
-        JLabel pageTitle = new JLabel("Marks Entry");
-        pageTitle.setFont(FONT_PAGE_TITLE);
-        pageTitle.setForeground(COLOR_TEXT_DARK);
-        pageTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pageTitle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
+        btnSearchStudent = new JButton("Search Student");
+        btnSearchStudent.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSearchStudent.setBackground(Color.WHITE);
+        btnSearchStudent.setForeground(UITheme.TEXT_BODY);
+        btnSearchStudent.setFocusPainted(false);
+        btnSearchStudent.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSearchStudent.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(5, 12, 5, 12)
+        ));
+        btnSearchStudent.addActionListener(e -> loadStudentMarks());
 
-        JLabel pageSub = new JLabel("Add, edit and remove student marks by evaluation.");
-        pageSub.setFont(FONT_PAGE_SUB);
-        pageSub.setForeground(COLOR_TEXT_MUTED);
-        pageSub.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pageSub.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
+        JLabel lblEval = new JLabel("Eval ID:");
+        lblEval.setFont(UITheme.FONT_SMALL_BOLD);
+        lblEval.setForeground(UITheme.TEXT_BODY);
 
-        titleBox.add(pageTitle);
-        titleBox.add(Box.createVerticalStrut(4));
-        titleBox.add(pageSub);
+        txtSearchEval = new JTextField(8);
+        txtSearchEval.setFont(UITheme.FONT_BODY);
+        txtSearchEval.setPreferredSize(new Dimension(90, 32));
+        txtSearchEval.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(2, 6, 2, 6)
+        ));
+        txtSearchEval.addActionListener(e -> loadEvaluationMarks());
 
-        BurgundyButton addMarksBtn = new BurgundyButton("+ Add marks");
-        addMarksBtn.setPreferredSize(new Dimension(135, 38));
-        addMarksBtn.addActionListener(e -> openAddDialog());
+        btnSearchEval = new JButton("Search Evaluation");
+        btnSearchEval.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSearchEval.setBackground(Color.WHITE);
+        btnSearchEval.setForeground(UITheme.TEXT_BODY);
+        btnSearchEval.setFocusPainted(false);
+        btnSearchEval.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSearchEval.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(5, 12, 5, 12)
+        ));
+        btnSearchEval.addActionListener(e -> loadEvaluationMarks());
 
-        headerPanel.add(titleBox, BorderLayout.CENTER);
-        headerPanel.add(addMarksBtn, BorderLayout.EAST);
-
-        // 2. Filter Toolbar
-        JPanel filterBar = new JPanel(new BorderLayout(10, 0));
-        filterBar.setOpaque(false);
-
-        searchStudentField = new SearchTextField("Search by student ID", 18);
-        searchStudentField.setPreferredSize(new Dimension(200, 36));
-        searchStudentField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { applyFilters(); }
-            public void removeUpdate(DocumentEvent e) { applyFilters(); }
-            public void changedUpdate(DocumentEvent e) { applyFilters(); }
-        });
-
-        searchEvalField = new SearchTextField("Search by evaluation ID", 18);
-        searchEvalField.setPreferredSize(new Dimension(200, 36));
-        searchEvalField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { applyFilters(); }
-            public void removeUpdate(DocumentEvent e) { applyFilters(); }
-            public void changedUpdate(DocumentEvent e) { applyFilters(); }
-        });
-
-        WhiteOutlineButton refreshBtn = createRefreshButton();
-        refreshBtn.setPreferredSize(new Dimension(100, 36));
-        refreshBtn.addActionListener(e -> {
-            searchStudentField.setText("");
-            searchEvalField.setText("");
+        btnShowAll = new JButton("Show All Marks");
+        btnShowAll.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnShowAll.setBackground(Color.WHITE);
+        btnShowAll.setForeground(UITheme.TEXT_BODY);
+        btnShowAll.setFocusPainted(false);
+        btnShowAll.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnShowAll.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(5, 12, 5, 12)
+        ));
+        btnShowAll.addActionListener(e -> {
+            txtSearchStudent.setText("");
+            txtSearchEval.setText("");
             loadAllMarks();
         });
 
-        JPanel leftFilters = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        leftFilters.setOpaque(false);
-        leftFilters.add(searchStudentField);
-        leftFilters.add(searchEvalField);
+        topToolbar.add(lblStudent);
+        topToolbar.add(txtSearchStudent);
+        topToolbar.add(btnSearchStudent);
+        topToolbar.add(Box.createHorizontalStrut(8));
+        topToolbar.add(lblEval);
+        topToolbar.add(txtSearchEval);
+        topToolbar.add(btnSearchEval);
+        topToolbar.add(Box.createHorizontalStrut(8));
+        topToolbar.add(btnShowAll);
 
-        filterBar.add(leftFilters, BorderLayout.WEST);
-        filterBar.add(refreshBtn, BorderLayout.EAST);
-
-        // 3. Table Container
-        JPanel tableContainer = new JPanel(new BorderLayout(0, 10));
-        tableContainer.setOpaque(false);
-
-        String[] columns = {"STUDENT ID", "EVALUATION ID", "MARKS OBTAINED", "ACTIONS", "_DATA_"};
-        tableModel = new DefaultTableModel(columns, 0) {
+        // 2. Table Model Setup
+        tableModel = new DefaultTableModel(new String[]{"Student ID", "Evaluation ID", "Marks Obtained"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -123,152 +138,113 @@ public class MarkManagementPanel extends JPanel {
         };
 
         markTable = new JTable(tableModel);
-        markTable.setRowHeight(42);
-        markTable.setShowVerticalLines(false);
-        markTable.setGridColor(new Color(243, 244, 246));
-        markTable.setSelectionBackground(new Color(254, 249, 235));
-        markTable.setSelectionForeground(COLOR_TEXT_DARK);
-        markTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        markTable.setFont(FONT_BODY);
+        UITheme.styleTable(markTable);
+        markTable.setRowHeight(32);
 
-        // Header Styling
-        JTableHeader th = markTable.getTableHeader();
-        th.setFont(FONT_SMALL_BOLD);
-        th.setForeground(COLOR_TEXT_MUTED);
-        th.setBackground(Color.WHITE);
-        th.setPreferredSize(new Dimension(th.getPreferredSize().width, 36));
-        th.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, COLOR_BORDER));
-        ((DefaultTableCellRenderer) th.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+        DefaultTableCellRenderer leftAlign = new DefaultTableCellRenderer();
+        leftAlign.setHorizontalAlignment(SwingConstants.LEFT);
+        leftAlign.setBorder(new EmptyBorder(0, 8, 0, 0));
+        markTable.getColumnModel().getColumn(0).setCellRenderer(leftAlign);
+        markTable.getColumnModel().getColumn(1).setCellRenderer(leftAlign);
+        markTable.getColumnModel().getColumn(2).setCellRenderer(leftAlign);
 
-        // Renderers
-        DefaultTableCellRenderer centerRender = new DefaultTableCellRenderer();
-        centerRender.setHorizontalAlignment(JLabel.LEFT);
-        centerRender.setFont(FONT_BODY);
+        // 3. Bottom Action Panel matching the image: [ + Add Marks ] [ Edit Selected ] [ Delete Selected ]
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        bottomPanel.setOpaque(false);
 
-        markTable.getColumnModel().getColumn(0).setPreferredWidth(160);
-        markTable.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-                setFont(FONT_BODY_BOLD);
-                setForeground(COLOR_TEXT_DARK);
-                setBorder(new EmptyBorder(0, 12, 0, 0));
-                return c;
-            }
-        });
+        btnAddMark = new PrimaryButton("+ Add Marks");
+        btnAddMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnAddMark.setPreferredSize(new Dimension(130, 34));
+        btnAddMark.addActionListener(e -> openAddDialog());
 
-        markTable.getColumnModel().getColumn(1).setPreferredWidth(160);
-        markTable.getColumnModel().getColumn(1).setCellRenderer(centerRender);
-
-        markTable.getColumnModel().getColumn(2).setPreferredWidth(180);
-        markTable.getColumnModel().getColumn(2).setCellRenderer(centerRender);
-
-        markTable.getColumnModel().getColumn(3).setPreferredWidth(140);
-        markTable.getColumnModel().getColumn(3).setCellRenderer(new ActionsCellRenderer());
-
-        // Hide raw mark data column
-        markTable.getColumnModel().getColumn(4).setMinWidth(0);
-        markTable.getColumnModel().getColumn(4).setMaxWidth(0);
-        markTable.getColumnModel().getColumn(4).setPreferredWidth(0);
-
-        // Actions click listener
-        markTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int col = markTable.columnAtPoint(e.getPoint());
-                int row = markTable.rowAtPoint(e.getPoint());
-                if (row >= 0 && col == 3) {
-                    int modelRow = markTable.convertRowIndexToModel(row);
-                    Mark m = (Mark) tableModel.getValueAt(modelRow, 4);
-                    if (m == null) return;
-
-                    Rectangle cellRect = markTable.getCellRect(row, col, false);
-                    int clickX = e.getX() - cellRect.x;
-
-                    if (clickX < 55) {
-                        openEditDialogForMark(m);
-                    } else {
-                        deleteSelectedMark(m);
-                    }
-                }
-            }
-        });
-
-        rowSorter = new TableRowSorter<>(tableModel);
-        markTable.setRowSorter(rowSorter);
-
-        JScrollPane scrollPane = new JScrollPane(markTable);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(COLOR_BORDER, 1, true),
-                new EmptyBorder(0, 0, 0, 0)
+        btnEditMark = new JButton("Edit Selected");
+        btnEditMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnEditMark.setBackground(Color.WHITE);
+        btnEditMark.setForeground(UITheme.TEXT_BODY);
+        btnEditMark.setFocusPainted(false);
+        btnEditMark.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnEditMark.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UITheme.BORDER_INPUT, 1),
+                new EmptyBorder(6, 14, 6, 14)
         ));
+        btnEditMark.addActionListener(e -> openEditDialog());
 
-        // Footer Summary
-        footerSummaryLabel = new JLabel("Showing 0 of 0 records · Rows offer Edit and Delete");
-        footerSummaryLabel.setFont(FONT_SMALL);
-        footerSummaryLabel.setForeground(COLOR_TEXT_MUTED);
-        footerSummaryLabel.setBorder(new EmptyBorder(4, 4, 4, 4));
+        btnDeleteMark = new DangerButton("Delete Selected");
+        btnDeleteMark.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnDeleteMark.setPreferredSize(new Dimension(140, 34));
+        btnDeleteMark.addActionListener(e -> deleteSelectedMark());
 
-        tableContainer.add(filterBar, BorderLayout.NORTH);
-        tableContainer.add(scrollPane, BorderLayout.CENTER);
-        tableContainer.add(footerSummaryLabel, BorderLayout.SOUTH);
+        bottomPanel.add(btnAddMark);
+        bottomPanel.add(btnEditMark);
+        bottomPanel.add(btnDeleteMark);
 
-        add(headerPanel, BorderLayout.NORTH);
-        add(tableContainer, BorderLayout.CENTER);
+        add(topToolbar, BorderLayout.NORTH);
+        add(UITheme.createModernScrollPane(markTable), BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Loads all marks from the database and populates the table.
+     */
     public void loadAllMarks() {
-        tableModel.setRowCount(0);
         try {
-            // Load sample/database marks
-            List<Mark> list = markService.getMarksForStudent("11");
-            if (list == null || list.isEmpty()) {
-                list = markService.getMarksForStudent("1");
-            }
-
-            if (list != null) {
-                for (Mark m : list) {
-                    tableModel.addRow(new Object[]{
-                            m.getStudentId(),
-                            String.valueOf(m.getEvaluationId()),
-                            String.valueOf(m.getMarksObtained()),
-                            "Edit   Delete",
-                            m
-                    });
-                }
-            }
-        } catch (Exception ignored) {
+            List<Mark> marks = markService.getAllMarks();
+            populateTable(marks);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Failed to load marks from database: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         }
-        updateFooterCount();
     }
 
-    private void applyFilters() {
-        String sStudent = searchStudentField.getText().trim().toLowerCase();
-        String sEval = searchEvalField.getText().trim().toLowerCase();
+    private void loadStudentMarks() {
+        String studentId = txtSearchStudent.getText().trim();
+        if (studentId.isEmpty()) {
+            loadAllMarks();
+            return;
+        }
 
-        RowFilter<DefaultTableModel, Object> rf = new RowFilter<DefaultTableModel, Object>() {
-            @Override
-            public boolean include(Entry<? extends DefaultTableModel, ?> entry) {
-                if (!sStudent.isEmpty()) {
-                    String std = entry.getStringValue(0).toLowerCase();
-                    if (!std.contains(sStudent)) return false;
-                }
-                if (!sEval.isEmpty()) {
-                    String ev = entry.getStringValue(1).toLowerCase();
-                    if (!ev.contains(sEval)) return false;
-                }
-                return true;
+        try {
+            List<Mark> list = markService.getMarksForStudent(studentId);
+            populateTable(list);
+            if (list == null || list.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No marks found for Student ID: " + studentId, "Search Result", JOptionPane.INFORMATION_MESSAGE);
             }
-        };
-
-        rowSorter.setRowFilter(rf);
-        updateFooterCount();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Failed to load student marks: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    private void updateFooterCount() {
-        int count = markTable.getRowCount();
-        footerSummaryLabel.setText("Showing " + count + " of " + count + " records · Rows offer Edit and Delete");
+    private void loadEvaluationMarks() {
+        String evalStr = txtSearchEval.getText().trim();
+        if (evalStr.isEmpty()) {
+            loadAllMarks();
+            return;
+        }
+
+        try {
+            int evalId = Integer.parseInt(evalStr);
+            List<Mark> list = markService.getMarksForEvaluation(evalId);
+            populateTable(list);
+            if (list == null || list.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No marks found for Evaluation ID: " + evalId, "Search Result", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Evaluation ID must be an integer number.", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Failed to load evaluation marks: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void populateTable(List<Mark> marks) {
+        tableModel.setRowCount(0);
+        if (marks != null) {
+            for (Mark m : marks) {
+                tableModel.addRow(new Object[]{
+                        m.getStudentId(),
+                        m.getEvaluationId(),
+                        String.format("%.1f", m.getMarksObtained())
+                });
+            }
+        }
     }
 
     private void openAddDialog() {
@@ -281,10 +257,19 @@ public class MarkManagementPanel extends JPanel {
         }
     }
 
-    private void openEditDialogForMark(Mark m) {
-        if (m == null) return;
+    private void openEditDialog() {
+        int selectedRow = markTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a mark row from the table to edit.", "Selection Required", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String studentId = tableModel.getValueAt(selectedRow, 0).toString();
+        String evalId = tableModel.getValueAt(selectedRow, 1).toString();
+        String currentMarks = tableModel.getValueAt(selectedRow, 2).toString();
+
         Frame parentFrame = (Frame) SwingUtilities.getWindowAncestor(this);
-        MarkEntryDialog dialog = new MarkEntryDialog(parentFrame, m.getStudentId(), String.valueOf(m.getEvaluationId()), String.valueOf(m.getMarksObtained()));
+        MarkEntryDialog dialog = new MarkEntryDialog(parentFrame, studentId, evalId, currentMarks);
         dialog.setVisible(true);
 
         if (dialog.isSuccessful()) {
@@ -292,48 +277,32 @@ public class MarkManagementPanel extends JPanel {
         }
     }
 
-    private void deleteSelectedMark(Mark m) {
-        if (m == null) return;
+    private void deleteSelectedMark() {
+        int selectedRow = markTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a mark row from the table to delete.", "Selection Required", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String studentId = tableModel.getValueAt(selectedRow, 0).toString();
+        String evalIdStr = tableModel.getValueAt(selectedRow, 1).toString();
+
         int confirm = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to delete mark for Student: " + m.getStudentId() + " (Eval ID: " + m.getEvaluationId() + ")?",
+                "Are you sure you want to delete mark for Student: " + studentId + " (Evaluation ID: " + evalIdStr + ")?",
                 "Confirm Delete", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                if (markService.removeMark(m.getStudentId(), m.getEvaluationId())) {
+                int evalId = Integer.parseInt(evalIdStr);
+                if (markService.removeMark(studentId, evalId)) {
+                    JOptionPane.showMessageDialog(this, "Mark deleted successfully from database.", "Success", JOptionPane.INFORMATION_MESSAGE);
                     loadAllMarks();
-                    JOptionPane.showMessageDialog(this, "Mark deleted successfully.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to delete mark.", "Notice", JOptionPane.WARNING_MESSAGE);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error deleting mark: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error deleting mark: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
             }
-        }
-    }
-
-    private static class ActionsCellRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private final JLabel editLink = new JLabel("Edit");
-        private final JLabel deleteLink = new JLabel("Delete");
-
-        public ActionsCellRenderer() {
-            setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            setOpaque(true);
-
-            editLink.setFont(FONT_BODY_BOLD);
-            editLink.setForeground(COLOR_BURGUNDY);
-            editLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-            deleteLink.setFont(FONT_BODY_BOLD);
-            deleteLink.setForeground(new Color(220, 38, 38));
-            deleteLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-            add(editLink);
-            add(deleteLink);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? new Color(254, 249, 235) : Color.WHITE);
-            return this;
         }
     }
 }

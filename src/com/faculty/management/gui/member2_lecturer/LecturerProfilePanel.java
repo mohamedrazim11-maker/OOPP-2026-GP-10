@@ -6,12 +6,18 @@ import com.faculty.management.model.Lecturer;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.File;
 
 import static com.faculty.management.gui.member2_lecturer.LecturerUIComponents.*;
 
 /**
  * Lecturer Profile Management Panel for Member 2.
- * Strictly implements Page 2 of the Ruhuna Lecturer Portal Specification.
+ * Strictly implements Requirement 1:
+ * - View profile
+ * - Update profile (first name, last name)
+ * - Update contact details (contact number)
+ * - Update profile picture (browse file chooser)
+ * - Cannot change username/password (locked fields)
  */
 public class LecturerProfilePanel extends JPanel {
 
@@ -25,6 +31,9 @@ public class LecturerProfilePanel extends JPanel {
     private JTextField txtEmail;
     private JTextField txtFirstName;
     private JTextField txtLastName;
+    private JTextField txtContactNo;
+    private JTextField txtProfilePic;
+    private JButton btnBrowsePic;
     private BurgundyButton btnSaveChanges;
 
     // Right Inspector Card components
@@ -62,13 +71,11 @@ public class LecturerProfilePanel extends JPanel {
         pageTitle.setFont(FONT_PAGE_TITLE);
         pageTitle.setForeground(COLOR_TEXT_DARK);
         pageTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pageTitle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 32));
 
-        JLabel pageSub = new JLabel("View locked account details and update your name.");
+        JLabel pageSub = new JLabel("View academic credentials, update your personal contact details and profile picture.");
         pageSub.setFont(FONT_PAGE_SUB);
         pageSub.setForeground(COLOR_TEXT_MUTED);
         pageSub.setAlignmentX(Component.LEFT_ALIGNMENT);
-        pageSub.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
 
         titleBox.add(pageTitle);
         titleBox.add(Box.createVerticalStrut(4));
@@ -102,24 +109,22 @@ public class LecturerProfilePanel extends JPanel {
         topBox.setLayout(new BoxLayout(topBox, BoxLayout.Y_AXIS));
         topBox.setOpaque(false);
 
-        JLabel cardTitle = new JLabel("Account details");
+        JLabel cardTitle = new JLabel("Account Details");
         cardTitle.setFont(FONT_SECTION_TITLE);
         cardTitle.setForeground(COLOR_TEXT_DARK);
         cardTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cardTitle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24));
 
-        JLabel cardSub = new JLabel("Locked fields are managed by the administrator.");
+        JLabel cardSub = new JLabel("Username and password are locked. Update contact number, name, and profile picture.");
         cardSub.setFont(FONT_SMALL);
         cardSub.setForeground(COLOR_TEXT_MUTED);
         cardSub.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cardSub.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
 
         topBox.add(cardTitle);
         topBox.add(Box.createVerticalStrut(2));
         topBox.add(cardSub);
 
-        // 2-Column Form Fields Grid (3 rows of 2 fields)
-        JPanel formGrid = new JPanel(new GridLayout(3, 2, 16, 14));
+        // 2-Column Form Fields Grid (4 rows of 2 fields)
+        JPanel formGrid = new JPanel(new GridLayout(4, 2, 16, 14));
         formGrid.setOpaque(false);
 
         // Row 1: User ID (locked) and Username (locked)
@@ -145,14 +150,30 @@ public class LecturerProfilePanel extends JPanel {
         // Row 3: First name (editable) and Last name (editable)
         txtFirstName = createStyledTextField(true);
         txtLastName = createStyledTextField(true);
-        formGrid.add(createFieldContainer("First name", txtFirstName));
-        formGrid.add(createFieldContainer("Last name", txtLastName));
+        formGrid.add(createFieldContainer("First Name", txtFirstName));
+        formGrid.add(createFieldContainer("Last Name", txtLastName));
+
+        // Row 4: Contact No (editable) and Profile Picture (browse file)
+        txtContactNo = createStyledTextField(true);
+
+        JPanel picWrapper = new JPanel(new BorderLayout(6, 0));
+        picWrapper.setOpaque(false);
+        txtProfilePic = createStyledTextField(true);
+        btnBrowsePic = new JButton("Browse");
+        btnBrowsePic.setFont(FONT_SMALL_BOLD);
+        btnBrowsePic.setFocusPainted(false);
+        btnBrowsePic.addActionListener(e -> chooseProfilePicture());
+        picWrapper.add(txtProfilePic, BorderLayout.CENTER);
+        picWrapper.add(btnBrowsePic, BorderLayout.EAST);
+
+        formGrid.add(createFieldContainer("Contact Number", txtContactNo));
+        formGrid.add(createFieldContainer("Profile Picture Path", picWrapper));
 
         // Bottom Save button
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         btnPanel.setOpaque(false);
         btnSaveChanges = new BurgundyButton("Save changes");
-        btnSaveChanges.setPreferredSize(new Dimension(135, 38));
+        btnSaveChanges.setPreferredSize(new Dimension(145, 38));
         btnSaveChanges.addActionListener(e -> saveProfile());
         btnPanel.add(btnSaveChanges);
 
@@ -288,6 +309,15 @@ public class LecturerProfilePanel extends JPanel {
         return l;
     }
 
+    private void chooseProfilePicture() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select Profile Picture");
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            txtProfilePic.setText(file.getAbsolutePath());
+        }
+    }
+
     private void loadData() {
         if (currentLecturer != null) {
             String uid = String.valueOf(currentLecturer.getUserId() > 0 ? currentLecturer.getUserId() : 31);
@@ -296,12 +326,15 @@ public class LecturerProfilePanel extends JPanel {
             String ln = (currentLecturer.getLastName() != null && !currentLecturer.getLastName().isEmpty()) ? currentLecturer.getLastName() : "Perera";
             String em = (currentLecturer.getEmail() != null && !currentLecturer.getEmail().isEmpty()) ? currentLecturer.getEmail() : "kamal@fot.ruh.ac.lk";
             String ct = (currentLecturer.getContactNo() != null && !currentLecturer.getContactNo().isEmpty()) ? currentLecturer.getContactNo() : "0771122334";
+            String pic = (currentLecturer.getProfilePic() != null) ? currentLecturer.getProfilePic() : "";
 
             txtUserId.setText(uid);
             txtUsername.setText(un);
             txtEmail.setText(em);
             txtFirstName.setText(fn);
             txtLastName.setText(ln);
+            txtContactNo.setText(ct);
+            txtProfilePic.setText(pic);
 
             String full = fn + " " + ln;
             inspectorNameLabel.setText(full);
@@ -318,13 +351,15 @@ public class LecturerProfilePanel extends JPanel {
     private void saveProfile() {
         currentLecturer.setFirstName(txtFirstName.getText().trim());
         currentLecturer.setLastName(txtLastName.getText().trim());
+        currentLecturer.setContactNo(txtContactNo.getText().trim());
+        currentLecturer.setProfilePic(txtProfilePic.getText().trim());
 
         if (controller.updateProfile(currentLecturer)) {
             loadData();
-            JOptionPane.showMessageDialog(this, "Profile updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Profile and contact details updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } else {
             loadData();
-            JOptionPane.showMessageDialog(this, "Profile saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Profile updated locally.", "Notice", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 }

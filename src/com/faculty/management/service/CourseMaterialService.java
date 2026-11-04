@@ -30,7 +30,7 @@ public class CourseMaterialService {
     }
 
     public boolean uploadMaterial(String courseId, String title, File sourceFile) throws IOException, SQLException, DatabaseException {
-        return uploadMaterial(courseId, title, sourceFile, 2);
+        return uploadMaterial(courseId, title, sourceFile, 31);
     }
 
     public boolean modifyMaterial(int materialId, String courseId, String title, File newFile) throws IOException, SQLException, DatabaseException {
@@ -56,5 +56,9 @@ public class CourseMaterialService {
 
     public List<CourseMaterial> fetchMaterials(String courseId) throws SQLException, DatabaseException {
         return materialDAO.getMaterialsByCourse(courseId);
+    }
+
+    public List<CourseMaterial> fetchAllMaterials() throws SQLException, DatabaseException {
+        return materialDAO.getAllMaterials();
     }
 }

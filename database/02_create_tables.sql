@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS marks (
     CONSTRAINT fk_marks_evaluation FOREIGN KEY (evaluation_id) REFERENCES evaluations(evaluation_id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT check_mark_range CHECK (marks_obtained IS NULL OR (marks_obtained >= 0 AND marks_obtained <= 100)),
     UNIQUE KEY unique_student_evaluation (student_id, evaluation_id),
-    UNIQUE KEY unique_student_course (student_id, course_id)
+    UNIQUE KEY unique_student_course_mark (student_id, course_id, evaluation_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS eligibility (

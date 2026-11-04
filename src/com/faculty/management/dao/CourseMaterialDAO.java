@@ -76,12 +76,23 @@ public class CourseMaterialDAO {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         int resolvedCourseId = resolveCourseId(conn, material.getCourseId());
 
-        String sql = "UPDATE course_materials SET course_id = ?, title = ?, file_path = ? WHERE material_id = ?";
+        String sql;
+        boolean hasPath = (material.getFilePath() != null && !material.getFilePath().trim().isEmpty());
+        if (hasPath) {
+            sql = "UPDATE course_materials SET course_id = ?, title = ?, file_path = ? WHERE material_id = ?";
+        } else {
+            sql = "UPDATE course_materials SET course_id = ?, title = ? WHERE material_id = ?";
+        }
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, resolvedCourseId);
             stmt.setString(2, material.getTitle());
-            stmt.setString(3, material.getFilePath());
-            stmt.setInt(4, material.getMaterialId());
+            if (hasPath) {
+                stmt.setString(3, material.getFilePath());
+                stmt.setInt(4, material.getMaterialId());
+            } else {
+                stmt.setInt(3, material.getMaterialId());
+            }
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -101,6 +112,13 @@ public class CourseMaterialDAO {
         } catch (SQLException e) {
             throw new DatabaseException("Failed to delete course material: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Retrieves all course materials across courses.
+     */
+    public List<CourseMaterial> getAllMaterials() throws DatabaseException, SQLException {
+        return getMaterialsByCourse(null);
     }
 
     /**
