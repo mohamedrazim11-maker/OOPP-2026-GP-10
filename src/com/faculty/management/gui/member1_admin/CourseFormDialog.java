@@ -10,13 +10,17 @@ import com.faculty.management.model.Course;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.AbstractDocument;
 import java.awt.*;
 import java.util.List;
 
 /**
  * Course Form Dialog for Administrator (Member 1).
  * Supports "Add Course", "Update Course", "Delete Course", and "View Course" operations for Faculty Management System.
- * 
+ *
  * Demonstrates Core OOP Principles:
  * - Classes and Objects: Dialog, Swing components, and Course model instantiation.
  * - Inheritance: Extends JDialog to inherit standard modal window behaviors.
@@ -39,16 +43,30 @@ public class CourseFormDialog extends JDialog {
         ASSIGN_INFO
     }
 
+    // Course type options and automatic contact-hour rules (change here if the rules change)
+    private static final String TYPE_THEORY = "Theory";
+    private static final String TYPE_PRACTICAL = "Practical";
+    private static final String TYPE_COMBINED = "Combined";
+    private static final int SEMESTER_WEEKS = 15;             // all hours are totals for a 15-week semester
+    private static final int THEORY_HOURS_PER_CREDIT = 1;     // weekly: 1 credit = 1 hour, 2 credits = 2 hours
+    private static final int PRACTICAL_HOURS_PER_CREDIT = 2;  // weekly: 1 credit = 2 hours, 2 credits = 4 hours
+
     // Encapsulated Fields
     private final FormMode mode;
     private final AdminController adminController;
     private boolean saved = false;
     private Course course;
     private int courseIdToUpdate = 0;
+    private boolean loadingFields = false; // true while populating, so auto-calculation does not overwrite stored values
 
     // Encapsulated UI Components
     private JComboBox<Course> courseSelectorComboBox;
-    private JTextField courseCodeField;
+    private JTextField courseCodeField;          // full code (read-only display for VIEW / DELETE / ASSIGN_INFO)
+    private JLabel codePrefixLabel;              // auto prefix e.g. "12"
+    private JTextField codeSuffixField;          // the "XX" typed by the admin
+    private JLabel codeHintLabel;
+    private JComboBox<String> levelComboBox;
+    private JComboBox<String> typeComboBox;
     private JTextField courseNameField;
     private JSpinner creditSpinner;
     private JSpinner theoryHoursSpinner;
@@ -110,8 +128,8 @@ public class CourseFormDialog extends JDialog {
      * Initializes all UI components and layouts.
      */
     private void initComponents() {
-        setSize(580, 720);
-        setMinimumSize(new Dimension(520, 640));
+        setSize(580, 820);
+        setMinimumSize(new Dimension(520, 700));
         setLocationRelativeTo(getParent());
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(248, 250, 252));
@@ -205,73 +223,16 @@ public class CourseFormDialog extends JDialog {
             gridY++;
         }
 
-        // Course Code
-        gbc.gridx = 0;
-        gbc.gridy = gridY;
-        gbc.weightx = 0.35;
-        formPanel.add(createFieldLabel("Course Code *"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 0.65;
-        courseCodeField = new JTextField();
-        courseCodeField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        courseCodeField.setToolTipText("Enter course code");
-        formPanel.add(courseCodeField, gbc);
-
-        // Course Name
-        gridY++;
-        gbc.gridx = 0;
-        gbc.gridy = gridY;
-        gbc.weightx = 0.35;
-        formPanel.add(createFieldLabel("Course Name *"), gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = 0.65;
-        courseNameField = new JTextField();
-        courseNameField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        courseNameField.setToolTipText("Enter course module name");
-        formPanel.add(courseNameField, gbc);
-
-        // Credit Value
-        gridY++;
-        gbc.gridx = 0;
-        gbc.gridy = gridY;
-        formPanel.add(createFieldLabel("Credit Value *"), gbc);
-
-        gbc.gridx = 1;
-        creditSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 10, 1));
-        creditSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        formPanel.add(creditSpinner, gbc);
-
-        // Theory Hours
-        gridY++;
-        gbc.gridx = 0;
-        gbc.gridy = gridY;
-        formPanel.add(createFieldLabel("Theory Hours (Total)"), gbc);
-
-        gbc.gridx = 1;
-        theoryHoursSpinner = new JSpinner(new SpinnerNumberModel(30, 0, 150, 5));
-        theoryHoursSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        formPanel.add(theoryHoursSpinner, gbc);
-
-        // Practical Hours
-        gridY++;
-        gbc.gridx = 0;
-        gbc.gridy = gridY;
-        formPanel.add(createFieldLabel("Practical Hours (Total)"), gbc);
-
-        gbc.gridx = 1;
-        practicalHoursSpinner = new JSpinner(new SpinnerNumberModel(30, 0, 150, 5));
-        practicalHoursSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        formPanel.add(practicalHoursSpinner, gbc);
+        boolean codeEditable = (mode == FormMode.ADD || mode == FormMode.UPDATE);
 
         // Department
-        gridY++;
         gbc.gridx = 0;
+        gbc.weightx = 0.35;
         gbc.gridy = gridY;
         formPanel.add(createFieldLabel("Department *"), gbc);
 
         gbc.gridx = 1;
+        gbc.weightx = 0.65;
         String[] departments = {
                 "-- Select Department --",
                 "Department of Information & Communication Technology",
@@ -282,29 +243,166 @@ public class CourseFormDialog extends JDialog {
         departmentComboBox = new JComboBox<>(departments);
         departmentComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         departmentComboBox.setBackground(Color.WHITE);
+        departmentComboBox.addActionListener(e -> updateCodePrefix());
         formPanel.add(departmentComboBox, gbc);
+
+        // Course Name
+        gridY++;
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        gbc.gridy = gridY;
+        formPanel.add(createFieldLabel("Course Name *"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        courseNameField = new JTextField();
+        courseNameField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        courseNameField.setToolTipText("Enter course module name");
+        formPanel.add(courseNameField, gbc);
+
+        // Level
+        gridY++;
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        gbc.gridy = gridY;
+        formPanel.add(createFieldLabel("Level *"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        levelComboBox = new JComboBox<>(new String[]{"Level 1", "Level 2", "Level 3", "Level 4"});
+        levelComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        levelComboBox.setBackground(Color.WHITE);
+        levelComboBox.addActionListener(e -> updateCodePrefix());
+        formPanel.add(levelComboBox, gbc);
 
         // Semester
         gridY++;
         gbc.gridx = 0;
+        gbc.weightx = 0.35;
         gbc.gridy = gridY;
         formPanel.add(createFieldLabel("Semester *"), gbc);
 
         gbc.gridx = 1;
+        gbc.weightx = 0.65;
         String[] semesters = {"Semester 1", "Semester 2"};
         semesterComboBox = new JComboBox<>(semesters);
         semesterComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         semesterComboBox.setBackground(Color.WHITE);
+        semesterComboBox.addActionListener(e -> updateCodePrefix());
         formPanel.add(semesterComboBox, gbc);
+
+        // Type
+        gridY++;
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        gbc.gridy = gridY;
+        formPanel.add(createFieldLabel("Type *"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        typeComboBox = new JComboBox<>(new String[]{TYPE_THEORY, TYPE_PRACTICAL, TYPE_COMBINED});
+        typeComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        typeComboBox.setBackground(Color.WHITE);
+        typeComboBox.addActionListener(e -> recalculateHours());
+        formPanel.add(typeComboBox, gbc);
+
+        // Credit Value
+        gridY++;
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        gbc.gridy = gridY;
+        formPanel.add(createFieldLabel("Credit Value *"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        creditSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 10, 1));
+        creditSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        creditSpinner.addChangeListener(e -> recalculateHours());
+        formPanel.add(creditSpinner, gbc);
+
+        // Course Code  (ADD / UPDATE: auto prefix + admin-entered XX;  other modes: read-only full code)
+        gridY++;
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        gbc.gridy = gridY;
+        formPanel.add(createFieldLabel("Course Code *"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        courseCodeField = new JTextField();
+        courseCodeField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        codePrefixLabel = new JLabel("11", SwingConstants.CENTER);
+        codePrefixLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        codePrefixLabel.setForeground(new Color(92, 18, 33));
+        codePrefixLabel.setOpaque(true);
+        codePrefixLabel.setBackground(new Color(241, 245, 249));
+        codePrefixLabel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(203, 213, 225)),
+                new EmptyBorder(4, 10, 4, 10)));
+
+        codeSuffixField = new JTextField();
+        codeSuffixField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        codeSuffixField.setToolTipText("Enter the last two digits (XX) of the course code");
+        ((AbstractDocument) codeSuffixField.getDocument()).setDocumentFilter(new TwoDigitFilter());
+
+        if (codeEditable) {
+            JPanel codePanel = new JPanel(new BorderLayout(6, 0));
+            codePanel.setOpaque(false);
+            codePanel.add(codePrefixLabel, BorderLayout.WEST);
+            codePanel.add(codeSuffixField, BorderLayout.CENTER);
+            formPanel.add(codePanel, gbc);
+
+            gridY++;
+            gbc.gridx = 1;
+            gbc.weightx = 0.65;
+            gbc.gridy = gridY;
+            codeHintLabel = new JLabel(" ");
+            codeHintLabel.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+            codeHintLabel.setForeground(new Color(100, 116, 139));
+            formPanel.add(codeHintLabel, gbc);
+        } else {
+            formPanel.add(courseCodeField, gbc);
+        }
+
+        // Theory Hours (calculated automatically)
+        gridY++;
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        gbc.gridy = gridY;
+        formPanel.add(createFieldLabel("Theory Hours (15 Weeks)"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        theoryHoursSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 500, 1));
+        theoryHoursSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        theoryHoursSpinner.setToolTipText("Total for 15 weeks, calculated automatically from Type and Credit Value");
+        formPanel.add(theoryHoursSpinner, gbc);
+
+        // Practical Hours (calculated automatically)
+        gridY++;
+        gbc.gridx = 0;
+        gbc.weightx = 0.35;
+        gbc.gridy = gridY;
+        formPanel.add(createFieldLabel("Practical Hours (15 Weeks)"), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.65;
+        practicalHoursSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 500, 1));
+        practicalHoursSpinner.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        practicalHoursSpinner.setToolTipText("Total for 15 weeks, calculated automatically from Type and Credit Value");
+        formPanel.add(practicalHoursSpinner, gbc);
 
         // Description
         gridY++;
         gbc.gridx = 0;
+        gbc.weightx = 0.35;
         gbc.gridy = gridY;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         formPanel.add(createFieldLabel("Description"), gbc);
 
         gbc.gridx = 1;
+        gbc.weightx = 0.65;
         gbc.anchor = GridBagConstraints.CENTER;
         descriptionArea = new JTextArea(4, 20);
         descriptionArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -320,8 +418,8 @@ public class CourseFormDialog extends JDialog {
             courseNameField.setEditable(false);
             courseNameField.setBackground(new Color(241, 245, 249));
             creditSpinner.setEnabled(false);
-            theoryHoursSpinner.setEnabled(false);
-            practicalHoursSpinner.setEnabled(false);
+            levelComboBox.setEnabled(false);
+            typeComboBox.setEnabled(false);
             departmentComboBox.setEnabled(false);
             semesterComboBox.setEnabled(false);
             descriptionArea.setEditable(false);
@@ -331,6 +429,17 @@ public class CourseFormDialog extends JDialog {
             courseCodeField.setBackground(new Color(241, 245, 249));
             courseNameField.setEditable(false);
             courseNameField.setBackground(new Color(241, 245, 249));
+            levelComboBox.setEnabled(false); // level is part of the (read-only) course code
+        }
+
+        // Contact hours are always calculated automatically from Type and Credit Value
+        theoryHoursSpinner.setEnabled(false);
+        practicalHoursSpinner.setEnabled(false);
+
+        // Initial prefix / hours for a brand-new course
+        updateCodePrefix();
+        if (mode == FormMode.ADD) {
+            recalculateHours();
         }
 
         // Error message banner
@@ -473,31 +582,139 @@ public class CourseFormDialog extends JDialog {
     }
 
     /**
+     * Returns the 3-letter course-code prefix for a department (e.g. ICT, BST, ENG), or "" if none selected.
+     * Change the letters here if your faculty uses different ones.
+     */
+    private String getDepartmentCodePrefix() {
+        Object sel = (departmentComboBox != null) ? departmentComboBox.getSelectedItem() : null;
+        if (sel == null) return "";
+        String dept = sel.toString();
+        if (dept.contains("Information & Communication")) return "ICT";
+        if (dept.contains("Biosystems")) return "BST";
+        if (dept.contains("Engineering")) return "ENG";
+        if (dept.contains("Multidisciplinary")) return "MDS";
+        return "";
+    }
+
+    /**
+     * Updates the automatic course-code prefix: department letters + level digit + semester digit,
+     * e.g. ICT + Level 3 + Semester 1 -> "ICT31", so the final code is ICT31XX (e.g. ICT3122).
+     */
+    private void updateCodePrefix() {
+        if (levelComboBox == null || semesterComboBox == null || codePrefixLabel == null || departmentComboBox == null) return;
+        int level = Math.max(1, levelComboBox.getSelectedIndex() + 1);
+        int sem = Math.max(1, semesterComboBox.getSelectedIndex() + 1);
+        String letters = getDepartmentCodePrefix();
+        String prefix = (letters.isEmpty() ? "---" : letters) + level + sem;
+        codePrefixLabel.setText(prefix);
+        if (codeHintLabel != null) {
+            codeHintLabel.setText(letters.isEmpty()
+                    ? "Select a department first, then enter the last two digits"
+                    : "Format: " + prefix + "XX  (enter the last two digits)");
+        }
+    }
+
+    /**
+     * Calculates TOTAL theory / practical hours for a 15-week semester from Type and Credit Value.
+     *  Theory    : 1 hour per credit per week  (1 credit = 15 h, 2 credits = 30 h)
+     *  Practical : 2 hours per credit per week (1 credit = 30 h, 2 credits = 60 h)
+     *  Combined  : both of the above are applied
+     */
+    private void recalculateHours() {
+        if (loadingFields || typeComboBox == null || creditSpinner == null) return;
+        int credits = (Integer) creditSpinner.getValue();
+        String type = (String) typeComboBox.getSelectedItem();
+
+        int theory = 0;
+        int practical = 0;
+        if (TYPE_THEORY.equals(type)) {
+            theory = credits * THEORY_HOURS_PER_CREDIT * SEMESTER_WEEKS;
+        } else if (TYPE_PRACTICAL.equals(type)) {
+            practical = credits * PRACTICAL_HOURS_PER_CREDIT * SEMESTER_WEEKS;
+        } else {
+            theory = credits * THEORY_HOURS_PER_CREDIT * SEMESTER_WEEKS;
+            practical = credits * PRACTICAL_HOURS_PER_CREDIT * SEMESTER_WEEKS;
+        }
+        theoryHoursSpinner.setValue(theory);
+        practicalHoursSpinner.setValue(practical);
+    }
+
+    /**
+     * Restricts the course-code suffix field to at most two digits.
+     */
+    private static class TwoDigitFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException {
+            replace(fb, offset, 0, text, attr);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            if (text == null) text = "";
+            String digits = text.replaceAll("[^0-9]", "");
+            int newLength = fb.getDocument().getLength() - length + digits.length();
+            if (newLength <= 2) {
+                super.replace(fb, offset, length, digits, attrs);
+            }
+        }
+    }
+
+    /**
      * Populates form fields from a Course object.
      */
     private void populateFields(Course c) {
         if (c == null) return;
-        this.courseIdToUpdate = c.getCourseId();
-        courseCodeField.setText(c.getCourseCode());
-        courseNameField.setText(c.getCourseName());
-        creditSpinner.setValue(c.getCreditValue());
-        theoryHoursSpinner.setValue(c.getTheoryHours());
-        practicalHoursSpinner.setValue(c.getPracticalHours());
+        loadingFields = true;
+        try {
+            this.courseIdToUpdate = c.getCourseId();
+            String code = c.getCourseCode() != null ? c.getCourseCode() : "";
+            courseCodeField.setText(code);
+            courseNameField.setText(c.getCourseName());
+            creditSpinner.setValue(c.getCreditValue());
+            theoryHoursSpinner.setValue(c.getTheoryHours());
+            practicalHoursSpinner.setValue(c.getPracticalHours());
 
-        if (c.getDepartment() != null) {
-            departmentComboBox.setSelectedItem(c.getDepartment());
-        } else {
-            departmentComboBox.setSelectedIndex(0);
+            // Level + code suffix are derived from the trailing 4 digits of the code (e.g. 1205 or ICT2132)
+            int levelIndex = 0;
+            String suffix = "";
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d)(\\d)(\\d{2})$").matcher(code);
+            if (m.find()) {
+                int lv = Integer.parseInt(m.group(1));
+                if (lv >= 1 && lv <= 4) {
+                    levelIndex = lv - 1;
+                }
+                suffix = m.group(3);
+            }
+            levelComboBox.setSelectedIndex(levelIndex);
+            codeSuffixField.setText(suffix);
+
+            // Type is derived from the stored contact hours
+            if (c.getTheoryHours() > 0 && c.getPracticalHours() > 0) {
+                typeComboBox.setSelectedItem(TYPE_COMBINED);
+            } else if (c.getPracticalHours() > 0) {
+                typeComboBox.setSelectedItem(TYPE_PRACTICAL);
+            } else {
+                typeComboBox.setSelectedItem(TYPE_THEORY);
+            }
+
+            if (c.getDepartment() != null) {
+                departmentComboBox.setSelectedItem(c.getDepartment());
+            } else {
+                departmentComboBox.setSelectedIndex(0);
+            }
+
+            if (c.getSemester() != null) {
+                semesterComboBox.setSelectedItem(c.getSemester());
+            } else {
+                semesterComboBox.setSelectedIndex(0);
+            }
+
+            descriptionArea.setText(c.getDescription() != null ? c.getDescription() : "");
+            errorLabel.setText(" ");
+        } finally {
+            loadingFields = false;
         }
-
-        if (c.getSemester() != null) {
-            semesterComboBox.setSelectedItem(c.getSemester());
-        } else {
-            semesterComboBox.setSelectedIndex(0);
-        }
-
-        descriptionArea.setText(c.getDescription() != null ? c.getDescription() : "");
-        errorLabel.setText(" ");
+        updateCodePrefix();
     }
 
     /**
@@ -547,7 +764,20 @@ public class CourseFormDialog extends JDialog {
                 return;
             }
 
-            String courseCode = courseCodeField.getText().trim();
+            String courseCode;
+            if (mode == FormMode.ADD || mode == FormMode.UPDATE) {
+                if (getDepartmentCodePrefix().isEmpty()) {
+                    throw new ValidationException("Please select a department first; it sets the course code letters (e.g. ICT).");
+                }
+                String suffix = codeSuffixField.getText().trim();
+                if (!suffix.matches("\\d{2}")) {
+                    throw new ValidationException("Please enter the last two digits (XX) of the course code, e.g. "
+                            + codePrefixLabel.getText() + "05.");
+                }
+                courseCode = codePrefixLabel.getText() + suffix;
+            } else {
+                courseCode = courseCodeField.getText().trim();
+            }
             String courseName = courseNameField.getText().trim();
             int creditValue = (Integer) creditSpinner.getValue();
             int theoryHours = (Integer) theoryHoursSpinner.getValue();
@@ -591,7 +821,7 @@ public class CourseFormDialog extends JDialog {
                     JOptionPane.showMessageDialog(
                             this,
                             "Course information for '" + targetCourse.getCourseCode() + " - " + targetCourse.getCourseName() +
-                            "' was successfully assigned and updated in the system!",
+                                    "' was successfully assigned and updated in the system!",
                             "Course Information Assigned",
                             JOptionPane.INFORMATION_MESSAGE
                     );
@@ -612,7 +842,7 @@ public class CourseFormDialog extends JDialog {
                     JOptionPane.showMessageDialog(
                             this,
                             "Course '" + targetCourse.getCourseCode() + " - " + targetCourse.getCourseName() +
-                            "' was successfully updated in the system!",
+                                    "' was successfully updated in the system!",
                             "Course Updated Successfully",
                             JOptionPane.INFORMATION_MESSAGE
                     );
@@ -627,10 +857,10 @@ public class CourseFormDialog extends JDialog {
                 JOptionPane.showMessageDialog(
                         this,
                         "Course '" + created.getCourseCode() + " - " + created.getCourseName() +
-                        "' was successfully registered in the system!",
+                                "' was successfully registered in the system!",
                         "Course Added Successfully",
                         JOptionPane.INFORMATION_MESSAGE
-                    );
+                );
                 dispose();
             }
 
