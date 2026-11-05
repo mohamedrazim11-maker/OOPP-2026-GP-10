@@ -1,5 +1,7 @@
 package com.faculty.management.gui.member2_lecturer;
 
+import com.faculty.management.dao.CourseDAO;
+import com.faculty.management.model.Course;
 import com.faculty.management.model.Eligibility;
 import com.faculty.management.service.EligibilityService;
 
@@ -68,8 +70,18 @@ public class EligibilityPanel extends JPanel {
             try {
                 courseFilter = Integer.parseInt(courseStr);
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Course ID must be a valid integer.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                return;
+                try {
+                    Course c = new CourseDAO().findByCode(courseStr);
+                    if (c != null) {
+                        courseFilter = c.getCourseId();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Course '" + courseStr + "' not found.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                } catch (Exception daoEx) {
+                    JOptionPane.showMessageDialog(this, "Course ID must be a valid integer or course code (e.g. CS203, ICT2112).", "Input Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
         }
 

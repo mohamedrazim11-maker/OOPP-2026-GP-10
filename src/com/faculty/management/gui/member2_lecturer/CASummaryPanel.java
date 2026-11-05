@@ -1,7 +1,11 @@
 package com.faculty.management.gui.member2_lecturer;
 
+import com.faculty.management.dao.CourseDAO;
+import com.faculty.management.dao.UserDAO;
+import com.faculty.management.model.Course;
 import com.faculty.management.model.Eligibility;
 import com.faculty.management.model.Mark;
+import com.faculty.management.model.User;
 import com.faculty.management.service.EligibilityService;
 
 import javax.swing.*;
@@ -10,6 +14,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.faculty.management.gui.member2_lecturer.LecturerUIComponents.*;
@@ -24,10 +29,13 @@ import static com.faculty.management.gui.member2_lecturer.LecturerUIComponents.*
 public class CASummaryPanel extends JPanel {
 
     private final EligibilityService eligibilityService = new EligibilityService();
+    private final CourseDAO courseDAO = new CourseDAO();
+    private final UserDAO userDAO = new UserDAO();
+    private List<Course> allCourses = new ArrayList<>();
 
     // Inputs
     private SearchTextField txtStudentId;
-    private SearchTextField txtCourseId;
+    private JComboBox<String> cmbCourse;
     private SearchTextField txtMaxCAMarks;
     private BurgundyButton btnCalculate;
 
@@ -44,8 +52,15 @@ public class CASummaryPanel extends JPanel {
 
     public CASummaryPanel() {
         initComponents();
-        txtStudentId.setText("32");
-        txtCourseId.setText("6");
+        txtStudentId.setText("11");
+        // Pre-select CS203 (Course ID 6) if available
+        for (int i = 0; i < cmbCourse.getItemCount(); i++) {
+            String item = cmbCourse.getItemAt(i);
+            if (item != null && item.startsWith("CS203")) {
+                cmbCourse.setSelectedIndex(i);
+                break;
+            }
+        }
         processCACalculation();
     }
 
@@ -94,30 +109,123 @@ public class CASummaryPanel extends JPanel {
         add(mainContent, BorderLayout.CENTER);
     }
 
+    private void loadCourses() {
+        cmbCourse.removeAllItems();
+        try {
+            allCourses = courseDAO.getAllCourses();
+            for (Course c : allCourses) {
+                cmbCourse.addItem(c.getCourseCode() + " - " + c.getCourseName());
+            }
+        } catch (Exception e) {
+            allCourses = new ArrayList<>();
+        }
+    }
+
+    private Course resolveCourse(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return null;
+        }
+        String trimmed = input.trim();
+
+        // 1. Check if item has "CODE - NAME" pattern
+        if (trimmed.contains(" - ")) {
+            String code = trimmed.split(" - ")[0].trim();
+            for (Course c : allCourses) {
+                if (c.getCourseCode().equalsIgnoreCase(code)) {
+                    return c;
+                }
+            }
+        }
+
+        // 2. Check exact course code match (case-insensitive)
+        for (Course c : allCourses) {
+            if (c.getCourseCode().equalsIgnoreCase(trimmed)) {
+                return c;
+            }
+        }
+
+        // 3. Check integer course_id match in loaded courses
+        try {
+            int id = Integer.parseInt(trimmed);
+            for (Course c : allCourses) {
+                if (c.getCourseId() == id) {
+                    return c;
+                }
+            }
+        } catch (NumberFormatException ignored) {}
+
+        // 4. Fallback search by code via DAO
+        try {
+            Course c = courseDAO.findByCode(trimmed);
+            if (c != null) return c;
+        } catch (Exception ignored) {}
+
+        // 5. Fallback search by ID via DAO
+        try {
+            int id = Integer.parseInt(trimmed);
+            Course c = courseDAO.findById(id);
+            if (c != null) return c;
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
+    private User resolveStudent(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return null;
+        }
+        String trimmed = input.trim();
+        try {
+            int id = Integer.parseInt(trimmed);
+            try {
+                User u = userDAO.findById(id);
+                if (u != null) return u;
+            } catch (Exception ignored) {}
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            User u = userDAO.findByUsername(trimmed);
+            if (u != null) return u;
+        } catch (Exception ignored) {}
+
+        return null;
+    }
+
     private JPanel createLeftPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 12));
         panel.setOpaque(false);
 
         // Input Controls Row
-        JPanel inputBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        JPanel inputBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         inputBar.setOpaque(false);
+        inputBar.setPreferredSize(new Dimension(0, 40));
 
-        txtStudentId = new SearchTextField("Student ID", 12);
-        txtStudentId.setPreferredSize(new Dimension(140, 36));
+        txtStudentId = new SearchTextField("Student ID", 10);
+        txtStudentId.setPreferredSize(new Dimension(105, 36));
 
-        txtCourseId = new SearchTextField("Course ID", 12);
-        txtCourseId.setPreferredSize(new Dimension(140, 36));
+        cmbCourse = new JComboBox<>();
+        cmbCourse.setEditable(true);
+        styleComboBox(cmbCourse);
+        cmbCourse.setPreferredSize(new Dimension(185, 36));
+        Component editor = cmbCourse.getEditor().getEditorComponent();
+        if (editor instanceof JTextField) {
+            JTextField tf = (JTextField) editor;
+            tf.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
+            tf.setBackground(Color.WHITE);
+            tf.setFont(FONT_BODY);
+        }
+        loadCourses();
 
-        txtMaxCAMarks = new SearchTextField("100", 6);
+        txtMaxCAMarks = new SearchTextField("100", 5);
         txtMaxCAMarks.setText("100");
-        txtMaxCAMarks.setPreferredSize(new Dimension(80, 36));
+        txtMaxCAMarks.setPreferredSize(new Dimension(65, 36));
 
         btnCalculate = new BurgundyButton("Calculate");
-        btnCalculate.setPreferredSize(new Dimension(110, 36));
+        btnCalculate.setPreferredSize(new Dimension(100, 36));
         btnCalculate.addActionListener(e -> processCACalculation());
 
         inputBar.add(txtStudentId);
-        inputBar.add(txtCourseId);
+        inputBar.add(cmbCourse);
         inputBar.add(txtMaxCAMarks);
         inputBar.add(btnCalculate);
 
@@ -148,10 +256,10 @@ public class CASummaryPanel extends JPanel {
 
         DefaultTableCellRenderer leftRender = new DefaultTableCellRenderer();
         leftRender.setBorder(new EmptyBorder(0, 12, 0, 0));
-        marksTable.getColumnModel().getColumn(0).setPreferredWidth(260);
+        marksTable.getColumnModel().getColumn(0).setPreferredWidth(320);
         marksTable.getColumnModel().getColumn(0).setCellRenderer(leftRender);
 
-        marksTable.getColumnModel().getColumn(1).setPreferredWidth(260);
+        marksTable.getColumnModel().getColumn(1).setPreferredWidth(160);
         marksTable.getColumnModel().getColumn(1).setCellRenderer(leftRender);
 
         JScrollPane scrollPane = new JScrollPane(marksTable);
@@ -246,7 +354,8 @@ public class CASummaryPanel extends JPanel {
 
     private void processCACalculation() {
         String studentIdStr = txtStudentId.getText().trim();
-        String courseIdStr = txtCourseId.getText().trim();
+        Object selectedCourseObj = cmbCourse.getSelectedItem();
+        String courseIdStr = (selectedCourseObj != null) ? selectedCourseObj.toString().trim() : "";
         String maxStr = txtMaxCAMarks.getText().trim();
 
         if (studentIdStr.isEmpty() || courseIdStr.isEmpty()) {
@@ -254,36 +363,76 @@ public class CASummaryPanel extends JPanel {
         }
 
         try {
-            double maxMarks = 100.0;
-            if (!maxStr.isEmpty()) {
-                maxMarks = Double.parseDouble(maxStr);
+            User student = resolveStudent(studentIdStr);
+            if (student == null) {
+                JOptionPane.showMessageDialog(this,
+                        "Student '" + studentIdStr + "' not found in database.\nPlease enter a valid Student ID or Username (e.g., 11, 30, tg2021001, Rashkan).",
+                        "Invalid Student",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
             }
 
-            List<Mark> studentMarks = eligibilityService.getStudentMarks(studentIdStr);
-            tableModel.setRowCount(0);
-            double totalObtained = 0.0;
+            Course course = resolveCourse(courseIdStr);
+            if (course == null) {
+                JOptionPane.showMessageDialog(this,
+                        "Course '" + courseIdStr + "' not found in database.\nPlease select a valid course from the list (e.g., CS203, ICT2112).",
+                        "Invalid Course",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-            if (studentMarks != null && !studentMarks.isEmpty()) {
-                for (Mark m : studentMarks) {
-                    tableModel.addRow(new Object[]{
-                            "Eval #" + m.getEvaluationId(),
-                            String.format("%.1f", m.getMarksObtained())
-                    });
-                    totalObtained += m.getMarksObtained();
+            int studentId = student.getUserId();
+            int courseId = course.getCourseId();
+
+            double maxMarks = 100.0;
+            if (!maxStr.isEmpty()) {
+                try {
+                    maxMarks = Double.parseDouble(maxStr);
+                    if (maxMarks <= 0) maxMarks = 100.0;
+                } catch (NumberFormatException ignored) {
+                    maxMarks = 100.0;
                 }
-            } else {
-                totalObtained = 65.0;
-                tableModel.addRow(new Object[]{"Eval #1 (Quiz)", "85.0"});
-                tableModel.addRow(new Object[]{"Eval #2 (Assessment)", "78.0"});
-                tableModel.addRow(new Object[]{"Eval #3 (Mid-Term)", "68.0"});
-                totalObtained = 231.0;
+            }
+
+            List<Mark> studentMarks = eligibilityService.getStudentMarks(String.valueOf(studentId), String.valueOf(courseId));
+            tableModel.setRowCount(0);
+
+            if (studentMarks == null || studentMarks.isEmpty()) {
+                footerCountLabel.setText("Showing 0 of 0 evaluations");
+                valTotalMarks.setText("0.0");
+                valCAPercentage.setText("0.0%");
+                badgeStatus.setText("No Marks");
+                badgeStatus.setColors(new Color(243, 244, 246), new Color(107, 114, 128));
+                JOptionPane.showMessageDialog(this,
+                        "No marks recorded for student " + student.getFullName() + " (" + student.getUsername() + ")\nin course " + course.getCourseCode() + " - " + course.getCourseName() + ".\n\nPlease enter marks in the Marks Entry tab first.",
+                        "No Marks Found",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            double totalObtained = 0.0;
+            double totalMaxMarks = 0.0;
+
+            for (Mark m : studentMarks) {
+                String evalLabel = "Eval #" + m.getEvaluationId();
+                if (m.getEvaluationTitle() != null && !m.getEvaluationTitle().trim().isEmpty()) {
+                    evalLabel += " (" + m.getEvaluationTitle().trim() + ")";
+                } else if (m.getEvaluationType() != null && !m.getEvaluationType().trim().isEmpty()) {
+                    evalLabel += " (" + m.getEvaluationType().trim() + ")";
+                }
+                tableModel.addRow(new Object[]{
+                        evalLabel,
+                        String.format("%.1f", m.getMarksObtained())
+                });
+                totalObtained += m.getMarksObtained();
+                double mx = m.getMaxMarks() > 0 ? m.getMaxMarks() : 100.0;
+                totalMaxMarks += mx;
             }
 
             int count = tableModel.getRowCount();
             footerCountLabel.setText("Showing " + count + " of " + count + " evaluations");
 
-            double avgScore = count > 0 ? (totalObtained / count) : 0.0;
-            double caPercentage = (avgScore / maxMarks) * 100.0;
+            double caPercentage = (totalMaxMarks > 0) ? ((totalObtained / totalMaxMarks) * 100.0) : 0.0;
             boolean isEligible = caPercentage >= 40.0;
 
             valTotalMarks.setText(String.format("%.1f", totalObtained));
@@ -297,12 +446,8 @@ public class CASummaryPanel extends JPanel {
                 badgeStatus.setColors(new Color(254, 226, 226), new Color(185, 28, 28));
             }
 
-            // Save to database table eligibility
-            int stdId = 32;
-            try { stdId = Integer.parseInt(studentIdStr.replaceAll("[^0-9]", "")); } catch (Exception ignored) {}
-            int crsId = 6;
-            try { crsId = Integer.parseInt(courseIdStr.replaceAll("[^0-9]", "")); } catch (Exception ignored) {}
-            eligibilityService.calculateAndSaveEligibility(stdId, crsId, avgScore, maxMarks);
+            // Save or update calculated eligibility in database table eligibility
+            eligibilityService.calculateAndSaveEligibility(studentId, courseId, caPercentage, 100.0);
 
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Calculation error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);

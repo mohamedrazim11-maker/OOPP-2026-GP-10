@@ -83,6 +83,15 @@ public class MarkDAO {
         return 0;
     }
 
+    public int resolveStudentId(String studentIdentifier) {
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            return resolveStudentId(conn, studentIdentifier);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     /**
      * Inserts a new student mark entry into the database.
      */
@@ -440,26 +449,11 @@ public class MarkDAO {
         List<Mark> marksList = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
 
-        int resolvedId = -1;
-        if (studentId != null && !studentId.trim().isEmpty()) {
-            try {
-                resolvedId = Integer.parseInt(studentId.trim());
-            } catch (NumberFormatException ignored) {
-            }
-            if (resolvedId <= 0) {
-                String uSql = "SELECT user_id FROM users WHERE UPPER(username) = UPPER(?)";
-                try (PreparedStatement uStmt = conn.prepareStatement(uSql)) {
-                    uStmt.setString(1, studentId.trim());
-                    try (ResultSet uRs = uStmt.executeQuery()) {
-                        if (uRs.next()) {
-                            resolvedId = uRs.getInt("user_id");
-                        }
-                    }
-                } catch (SQLException ignored) {
-                }
-            }
+        int resolvedId = resolveStudentId(conn, studentId);
+        if (resolvedId <= 0) {
+            return marksList;
         }
-        int queryId = resolvedId > 0 ? resolvedId : 32;
+        int queryId = resolvedId;
 
         boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
 
@@ -467,8 +461,9 @@ public class MarkDAO {
             String sql = "SELECT m.mark_id, m.student_id, m.evaluation_id, m.marks_obtained, " +
                     "e.title, e.type, e.weightage, e.max_marks, e.course_id " +
                     "FROM marks m " +
-                    "LEFT JOIN evaluations e ON m.evaluation_id = e.evaluation_id " +
-                    "WHERE m.student_id = ? ORDER BY m.evaluation_id ASC";
+                    "JOIN evaluations e ON m.evaluation_id = e.evaluation_id " +
+                    "WHERE m.student_id = ? AND m.evaluation_id IS NOT NULL AND m.evaluation_id > 0 " +
+                    "ORDER BY m.evaluation_id ASC";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, queryId);
                 try (ResultSet rs = stmt.executeQuery()) {
@@ -526,6 +521,13 @@ public class MarkDAO {
     public List<Mark> getMarksByStudentAndCourse(String studentId, int courseId) throws DatabaseException, SQLException, InvalidMarkException {
         List<Mark> marksList = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
+
+        int resolvedId = resolveStudentId(conn, studentId);
+        if (resolvedId <= 0) {
+            return marksList;
+        }
+        int queryId = resolvedId;
+
         boolean hasEvalId = hasColumn(conn, "marks", "evaluation_id");
 
         if (hasEvalId) {
@@ -536,7 +538,7 @@ public class MarkDAO {
                     "WHERE m.student_id = ? AND e.course_id = ? " +
                     "ORDER BY m.evaluation_id ASC";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, studentId);
+                stmt.setInt(1, queryId);
                 stmt.setInt(2, courseId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
@@ -554,10 +556,60 @@ public class MarkDAO {
                         marksList.add(mark);
                     }
                 }
-            } catch (SQLException e) {
-                throw new DatabaseException("Failed to fetch marks for student and course: " + e.getMessage(), e);
+            } catch (SQLException ignored) {
             }
         }
+
+        // If no evaluations found, check if component marks exist in marks table
+        if (marksList.isEmpty()) {
+            String compSql = "SELECT * FROM marks WHERE student_id = ? AND course_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(compSql)) {
+                stmt.setInt(1, queryId);
+                stmt.setInt(2, courseId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        Double q = getDoubleOrNull(rs, "quiz_marks");
+                        Double a = getDoubleOrNull(rs, "assignment_marks");
+                        Double mid = getDoubleOrNull(rs, "mid_sem_marks");
+                        Double p = getDoubleOrNull(rs, "practical_marks");
+
+                        if (q != null) {
+                            Mark m = new Mark(String.valueOf(queryId), 1, q);
+                            m.setEvaluationTitle("Quiz Assessment");
+                            m.setEvaluationType("QUIZ");
+                            m.setCourseId(courseId);
+                            m.setMaxMarks(100.0);
+                            marksList.add(m);
+                        }
+                        if (a != null) {
+                            Mark m = new Mark(String.valueOf(queryId), 2, a);
+                            m.setEvaluationTitle("Continuous Assessment / Assignment");
+                            m.setEvaluationType("ASSESSMENT");
+                            m.setCourseId(courseId);
+                            m.setMaxMarks(100.0);
+                            marksList.add(m);
+                        }
+                        if (mid != null) {
+                            Mark m = new Mark(String.valueOf(queryId), 3, mid);
+                            m.setEvaluationTitle("Mid-Semester Examination");
+                            m.setEvaluationType("MID_TERM");
+                            m.setCourseId(courseId);
+                            m.setMaxMarks(100.0);
+                            marksList.add(m);
+                        }
+                        if (p != null) {
+                            Mark m = new Mark(String.valueOf(queryId), 4, p);
+                            m.setEvaluationTitle("Practical Lab Test");
+                            m.setEvaluationType("PRACTICAL");
+                            m.setCourseId(courseId);
+                            m.setMaxMarks(100.0);
+                            marksList.add(m);
+                        }
+                    }
+                }
+            } catch (SQLException ignored) {}
+        }
+
         return marksList;
     }
 
