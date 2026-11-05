@@ -90,6 +90,10 @@ public class UndergraduateController {
         return attendanceService.getStudentAttendance(studentId);
     }
 
+    public void validateMedicalDateRange(LocalDate start, LocalDate end) throws ValidationException {
+        medicalSubmissionService.validateDateRange(start, end);
+    }
+
     public void submitMedical(int studentId, Integer courseId, LocalDate start, LocalDate end, String reason, String documentPath)
             throws ValidationException, DatabaseException {
         medicalSubmissionService.submit(studentId, courseId, start, end, reason, documentPath);

@@ -45,3 +45,19 @@ public class Undergraduate extends User {
         return "Welcome to Student Portal, " + getFullName() + "!";
     }
 }
+
+
+/* I
+Inheritance – Parent properties reuse pannurathu.
+
+
+E
+Encapsulation – Data protect pannurathu.
+
+
+P
+Polymorphism – One name, many forms.
+
+
+A
+Abstraction – Implementation hide pannurathu */.

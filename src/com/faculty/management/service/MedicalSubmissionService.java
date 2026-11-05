@@ -16,10 +16,24 @@ import java.util.List;
 
 public class MedicalSubmissionService {
     private static final long MAX_PDF_SIZE_BYTES = 10L * 1024 * 1024;
+    private static final long MEDICAL_SUBMISSION_WINDOW_DAYS = 14;
     private final MedicalSubmissionDAO medicalDAO = new MedicalSubmissionDAO();
+
+    public void validateDateRange(LocalDate start, LocalDate end) throws ValidationException {
+        if (start == null || end == null || end.isBefore(start)) {
+            throw new ValidationException("Enter a valid medical date range.");
+        }
+        if (end.isAfter(LocalDate.now())) {
+            throw new ValidationException("Medical end date cannot be in the future.");
+        }
+        if (start.isBefore(LocalDate.now().minusDays(MEDICAL_SUBMISSION_WINDOW_DAYS))) {
+            throw new ValidationException("Medical reports must be submitted within 14 days of the start date.");
+        }
+    }
+
     public void submit(int studentId, Integer courseId, LocalDate start, LocalDate end, String reason, String documentPath)
             throws ValidationException, DatabaseException {
-        if (start == null || end == null || end.isBefore(start)) throw new ValidationException("Enter a valid medical date range.");
+        validateDateRange(start, end);
         if (reason == null || reason.trim().length() < 5) throw new ValidationException("Provide a short reason for the medical request.");
         if (reason.trim().length() > 500) throw new ValidationException("Medical reason must be 500 characters or fewer.");
         medicalDAO.create(studentId, courseId, start, end, reason.trim(), documentPath == null ? "" : documentPath.trim());

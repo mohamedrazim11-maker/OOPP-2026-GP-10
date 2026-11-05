@@ -580,6 +580,8 @@ public class MedicalPanel extends JPanel {
                 throw new ValidationException("End date cannot be prior to start date.");
             }
 
+            controller.validateMedicalDateRange(start, end);
+
             String reason = reasonArea.getText().trim();
             if (reason.length() < 5) {
                 throw new ValidationException("Please provide a descriptive medical reason (minimum 5 characters).");
